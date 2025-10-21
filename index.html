@@ -1,679 +1,945 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MINIMAL TIME TRACKER</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Timer Sholat — Offline</title>
+<script src="jadwalsholat.js"></script>
+<script src="quotes.js"></script>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #000;
-            color: #fff;
-            line-height: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+<style>
+html,body{margin:0;height:100%;font-family:system-ui,sans-serif;background:#000;color:#fff;margin-top: -50px;}
+body{display:flex;align-items:center;justify-content:center;text-align:center;padding:20px}
+#mainText{font-size:clamp(32px,8vw,80px);font-weight:700;line-height:1.2;margin-bottom:20px;margin-top:80px}
+#mainText span{color:#FFAA00;font-weight:400}
+#intervalText{font-size:26px;color:#fff;margin-bottom:20px}
+.progress {
+width: 80vw; /* PERBAIKAN: 80vw dari lebar layar */
+height: 30px;
+background: rgba(255,255,255,0.1);
+border-radius: 999px;
+overflow: hidden;
+margin: 12px auto;
+}
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            width: 100%;
-        }
+.progress > i {
+display: block;
+height: 100%;
+width: 0%;
+border-radius: inherit;
 
-        header {
-            text-align: center;
-            margin-bottom: 0px;
-        }
+/* Sederhanakan background - hanya gradasi sederhana */
+background: linear-gradient(90deg, #4aa8ff, #8b5cf6);
 
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
+/* animasi lebar progres - percepat untuk smart TV */
+transition: width 0.5s linear;
+}
 
-        header p {
-            color: #999;
-            margin-top: 0px;
-            font-size: 1rem;
-        }
+/* Tambahkan kelas untuk efek rush - sederhanakan */
+.progress.rush > i {
+background: linear-gradient(90deg, #ff0000, #ff3333); /* PERBAIKAN: Ubah ke merah */
+animation: blink 1s infinite; /* PERBAIKAN: Tambah animasi kedip */
+}
 
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 60px;
-        }
+/* PERBAIKAN: Tambah animasi kedip */
+@keyframes blink {
+0% { opacity: 1; }
+50% { opacity: 0.5; }
+100% { opacity: 1; }
+}
 
-        .task-input {
-            width: 100%;
-            max-width: 600px;
-            padding: 20px;
-            font-size: 2rem;
-            background-color: #111;
-            border: none;
-            border-radius: 0;
-            color: #fff;
-            text-align: center;
-            outline: none;
-            letter-spacing: 2px;
-            font-weight: 500;
-            text-transform: uppercase;
-        }
+/* PERBAIKAN: Tambah animasi kedip untuk angka menit */
+.blink-text {
+animation: blinkText 1s infinite;
+}
 
-        .task-input::placeholder {
-            color: #555;
-        }
+@keyframes blinkText {
+0% { opacity: 1; }
+50% { opacity: 0.3; }
+100% { opacity: 1; }
+}
 
-        .btn {
-            margin-top: 20px;
-            padding: 12px 30px;
-            background-color: #fff;
-            color: #000;
-            border: none;
-            border-radius: 0;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 700;
-            transition: all 0.2s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+#quote{margin-top:-20px;font-size:32px;color:#adadad;max-width:900wh;white-space:pre-line;margin-left:auto;margin-right:auto}
 
-        .btn:hover {
-            opacity: 0.9;
-        }
+/* Dark mode */
+body.dark {
+background: #000;
+color: #fff;
+}
 
-        .btn-reset {
-            background-color: #333;
-            color: #fff;
-            margin-top: 10px;
-            font-size: 0.875rem;
-            padding: 8px 20px;
-        }
+body.dark #mainText span {
+color: #ffb74d; /* oranye lembut */
+}
 
-        .stopwatch-container {
-            position: relative;
-            margin: -30px 0 20px;
-        }
+body.dark #intervalText {
+color: #bbb;
+}
 
-        .stopwatch {
-            font-size: 2rem;
-            font-weight: 100;
-            text-align: center;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: gray;
-            margin-top: 20px;
-            
-        }
+body.dark #quote {
+color: #4d4d4d;
+}
 
-        .stopwatch b {
-            font-weight: 900;
-            font-size: 2rem;
-            color: #fff;
-        }
+/* Style untuk chart container */
+#chart-container {
+width: 100%;
+max-width: 100%;
+margin: 40px auto 0;
+background: transparent; /* Background transparan */
+border-radius: 8px;
+padding: 20px;
+box-sizing: border-box;
+position: fixed;
+bottom: 0;
+left: 0;
+right: 0;
+height: 220px;
+}
 
-        .stopwatch-bar {
-            height: 10px;
-            background-color: #333;
-            margin-top: 0px;
-            position: relative;
-            overflow: hidden;
-        }
+#chart {
+width: 100%;
+height: 180px;
+position: absolute;
+bottom: 10px;
+left: 0;
+}
 
-        .stopwatch-progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            background-color: #fff;
-            width: 100%;
-        }
+/* Style untuk label bulan */
+.month-labels {
+position: absolute;
+bottom: 0;
+left: 0;
+right: 0;
+height: 30px;
+display: flex;
+justify-content: space-between;
+padding: 0 20px;
+box-sizing: border-box;
+font-size: 12px;
+color: #aaa;
+}
 
-        .current-task {
-            text-align: center;
-            margin-bottom: 20px;
-            margin-top: 20px;
-        }
+.month-label {
+text-align: center;
+flex: 1;
+}
 
-        .current-task h1 {
-            font-size: 5rem;
-            color: orange;
-            letter-spacing: 0px;
-            margin-bottom: 5px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
+/* Style untuk legend grafik */
+.chart-legend {
+position: absolute;
+top: 10px;
+left: 20px;
+display: flex;
+gap: 15px;
+font-size: 16px;
+}
 
-        .task-list {
-            margin-bottom: 50px;
-            position: relative;
-        }
+.legend-item {
+display: flex;
+align-items: center;
+gap: 5px;
+}
 
-        .task-list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: nowrap;
-        }
+.legend-color {
+width: 10px;
+height: 10px;
+border-radius: 50%;
+}
 
-        .task-list h2 {
-            font-size: 1.25rem;
-            font-weight: 500;
-            color: #999;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            white-space: nowrap;
-        }
+/* PERBAIKAN: Tambahkan style untuk jam di tengah halaman */
+#center-clock {
+position: absolute;
+top: 10px;
+left: 50%;
+transform: translateX(-50%);
+font-size: 24px;
+font-weight: normal;
+color: #fff;
+z-index: 100;
+display: flex;
+align-items: center;
+gap: 8px;
+}
 
-        .task-stats {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            white-space: nowrap;
-        }
+#center-clock .time-icon {
+color: #FFAA00;
+}
 
-        .task-counter {
-            color: #fff;
-            font-weight: 900;
-            font-size: 1.25rem;
-        }
+#center-clock .date-icon {
+color: #4aa8ff;
+}
 
-        .total-minutes {
-            color: #fff;
-            font-weight: 900;
-            font-size: 2rem;
-        }
-
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #222;
-        }
-
-        .task-item:last-child {
-            border-bottom: none;
-        }
-
-        .task-info {
-            flex: 1;
-        }
-
-        .task-title {
-            font-weight: 500;
-            text-transform: uppercase;
-        }
-
-        .task-meta {
-            font-size: 0.75rem;
-            color: #666;
-            text-transform: uppercase;
-        }
-
-        .task-timestamp {
-            width: 80px;
-            text-align: center;
-            font-size: 1rem;
-            color: #999;
-            text-transform: uppercase;
-        }
-
-        .task-duration {
-            width: 80px;
-            color:#fff;
-            text-align: right;
-            font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 0;
-            color: #666;
-            text-transform: uppercase;
-        }
-
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 15px 25px;
-            background-color: #333;
-            color: #fff;
-            border-radius: 0;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1000;
-            text-transform: uppercase;
-        }
-
-        .notification.show {
-            opacity: 1;
-        }
-
-        @media (max-width: 600px) {
-            .task-list-header {
-                justify-content: space-between;
-            }
-            
-            .stopwatch {
-                font-size: 1.8rem;
-            }
-            
-            .stopwatch b {
-                font-size: 2rem;
-            }
-            
-            .current-task h1 {
-                font-size: 2.5rem;
-            }
-            
-            .task-stats {
-                gap: 10px;
-            }
-            
-            .task-counter, .total-minutes {
-                font-size: 1.5rem;
-            }
-            
-            .task-timestamp, .task-duration {
-                width: 90px;
-                font-size: 1rem;
-            }
-        }
-    </style>
+/* PERBAIKAN: Style untuk tombol toggle di pojok kanan atas */
+#toggleTheme {
+position: absolute;
+top: 10px;
+right: 10px;
+background: none;
+border: 1px solid #666;
+border-radius: 8px;
+padding: 6px 12px;
+cursor: pointer;
+color: inherit;
+z-index: 101;
+}
+</style>
 </head>
-<body>
-    <div class="container">
-        <div class="stopwatch-container">
-            <div class="stopwatch-bar">
-                <div class="stopwatch-progress" id="stopwatchProgress"></div>
-            </div>
-            <div class="stopwatch" id="stopwatch"><b>0 MENIT </b>0 DETIK</div>
+<body class="dark">
+<main>
+<div id="quote">"Quotes & Jadwal disini"</div>
+<div id="mainText"><strong>—</strong><span><i></i></span></div>
+<div id="intervalText">—</div>
+<div class="progress"><i id="intervalProgress"></i></div>
 
-        </div>
+<span><div class="status-bar" style="color:gray;margin-top:0px;margin-bottom:30px;font-size: 12px;">
+<span class="internet-speed">🌐 ...</span>
 
-        <div class="current-task" id="currentTask" style="display: none;">
-            <h1 id="currentTaskName">-</h1>
-        </div>
+</div></span>
 
-        <div class="input-section">
-            <input type="text" id="taskInput" class="task-input" placeholder="KETIK TUGAS BARU..." autofocus>
-            <button id="addTaskBtn" class="btn">+ TAMBAH</button>
-        </div>
+<!-- PERBAIKAN: Tambahkan jam di tengah halaman -->
+<div id="center-clock">
+<span class="time-icon">🕒</span>
+<span id="center-time">--:--</span>
+<span class="date-icon">📅</span>
+<span id="center-date">--- ---- ----</span>
+</div>
 
-        <div class="task-list">
-            <div class="task-list-header">
-                <h2 id="taskListTitle">📊 TUGAS 0/0</h2>
-                <div class="total-minutes" id="totalMinutes">0 MENIT</div>
-            </div>
-            <div id="taskListContainer">
-                <p class="empty-state">BELUM ADA TUGAS</p>
-            </div>
-            <button id="resetBtn" class="btn btn-reset" style="align-self: flex-end; margin-top: 20px;">❌ RESET</button>
-        </div>
-    </div>
+<!-- PERBAIKAN: Tombol toggle di pojok kanan atas -->
+<button id="toggleTheme">🌓</button>
+</main>
 
-    <div class="notification" id="notification"></div>
+<!-- Grafik Jadwal Sholat -->
+<div id="chart-container">
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            let currentTaskId = localStorage.getItem('currentTaskId') || null;
-            let stopwatchInterval = null;
-            let isPaused = localStorage.getItem('isPaused') === 'true' || false;
-            
-            // DOM Elements
-            const taskInput = document.getElementById('taskInput');
-            const addTaskBtn = document.getElementById('addTaskBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const taskListContainer = document.getElementById('taskListContainer');
-            const stopwatch = document.getElementById('stopwatch');
-            const stopwatchProgress = document.getElementById('stopwatchProgress');
-            const currentTaskDiv = document.getElementById('currentTask');
-            const currentTaskName = document.getElementById('currentTaskName');
-            const notification = document.getElementById('notification');
-            const taskListTitle = document.getElementById('taskListTitle');
-            const totalMinutes = document.getElementById('totalMinutes');
-            
-            // Initialize
-            renderTasks();
-            updateStats();
-            
-            // If there's a current task, restore it
-            if (currentTaskId) {
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (currentTask && !currentTask.completed) {
-                    // Show current task
-                    currentTaskDiv.style.display = 'block';
-                    currentTaskName.textContent = currentTask.name;
-                    
-                    // Start stopwatch
-                    startStopwatch();
-                } else {
-                    // Task is completed or not found, reset currentTaskId
-                    currentTaskId = null;
-                    localStorage.removeItem('currentTaskId');
-                }
-            }
-            
-            // Event Listeners
-            addTaskBtn.addEventListener('click', addTask);
-            resetBtn.addEventListener('click', resetAll);
-            taskInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    addTask();
-                }
-            });
-            
-            // Functions
-            function addTask() {
-                const taskName = taskInput.value.trim();
-                if (!taskName) return;
-                
-                // Complete current task if exists
-                if (currentTaskId) {
-                    completeCurrentTask();
-                }
-                
-                const newTask = {
-                    id: Date.now(),
-                    name: taskName,
-                    startTime: new Date(),
-                    endTime: null,
-                    actualDuration: 0,
-                    completed: false
-                };
-                
-                tasks.push(newTask);
-                currentTaskId = newTask.id;
-                
-                // Save current task ID to localStorage
-                localStorage.setItem('currentTaskId', currentTaskId);
-                
-                // Show current task div
-                currentTaskDiv.style.display = 'block';
-                currentTaskName.textContent = taskName;
-                
-                // Start stopwatch
-                startStopwatch();
-                
-                // Save and render
-                saveTasks();
-                renderTasks();
-                updateStats();
-                
-                // Reset input
-                taskInput.value = '';
-                
-                showNotification(`TUGAS DIMULAI: "${taskName}"`);
-            }
-            
-            function completeCurrentTask() {
-                if (!currentTaskId) return;
-                
-                const task = tasks.find(t => t.id == currentTaskId);
-                if (!task) return;
-                
-                // Mark task as completed
-                task.completed = true;
-                task.endTime = new Date();
-                
-                // Calculate actual duration based on timestamp
-                if (task.startTime) {
-                    const startTime = new Date(task.startTime);
-                    const endTime = new Date();
-                    task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
-                }
-                
-                // Add log entry
-                addLogEntry(task);
-                
-                // Hide current task div
-                currentTaskDiv.style.display = 'none';
-                
-                // Reset current task
-                currentTaskId = null;
-                localStorage.removeItem('currentTaskId');
-                
-                // Clear interval
-                if (stopwatchInterval) clearInterval(stopwatchInterval);
-            }
-            
-            function startStopwatch() {
-                if (stopwatchInterval) clearInterval(stopwatchInterval);
-                
-                stopwatchInterval = setInterval(() => {
-                    if (!isPaused) {
-                        updateStopwatchDisplay();
-                        updateProgressBar();
-                        
-                        // Add log entry every minute
-                        const currentTask = tasks.find(t => t.id == currentTaskId);
-                        if (currentTask && currentTask.startTime) {
-                            const startTime = new Date(currentTask.startTime);
-                            const now = new Date();
-                            const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                            
-                            if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
-                                addLogEntry();
-                            }
-                        }
-                    }
-                }, 1000);
-            }
-            
-            function updateStopwatchDisplay() {
-                if (!currentTaskId) return;
-                
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (!currentTask || !currentTask.startTime) return;
-                
-                const startTime = new Date(currentTask.startTime);
-                const now = new Date();
-                const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                
-                const hours = Math.floor(elapsedSeconds / 3600);
-                const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-                const seconds = elapsedSeconds % 60;
-                
-                let displayText = '';
-                
-                if (hours > 0) {
-                    displayText = `<b>${hours} JAM ${minutes}</b> MENIT </b>${seconds} DETIK`;
-                } else {
-                    displayText = `<b>${minutes} MENIT </b>${seconds} DETIK`;
-                }
-                
-                stopwatch.innerHTML = displayText;
-            }
-            
-            function updateProgressBar() {
-                if (!currentTaskId) return;
-                
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (!currentTask || !currentTask.startTime) return;
-                
-                const startTime = new Date(currentTask.startTime);
-                const now = new Date();
-                const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                
-                // Calculate progress based on current minute (0-59 seconds)
-                const currentSecond = elapsedSeconds % 60;
-                const progressWidth = (100 - (currentSecond / 60) * 100);
-                
-                stopwatchProgress.style.width = `${progressWidth}%`;
-            }
-            
-            function togglePause() {
-                isPaused = !isPaused;
-                localStorage.setItem('isPaused', isPaused);
-            }
-            
-            function addLogEntry(taskParam = null) {
-                const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
-                if (!task) return;
-                
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('id-ID', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                // Create log entry
-                const logEntry = {
-                    id: Date.now(),
-                    taskId: task.id,
-                    taskName: task.name,
-                    time: timeString,
-                    timestamp: now
-                };
-                
-                // Get existing logs or create new array
-                let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
-                logs.push(logEntry);
-                
-                // Save logs
-                localStorage.setItem('timeLogs', JSON.stringify(logs));
-            }
-            
-            function getDurationColor(duration) {
-                // Find max duration for color scaling
-                const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-                
-                // Calculate color intensity (0 to 1)
-                const intensity = Math.min(duration / maxDuration, 1);
-                
-                // Generate color from white to red
-                const r = 255;
-                const g = Math.floor(255 * (1 - intensity));
-                const b = Math.floor(255 * (1 - intensity));
-                
-                return `rgb(${r}, ${g}, ${b})`;
-            }
-            
-            function renderTasks() {
-                if (tasks.length === 0) {
-                    taskListContainer.innerHTML = '<p class="empty-state">BELUM ADA TUGAS</p>';
-                    return;
-                }
-                
-                taskListContainer.innerHTML = '';
-                
-                // Sort tasks by start time (newest first)
-                const sortedTasks = [...tasks].sort((a, b) => {
-                    if (!a.startTime) return 1;
-                    if (!b.startTime) return -1;
-                    return new Date(b.startTime) - new Date(a.startTime);
-                });
-                
-                sortedTasks.forEach(task => {
-                    const taskItem = document.createElement('div');
-                    taskItem.className = 'task-item';
-                    
-                    if (task.completed) {
-                        taskItem.style.opacity = '0.6';
-                    }
-                    
-                    const statusIcon = task.completed 
-                        ? '✅' 
-                        : (task.id == currentTaskId 
-                            ? '🔥' 
-                            : '○');
-                    
-                    const startTimeText = task.startTime 
-                        ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })
-                        : '-';
-                    
-                    const durationColor = task.actualDuration > 0 
-                        ? getDurationColor(task.actualDuration)
-                        : '#666';
-                    
-                    taskItem.innerHTML = `
-                        <div class="task-info">
-                            <div class="task-title">${statusIcon} ${task.name}</div>
-                        </div>
-                        <div class="task-timestamp">${startTimeText}</div>
-                        <div class="task-duration" style="background-color: ${durationColor}; color: #000;">
-                            ${task.actualDuration > 0 ? `${task.actualDuration} MENIT` : ''}
-                        </div>
-                    `;
-                    
-                    taskListContainer.appendChild(taskItem);
-                });
-            }
-            
-            function updateStats() {
-                const totalTasks = tasks.length;
-                const completedTasks = tasks.filter(t => t.completed).length;
-                const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
-                
-                taskListTitle.textContent = ` ${completedTasks}/${totalTasks}`;
-                totalMinutes.textContent = `${totalTime} MENIT`;
-            }
-            
-            function saveTasks() {
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-            
-            function resetAll() {
-                if (confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?')) {
-                    // Reset variables
-                    tasks = [];
-                    currentTaskId = null;
-                    isPaused = false;
-                    
-                    // Clear intervals
-                    if (stopwatchInterval) clearInterval(stopwatchInterval);
-                    
-                    // Update UI
-                    stopwatch.innerHTML = '<b>0 MENIT </b>0 DETIK';
-                    stopwatchProgress.style.width = '100%';
-                    currentTaskDiv.style.display = 'none';
-                    
-                    // Clear localStorage
-                    localStorage.removeItem('tasks');
-                    localStorage.removeItem('timeLogs');
-                    localStorage.removeItem('currentTaskId');
-                    localStorage.removeItem('isPaused');
-                    
-                    // Re-render
-                    renderTasks();
-                    updateStats();
-                    
-                    showNotification('SEMUA DATA TELAH DIRESET');
-                }
-            }
-            
-            function showNotification(message) {
-                notification.textContent = message;
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-        });
-    </script>
+<div id="chart"></div>
+<div class="month-labels">
+<span class="month-label">JAN</span>
+<span class="month-label">FEB</span>
+<span class="month-label">MAR</span>
+<span class="month-label">APR</span>
+<span class="month-label">MEI</span>
+<span class="month-label">JUN</span>
+<span class="month-label">JUL</span>
+<span class="month-label">AGU</span>
+<span class="month-label">SEP</span>
+<span class="month-label">OKT</span>
+<span class="month-label">NOV</span>
+<span class="month-label">DES</span>
+</div>
+</div>
+
+<script>
+const TZ = 'Asia/Jakarta';
+const IQOMAH_MIN = 15 * 60000;
+const pad = n => String(n).padStart(2, '0');
+const fmtHM = d => pad(d.getHours()) + ':' + pad(d.getMinutes());
+const nowJakarta = () => new Date(new Date().toLocaleString('en-US', {
+timeZone: TZ
+}));
+
+function getKey(d) {
+const parts = new Intl.DateTimeFormat('en-CA', {
+timeZone: TZ,
+month: '2-digit',
+day: '2-digit'
+}).formatToParts(d);
+return parts.find(p => p.type === 'month').value + '-' + parts.find(p => p.type === 'day').value;
+}
+
+function parseHM(hm, base) {
+const [h, m] = hm.split(':').map(Number);
+const parts = new Intl.DateTimeFormat('en-CA', {
+timeZone: TZ,
+year: 'numeric',
+month: '2-digit',
+day: '2-digit'
+}).formatToParts(base);
+const y = parts.find(p => p.type === 'year').value;
+const M = parts.find(p => p.type === 'month').value;
+const D = parts.find(p => p.type === 'day').value;
+return new Date(`${y}-${M}-${D}T${pad(h)}:${pad(m)}:00+07:00`);
+}
+
+function getTodayTimes(d) {
+return (typeof prayerTimesData !== 'undefined') ? prayerTimesData[getKey(d)] : null;
+}
+
+// Fungsi untuk mengecek apakah waktu sholat memiliki iqomah
+function hasIqomah(prayerName) {
+// Terbit tidak memiliki iqomah
+return !prayerName.toLowerCase().includes('terbit');
+}
+
+function buildPrayers(now) {
+const list = [];
+const today = getTodayTimes(now);
+if (today) {
+list.push(['Subuh', today.Shubuh]);
+list.push(['Terbit', today.Terbit]); // Tambahkan Terbit
+list.push(['Dhuhur', today.Dzuhur]);
+list.push(['Ashar', today.Ashr]);
+list.push(['Magrib', today.Maghrib]);
+list.push(['Isya', today.Isya]);
+}
+const tmr = getTodayTimes(new Date(now.getTime() + 86400000));
+if (tmr) list.push(['Subuh 🌙', tmr.Shubuh]);
+return list.map(([name, hm]) => ({
+name,
+hm,
+when: parseHM(hm, name.includes('🌙') ? new Date(now.getTime() + 86400000) : now)
+}));
+}
+
+function findPrevNext(prayers, now) {
+let next = prayers.find(p => p.when >= now);
+if (!next) next = prayers[0];
+const prevCandidates = prayers.filter(p => p.when < next.when);
+let prev = prevCandidates.length ? prevCandidates[prevCandidates.length - 1] : null;
+if (!prev) {
+const y = new Date(now.getTime() - 86400000);
+const ylist = buildPrayers(y);
+if (ylist.length) prev = ylist[ylist.length - 1];
+}
+return {
+prev,
+next
+};
+}
+
+const fallbackQuotes = ["Belajar adalah cahaya hidup", "Waktu adalah pedang"];
+let quotesList = (typeof quotes !== 'undefined' && Array.isArray(quotes) && quotes.length > 0) ? quotes.slice() : fallbackQuotes.slice();
+let quoteIndex = Math.floor(Math.random() * quotesList.length);
+
+function showNextQuote() {
+if (!quotesList || quotesList.length === 0) quotesList = fallbackQuotes.slice();
+const randomIndex = Math.floor(Math.random() * quotesList.length);
+document.getElementById('quote').textContent = '"' + quotesList[randomIndex] + '"';
+}
+
+setInterval(showNextQuote, 30000);
+showNextQuote();
+
+const themeBtn = document.getElementById('toggleTheme');
+
+// PERBAIKAN: Perbaiki fungsi toggle theme
+function toggleTheme() {
+document.body.classList.toggle('dark');
+if (document.body.classList.contains('dark')) {
+localStorage.setItem('theme', 'dark');
+} else {
+localStorage.setItem('theme', 'light');
+}
+}
+
+// baca preferensi user dari localStorage
+if (localStorage.getItem('theme') === 'dark') {
+document.body.classList.add('dark');
+}
+
+// PERBAIKAN: Ganti event listener
+themeBtn.addEventListener('click', toggleTheme);
+
+// =============================
+// PROGRESS BAR - VERSI RINGAN UNTUK SMART TV
+// =============================
+// Fungsi untuk update progress bar berdasarkan detik jam saat ini
+function updateProgressBarBySeconds() {
+const now = new Date();
+const seconds = now.getSeconds(); // 0-59
+const milliseconds = now.getMilliseconds(); // 0-999
+
+// Hitung progress: (detik + milidetik/1000) / 60 * 100
+const progress = ((seconds + milliseconds / 1000) / 60) * 100;
+
+// Update progress bar
+document.getElementById('intervalProgress').style.width = progress.toFixed(1) + '%';
+}
+
+// =============================
+// JAM - PERBAIKAN: Tambahkan fungsi untuk jam
+// =============================
+function updateClock() {
+const now = new Date();
+
+// Format untuk tengah halaman (12 jam AM/PM tanpa detik)
+let hours12 = now.getHours();
+const ampm = hours12 >= 12 ? 'PM' : 'AM';
+hours12 = hours12 % 12;
+hours12 = hours12 ? hours12 : 12; // 0 harus diubah menjadi 12
+const minutes12 = pad(now.getMinutes());
+document.getElementById('center-time').textContent = `${hours12}:${minutes12} ${ampm}`;
+
+// Format tanggal
+const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
+const day = now.getDate();
+const month = monthNames[now.getMonth()];
+const year = now.getFullYear();
+document.getElementById('center-date').textContent = `${day} ${month} ${year}`;
+}
+
+// =============================
+// JADWAL SHOLAT
+// =============================
+function updateAll() {
+const now = nowJakarta();
+const prayers = buildPrayers(now).filter(p => !isNaN(p.when));
+if (prayers.length === 0) {
+document.getElementById('mainText').innerHTML = '<strong>Jadwal tidak tersedia</strong>';
+return;
+}
+
+// default prev/next
+let { prev, next } = findPrevNext(prayers, now);
+
+// cek apakah kita sedang dalam waktu iqomah (hanya untuk sholat yang memiliki iqomah)
+const currentAdzan = prayers.find(p => {
+if (!hasIqomah(p.name)) return false; // Lewatkan jika tidak ada iqomah
+const start = p.when;
+const end = new Date(start.getTime() + IQOMAH_MIN);
+return now >= start && now < end;
+});
+
+// kalau sedang iqomah, gunakan currentAdzan sbg next sementara
+let upcoming = currentAdzan || next;
+
+// kalau pakai currentAdzan, prev harus prayer sebelumnya
+if (currentAdzan) {
+const idx = prayers.indexOf(currentAdzan);
+if (idx > 0) {
+prev = prayers[idx - 1];
+} else {
+// fallback ke sholat terakhir kemarin
+const ylist = buildPrayers(new Date(now.getTime() - 86400000));
+if (ylist.length) prev = ylist[ylist.length - 1];
+}
+}
+
+const adzanTime = upcoming.when;
+// Hanya tambahkan iqomah jika waktu sholat memiliki iqomah
+const iqomahEnd = hasIqomah(upcoming.name) ? new Date(adzanTime.getTime() + IQOMAH_MIN) : adzanTime;
+const mainEl = document.getElementById('mainText');
+
+// PERBAIKAN: Hapus kelas blink-text sebelum update
+const mainTextStrong = mainEl.querySelector('strong');
+if (mainTextStrong) {
+mainTextStrong.classList.remove('blink-text');
+}
+
+if (now < adzanTime) {
+// sebelum adzan
+const diff = adzanTime - now;
+const hh = Math.floor(diff / 3600000);
+const mm = Math.floor((diff % 3600000) / 60000);
+
+// Ubah teks berdasarkan nama sholat
+const prayerText = upcoming.name.toLowerCase().includes('terbit') ?
+`menuju ${upcoming.name}` : `lagi adzan ${upcoming.name}`;
+
+mainEl.innerHTML = `<strong>${hh > 0 ? hh + " Jam " : ""}${mm} menit </strong><span><i>${prayerText}</i></span>`;
+    
+    // PERBAIKAN: Tambahkan kelas blink-text jika kurang dari 15 menit dan memiliki iqomah
+    if (diff < 15 * 60 * 1000 && hasIqomah(upcoming.name)) {
+        const mainTextStrong = mainEl.querySelector('strong');
+        if (mainTextStrong) {
+            mainTextStrong.classList.add('blink-text');
+        }
+    }
+} else if (now >= adzanTime && now < iqomahEnd && hasIqomah(upcoming.name)) {
+// dalam waktu iqomah (hanya untuk sholat yang memiliki iqomah)
+const diff = Math.ceil((iqomahEnd - now) / 60000);
+mainEl.innerHTML = `<strong>${diff} menit</strong><span><i> lagi iqomah ${upcoming.name}</i></span>`;
+    
+    // PERBAIKAN: Tambahkan kelas blink-text untuk iqomah
+    const mainTextStrong = mainEl.querySelector('strong');
+    if (mainTextStrong) {
+        mainTextStrong.classList.add('blink-text');
+    }
+} else {
+// lewat iqomah
+mainEl.innerHTML = '<strong>Menunggu</strong><span><i> jadwal berikutnya…</i></span>';
+}
+
+// interval progress
+if (prev && upcoming) {
+const intervalText = document.getElementById('intervalText');
+const deltaMs = now - prev.when;
+const deltaH = Math.floor(deltaMs / 3600000);
+const deltaM = Math.floor((deltaMs % 3600000) / 60000);
+
+// ✨ Tambah info Tahajud
+let tahajudInfo = '';
+const besok = new Date(now.getTime() + 86400000);
+const prayersBesok = buildPrayers(besok);
+const nextSubuhBesok = prayersBesok.find(p => p.name.toLowerCase().includes('subuh'));
+if (nextSubuhBesok) {
+const tahajudTime = new Date(nextSubuhBesok.when);
+tahajudTime.setHours(4, 0, 0, 0); // jam 04:00 besok
+const diffTahajud = Math.round((nextSubuhBesok.when - tahajudTime) / 60000);
+tahajudInfo = ` • ⏳ <strong>Tahajud</strong> ${diffTahajud} menit (Subuh Besok ${nextSubuhBesok.hm})`;
+}
+
+intervalText.innerHTML =
+`⏱️ <strong>${prev.name}</strong> lewat ${deltaH > 0 ? deltaH + ':' : ''}${deltaM} • 🕌 <strong>${upcoming.name}</strong> ${upcoming.hm}${tahajudInfo}`;
+
+// Update progress bar berdasarkan detik jam saat ini
+updateProgressBarBySeconds();
+
+// PERBAIKAN: Tambahkan efek rush jika kurang dari 15 menit lagi dan memiliki iqomah
+const progressBar = document.querySelector('.progress');
+const timeUntilNext = upcoming.when - now;
+if (timeUntilNext < 15 * 60 * 1000 && timeUntilNext > 0 && hasIqomah(upcoming.name)) {
+progressBar.classList.add('rush');
+} else {
+progressBar.classList.remove('rush');
+}
+
+// PERBAIKAN: Juga tambahkan efek rush saat sedang iqomah
+if (now >= adzanTime && now < iqomahEnd && hasIqomah(upcoming.name)) {
+progressBar.classList.add('rush');
+}
+
+// Update grafik untuk sholat berikutnya
+updateChartForNextPrayer(upcoming.name);
+}
+}
+
+// =============================
+// BATTERY INFO (lengkap)
+// =============================
+function initBattery() {
+const el = document.querySelector('.battery');
+if (!navigator.getBattery) {
+el.textContent = "-";
+return;
+}
+navigator.getBattery().then(function(battery) {
+function updateBattery() {
+let level = Math.round(battery.level * 100);
+let charging = battery.charging ? "Charging" : "Not Charging";
+let time = "";
+if (battery.charging && battery.chargingTime !== Infinity) {
+let h = Math.floor(battery.chargingTime / 3600);
+let m = Math.floor((battery.chargingTime % 3600) / 60);
+time = `Baterai Full: ${h} jam ${m} menit`;
+} else if (!battery.charging && battery.dischargingTime !== Infinity) {
+let h = Math.floor(battery.dischargingTime / 3600);
+let m = Math.floor((battery.dischargingTime % 3600) / 60);
+time = ` ${h} jam ${m} menit`;
+}
+el.innerHTML = `
+<div>🔋 ${level}% ⚡ ${charging} ⏳ ${time}</div>
+`;
+}
+updateBattery();
+battery.addEventListener('levelchange', updateBattery);
+battery.addEventListener('chargingchange', updateBattery);
+battery.addEventListener('chargingtimechange', updateBattery);
+battery.addEventListener('dischargingtimechange', updateBattery);
+});
+}
+
+// =============================
+// INTERNET INFO (lengkap)
+// =============================
+function initInternetInfo() {
+const speedEl = document.querySelector('.internet-speed');
+if (!speedEl) return;
+
+function updateInfo() {
+const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+let downlink = conn ? `${conn.downlink} Mbps` : "-";
+let connInfo = conn ?
+`${conn.effectiveType.toUpperCase()} • 🔴 ${conn.rtt} ms `
+: "-";
+
+speedEl.innerHTML = `
+<div>🚀 ${downlink} • 🌐 ${connInfo} </div>
+`;
+}
+
+updateInfo();
+window.addEventListener('online', updateInfo);
+window.addEventListener('offline', updateInfo);
+if (navigator.connection) navigator.connection.addEventListener('change', updateInfo);
+}
+
+// =============================
+// IP INFO
+// =============================
+async function initIP() {
+const el = document.querySelector('.ip-info');
+try {
+const res = await fetch("https://api.ipify.org?format=json");
+const data = await res.json();
+el.innerHTML = `🌎 IP: ${data.ip}`;
+} catch (err) {
+el.innerHTML = "🌎 IP: Error";
+}
+}
+
+// =============================
+// GRAFIK JADWAL SHOLAT - VERSI RINGAN UNTUK SMART TV
+// =============================
+// Fungsi untuk mengumpulkan data jadwal sholat selama setahun
+function collectYearPrayerData(prayerName) {
+const data = [];
+const now = new Date();
+const currentYear = now.getFullYear();
+
+// Loop untuk setiap hari dalam setahun
+for (let month = 1; month <= 12; month++) {
+for (let day = 1; day <= 31; day++) {
+// Cek apakah tanggal valid
+const date = new Date(currentYear, month - 1, day);
+if (date.getMonth() !== month - 1) continue; // Skip jika tanggal tidak valid
+
+const key = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+const times = getTodayTimes(date);
+
+if (times) {
+let prayerTime;
+
+// PERBAIKAN: Tambahkan penanganan untuk "Terbit"
+switch(prayerName) {
+case 'Subuh': prayerTime = times.Shubuh; break;
+case 'Dhuhur': prayerTime = times.Dzuhur; break;
+case 'Ashar': prayerTime = times.Ashr; break;
+case 'Magrib': prayerTime = times.Maghrib; break;
+case 'Isya': prayerTime = times.Isya; break;
+case 'Terbit': prayerTime = times.Terbit; break; // TAMBAHKAN INI
+}
+
+if (prayerTime) {
+const [h, m] = prayerTime.split(':').map(Number);
+const minutes = h * 60 + m;
+data.push({
+date: date,
+dateStr: `${String(day).padStart(2, '0')}/${String(month).padStart(2, '0')}`,
+month: month,
+day: day,
+time: prayerTime,
+minutes: minutes
+});
+}
+}
+}
+}
+
+return data;
+}
+
+// Fungsi untuk membuat grafik yang lebih ringan untuk smart TV
+function createChart(data, prayerName) {
+const chartEl = document.getElementById('chart');
+chartEl.innerHTML = '';
+
+if (!data || data.length === 0) {
+chartEl.innerHTML = '<p>Data tidak tersedia</p>';
+return;
+}
+
+// Buat canvas untuk grafik
+const canvas = document.createElement('canvas');
+canvas.width = chartEl.clientWidth;
+canvas.height = chartEl.clientHeight;
+chartEl.appendChild(canvas);
+
+const ctx = canvas.getContext('2d');
+
+// Atur padding
+const padding = {
+top: 40, // Tambah padding atas untuk legend
+right: 20,
+bottom: 30,
+left: 40
+};
+
+const graphWidth = canvas.width - padding.left - padding.right;
+const graphHeight = canvas.height - padding.top - padding.bottom;
+
+// Cari nilai minimum dan maksimum
+const minMinutes = Math.min(...data.map(d => d.minutes));
+const maxMinutes = Math.max(...data.map(d => d.minutes));
+
+// Cari data untuk waktu terawal dan terakhir
+const minEntry = data.find(d => d.minutes === minMinutes);
+const maxEntry = data.find(d => d.minutes === maxMinutes);
+
+// Sederhanakan gradien untuk performa lebih baik
+const gradient = ctx.createLinearGradient(0, padding.top, 0, padding.top + graphHeight);
+gradient.addColorStop(0, 'rgba(74, 168, 255, 0.4)');
+gradient.addColorStop(1, 'rgba(74, 168, 255, 0.05)');
+
+// Bersihkan canvas
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+// Gambar grid lines untuk pemisah bulan - kurangi frekuensi untuk performa
+ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+ctx.lineWidth = 1;
+
+// Gambar garis horizontal - hanya 3 garis untuk mengurangi beban
+for (let i = 0; i <= 2; i++) {
+const y = padding.top + (i / 2) * graphHeight;
+ctx.beginPath();
+ctx.moveTo(padding.left, y);
+ctx.lineTo(padding.left + graphWidth, y);
+ctx.stroke();
+}
+
+// Gambar garis vertikal (pemisah bulan) - hanya 6 garis untuk mengurangi beban
+for (let i = 1; i < 12; i += 2) {
+const x = padding.left + (i / 12) * graphWidth;
+ctx.beginPath();
+ctx.moveTo(x, padding.top);
+ctx.lineTo(x, padding.top + graphHeight);
+ctx.stroke();
+}
+
+// Gambar kurva dengan lebih sedikit titik untuk performa lebih baik
+ctx.beginPath();
+ctx.strokeStyle = '#4aa8ff';
+ctx.lineWidth = 3;
+ctx.lineJoin = 'round';
+
+// Ambil sampel data setiap 3 hari untuk mengurangi jumlah titik
+const sampledData = [];
+for (let i = 0; i < data.length; i += 3) {
+sampledData.push(data[i]);
+}
+// Pastikan data terakhir masuk
+if (data.length > 0 && !sampledData.includes(data[data.length - 1])) {
+sampledData.push(data[data.length - 1]);
+}
+
+for (let i = 0; i < sampledData.length; i++) {
+const dataIndex = data.indexOf(sampledData[i]);
+const x = padding.left + (dataIndex / (data.length - 1)) * graphWidth;
+const y = padding.top + graphHeight - ((sampledData[i].minutes - minMinutes) / (maxMinutes - minMinutes)) * graphHeight;
+
+if (i === 0) {
+ctx.moveTo(x, y);
+} else {
+ctx.lineTo(x, y);
+}
+}
+ctx.stroke();
+
+// Gambar area di bawah kurva dengan data yang sama
+ctx.beginPath();
+ctx.moveTo(padding.left, padding.top + graphHeight);
+
+for (let i = 0; i < sampledData.length; i++) {
+const dataIndex = data.indexOf(sampledData[i]);
+const x = padding.left + (dataIndex / (data.length - 1)) * graphWidth;
+const y = padding.top + graphHeight - ((sampledData[i].minutes - minMinutes) / (maxMinutes - minMinutes)) * graphHeight;
+
+ctx.lineTo(x, y);
+}
+
+ctx.lineTo(padding.left + graphWidth, padding.top + graphHeight);
+ctx.closePath();
+ctx.fillStyle = gradient;
+ctx.fill();
+
+// Tandai titik tanggal saat ini - PERBAIKAN: warna merah dan lebih besar
+const today = new Date();
+const todayData = data.find(d =>
+d.date.getDate() === today.getDate() &&
+d.date.getMonth() === today.getMonth()
+);
+
+if (todayData) {
+const todayIndex = data.indexOf(todayData);
+const x = padding.left + (todayIndex / (data.length - 1)) * graphWidth;
+const y = padding.top + graphHeight - ((todayData.minutes - minMinutes) / (maxMinutes - minMinutes)) * graphHeight;
+
+// Gambar garis vertikal tebal dari bawah sampai atas
+ctx.beginPath();
+ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+ctx.lineWidth = 2; // Lebih tebal
+ctx.moveTo(x, padding.top + graphHeight); // Dari bawah grafik
+ctx.lineTo(x, padding.top); // Sampai atas grafik
+ctx.stroke();
+
+// Gambar titik untuk hari ini - PERBAIKAN: warna merah dan lebih besar
+ctx.beginPath();
+ctx.fillStyle = '#ff4757';
+ctx.arc(x, y, 8, 0, Math.PI * 2); // PERBAIKAN: radius 8 (lebih besar)
+ctx.fill();
+
+// Gambar lingkaran putih di dalam
+ctx.beginPath();
+ctx.fillStyle = '#ffffff';
+ctx.arc(x, y, 4, 0, Math.PI * 2); // PERBAIKAN: radius 4 (lebih besar)
+ctx.fill();
+
+// Format tanggal dengan jam: 11 Okt 2025 05:30
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const formattedDate = `${todayData.day} ${monthNames[todayData.date.getMonth()]} ${todayData.date.getFullYear()}`;
+
+// Format jam untuk tanggal saat ini
+const [hours, minutes] = todayData.time.split(':').map(Number);
+const hours12 = hours % 12 || 12;
+const ampm = hours >= 12 ? 'PM' : 'AM';
+const formattedTime = `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+
+// Tambahkan label tanggal di atas grafik dengan jam
+ctx.fillStyle = '#ffffff';
+ctx.font = 'bold 18px sans-serif'; // Ukuran font untuk teks terkini
+ctx.textAlign = 'center';
+ctx.fillText(`${formattedDate} ${formattedTime}`, x, padding.top - 5); // Posisi di atas grafik dengan jarak 5px
+}
+
+// Tandai titik waktu terawal - PERBAIKAN: warna biru seperti garis
+if (minEntry) {
+const minIndex = data.indexOf(minEntry);
+const x = padding.left + (minIndex / (data.length - 1)) * graphWidth;
+const y = padding.top + graphHeight - ((minEntry.minutes - minMinutes) / (maxMinutes - minMinutes)) * graphHeight;
+
+// Gambar titik untuk waktu terawal - PERBAIKAN: warna biru
+ctx.beginPath();
+ctx.fillStyle = '#4aa8ff'; // PERBAIKAN: warna biru seperti garis
+ctx.arc(x, y, 6, 0, Math.PI * 2);
+ctx.fill();
+
+// Gambar lingkaran putih di dalam
+ctx.beginPath();
+ctx.fillStyle = '#ffffff';
+ctx.arc(x, y, 3, 0, Math.PI * 2);
+ctx.fill();
+
+// Format tanggal dengan jam
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const formattedDate = `${minEntry.day} ${monthNames[minEntry.date.getMonth()]} ${minEntry.date.getFullYear()}`;
+
+// Format jam untuk waktu terawal
+const [hours, minutes] = minEntry.time.split(':').map(Number);
+const hours12 = hours % 12 || 12;
+const ampm = hours >= 12 ? 'PM' : 'AM';
+const formattedTime = `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+
+// Tambahkan label tanggal dengan posisi yang disesuaikan
+ctx.fillStyle = '#ffffff';
+ctx.font = '11px sans-serif'; // PERBAIKAN: Kecilkan 60% dan hapus bold
+ctx.textAlign = 'center';
+
+// Cek posisi untuk menghindari tumpang tindih
+let textY = y - 15; // Posisi default di atas titik
+
+// Jika terlalu dekat dengan atas grafik, pindahkan ke bawah
+if (textY < padding.top + 15) {
+textY = y + 15; // Posisi di bawah titik
+}
+
+ctx.fillText(`${formattedDate} ${formattedTime}`, x, textY);
+}
+
+// Tandai titik waktu terakhir - PERBAIKAN: warna biru seperti garis
+if (maxEntry) {
+const maxIndex = data.indexOf(maxEntry);
+const x = padding.left + (maxIndex / (data.length - 1)) * graphWidth;
+const y = padding.top + graphHeight - ((maxEntry.minutes - minMinutes) / (maxMinutes - minMinutes)) * graphHeight;
+
+// Gambar titik untuk waktu terakhir - PERBAIKAN: warna biru
+ctx.beginPath();
+ctx.fillStyle = '#4aa8ff'; // PERBAIKAN: warna biru seperti garis
+ctx.arc(x, y, 6, 0, Math.PI * 2);
+ctx.fill();
+
+// Gambar lingkaran putih di dalam
+ctx.beginPath();
+ctx.fillStyle = '#ffffff';
+ctx.arc(x, y, 3, 0, Math.PI * 2);
+ctx.fill();
+
+// Format tanggal dengan jam
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const formattedDate = `${maxEntry.day} ${monthNames[maxEntry.date.getMonth()]} ${maxEntry.date.getFullYear()}`;
+
+// Format jam untuk waktu terakhir
+const [hours, minutes] = maxEntry.time.split(':').map(Number);
+const hours12 = hours % 12 || 12;
+const ampm = hours >= 12 ? 'PM' : 'AM';
+const formattedTime = `${hours12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+
+// Tambahkan label tanggal dengan posisi yang disesuaikan
+ctx.fillStyle = '#ffffff';
+ctx.font = '11px sans-serif'; // PERBAIKAN: Kecilkan 60% dan hapus bold
+ctx.textAlign = 'center';
+
+// Cek posisi untuk menghindari tumpang tindih
+let textY = y - 15; // Posisi default di atas titik
+
+// Jika terlalu dekat dengan atas grafik, pindahkan ke bawah
+if (textY < padding.top + 15) {
+textY = y + 15; // Posisi di bawah titik
+}
+
+ctx.fillText(`${formattedDate} ${formattedTime}`, x, textY);
+}
+
+// Gambar sumbu Y (waktu) - disesuaikan dengan rentang waktu sholat
+ctx.fillStyle = '#cccccc';
+ctx.font = '12px sans-serif'; // PERBAIKAN: Perbesar font
+ctx.textAlign = 'right';
+ctx.textBaseline = 'middle';
+
+// Tambahkan label waktu di sumbu Y
+for (let i = 0; i <= 4; i++) {
+const value = minMinutes + (maxMinutes - minMinutes) * (1 - i / 4);
+const hours = Math.floor(value / 60);
+const minutes = Math.floor(value % 60);
+const timeStr = `${pad(hours)}:${pad(minutes)}`;
+
+const y = padding.top + (i / 4) * graphHeight;
+ctx.fillText(timeStr, padding.left - 5, y);
+}
+}
+
+// Fungsi untuk update grafik berdasarkan sholat berikutnya
+function updateChartForNextPrayer(currentPrayer) {
+// Hapus "🌙" jika ada
+const cleanPrayer = currentPrayer.replace(' 🌙', '');
+
+// Kumpulkan data untuk sholat ini
+const data = collectYearPrayerData(cleanPrayer);
+
+// Buat grafik
+createChart(data, cleanPrayer);
+}
+
+// =============================
+// INIT
+// =============================
+window.addEventListener('load', () => {
+initBattery();
+initInternetInfo();
+initIP();
+
+// Inisialisasi grafik dengan sholat berikutnya
+updateChartForNextPrayer('Subuh');
+
+// Update grafik saat tema berubah
+themeBtn.addEventListener('click', () => {
+setTimeout(() => {
+const now = nowJakarta();
+const prayers = buildPrayers(now).filter(p => !isNaN(p.when));
+if (prayers.length > 0) {
+let { next } = findPrevNext(prayers, now);
+updateChartForNextPrayer(next.name);
+}
+}, 100); // Tunggu sedikit agar tema berubah dulu
+});
+});
+
+updateAll();
+setInterval(updateAll, 1000); // Update setiap detik untuk menampilkan waktu yang akurat
+
+// Kurangi frekuensi update progress bar untuk mengurangi beban
+setInterval(updateProgressBarBySeconds, 200); // Update setiap 200ms bukan 100ms
+
+// PERBAIKAN: Update jam setiap detik
+setInterval(updateClock, 1000);
+
+</script>
 </body>
 </html>
