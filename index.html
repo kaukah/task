@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MINIMAL TIME TRACKER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            line-height: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 0px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        header p {
+            color: #999;
+            margin-top: 0px;
+            font-size: 1rem;
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 60px;
+        }
+
+        .task-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            font-size: 2rem;
+            background-color: #111;
+            border: none;
+            border-radius: 0;
+            color: #fff;
+            text-align: center;
+            outline: none;
+            letter-spacing: 2px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .task-input::placeholder {
+            color: #555;
+        }
+
+        .btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn-reset {
+            background-color: #333;
+            color: #fff;
+            margin-top: 10px;
+            font-size: 0.875rem;
+            padding: 8px 20px;
+        }
+
+        .stopwatch-container {
+            position: relative;
+            margin: -30px 0 20px;
+        }
+
+        .stopwatch {
+            font-size: 2rem;
+            font-weight: 100;
+            text-align: center;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: gray;
+            margin-top: 20px;
+            
+        }
+
+        .stopwatch b {
+            font-weight: 900;
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .stopwatch-bar {
+            height: 10px;
+            background-color: #333;
+            margin-top: 0px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stopwatch-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: #fff;
+            width: 100%;
+        }
+
+        .current-task {
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        .current-task h1 {
+            font-size: 5rem;
+            color: orange;
+            letter-spacing: 0px;
+            margin-bottom: 5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .task-list {
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .task-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: nowrap;
+        }
+
+        .task-list h2 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        .task-stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            white-space: nowrap;
+        }
+
+        .task-counter {
+            color: #fff;
+            font-weight: 900;
+            font-size: 1.25rem;
+        }
+
+        .total-minutes {
+            color: #fff;
+            font-weight: 900;
+            font-size: 2rem;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .task-meta {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .task-timestamp {
+            width: 80px;
+            text-align: center;
+            font-size: 1rem;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .task-duration {
+            width: 80px;
+            color:#fff;
+            text-align: right;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            background-color: #333;
+            color: #fff;
+            border-radius: 0;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            text-transform: uppercase;
+        }
+
+        .notification.show {
+            opacity: 1;
+        }
+
+        @media (max-width: 600px) {
+            .task-list-header {
+                justify-content: space-between;
+            }
+            
+            .stopwatch {
+                font-size: 1.8rem;
+            }
+            
+            .stopwatch b {
+                font-size: 2rem;
+            }
+            
+            .current-task h1 {
+                font-size: 2.5rem;
+            }
+            
+            .task-stats {
+                gap: 10px;
+            }
+            
+            .task-counter, .total-minutes {
+                font-size: 1.5rem;
+            }
+            
+            .task-timestamp, .task-duration {
+                width: 90px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="stopwatch-container">
+            <div class="stopwatch-bar">
+                <div class="stopwatch-progress" id="stopwatchProgress"></div>
+            </div>
+            <div class="stopwatch" id="stopwatch"><b>0 MENIT </b>0 DETIK</div>
+
+        </div>
+
+        <div class="current-task" id="currentTask" style="display: none;">
+            <h1 id="currentTaskName">-</h1>
+        </div>
+
+        <div class="input-section">
+            <input type="text" id="taskInput" class="task-input" placeholder="KETIK TUGAS BARU..." autofocus>
+            <button id="addTaskBtn" class="btn">+ TAMBAH</button>
+        </div>
+
+        <div class="task-list">
+            <div class="task-list-header">
+                <h2 id="taskListTitle">📊 TUGAS 0/0</h2>
+                <div class="total-minutes" id="totalMinutes">0 MENIT</div>
+            </div>
+            <div id="taskListContainer">
+                <p class="empty-state">BELUM ADA TUGAS</p>
+            </div>
+            <button id="resetBtn" class="btn btn-reset" style="align-self: flex-end; margin-top: 20px;">❌ RESET</button>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize variables
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            let currentTaskId = localStorage.getItem('currentTaskId') || null;
+            let stopwatchInterval = null;
+            let isPaused = localStorage.getItem('isPaused') === 'true' || false;
+            
+            // DOM Elements
+            const taskInput = document.getElementById('taskInput');
+            const addTaskBtn = document.getElementById('addTaskBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            const taskListContainer = document.getElementById('taskListContainer');
+            const stopwatch = document.getElementById('stopwatch');
+            const stopwatchProgress = document.getElementById('stopwatchProgress');
+            const currentTaskDiv = document.getElementById('currentTask');
+            const currentTaskName = document.getElementById('currentTaskName');
+            const notification = document.getElementById('notification');
+            const taskListTitle = document.getElementById('taskListTitle');
+            const totalMinutes = document.getElementById('totalMinutes');
+            
+            // Initialize
+            renderTasks();
+            updateStats();
+            
+            // If there's a current task, restore it
+            if (currentTaskId) {
+                const currentTask = tasks.find(t => t.id == currentTaskId);
+                if (currentTask && !currentTask.completed) {
+                    // Show current task
+                    currentTaskDiv.style.display = 'block';
+                    currentTaskName.textContent = currentTask.name;
+                    
+                    // Start stopwatch
+                    startStopwatch();
+                } else {
+                    // Task is completed or not found, reset currentTaskId
+                    currentTaskId = null;
+                    localStorage.removeItem('currentTaskId');
+                }
+            }
+            
+            // Event Listeners
+            addTaskBtn.addEventListener('click', addTask);
+            resetBtn.addEventListener('click', resetAll);
+            taskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+            
+            // Functions
+            function addTask() {
+                const taskName = taskInput.value.trim();
+                if (!taskName) return;
+                
+                // Complete current task if exists
+                if (currentTaskId) {
+                    completeCurrentTask();
+                }
+                
+                const newTask = {
+                    id: Date.now(),
+                    name: taskName,
+                    startTime: new Date(),
+                    endTime: null,
+                    actualDuration: 0,
+                    completed: false
+                };
+                
+                tasks.push(newTask);
+                currentTaskId = newTask.id;
+                
+                // Save current task ID to localStorage
+                localStorage.setItem('currentTaskId', currentTaskId);
+                
+                // Show current task div
+                currentTaskDiv.style.display = 'block';
+                currentTaskName.textContent = taskName;
+                
+                // Start stopwatch
+                startStopwatch();
+                
+                // Save and render
+                saveTasks();
+                renderTasks();
+                updateStats();
+                
+                // Reset input
+                taskInput.value = '';
+                
+                showNotification(`TUGAS DIMULAI: "${taskName}"`);
+            }
+            
+            function completeCurrentTask() {
+                if (!currentTaskId) return;
+                
+                const task = tasks.find(t => t.id == currentTaskId);
+                if (!task) return;
+                
+                // Mark task as completed
+                task.completed = true;
+                task.endTime = new Date();
+                
+                // Calculate actual duration based on timestamp
+                if (task.startTime) {
+                    const startTime = new Date(task.startTime);
+                    const endTime = new Date();
+                    task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
+                }
+                
+                // Add log entry
+                addLogEntry(task);
+                
+                // Hide current task div
+                currentTaskDiv.style.display = 'none';
+                
+                // Reset current task
+                currentTaskId = null;
+                localStorage.removeItem('currentTaskId');
+                
+                // Clear interval
+                if (stopwatchInterval) clearInterval(stopwatchInterval);
+            }
+            
+            function startStopwatch() {
+                if (stopwatchInterval) clearInterval(stopwatchInterval);
+                
+                stopwatchInterval = setInterval(() => {
+                    if (!isPaused) {
+                        updateStopwatchDisplay();
+                        updateProgressBar();
+                        
+                        // Add log entry every minute
+                        const currentTask = tasks.find(t => t.id == currentTaskId);
+                        if (currentTask && currentTask.startTime) {
+                            const startTime = new Date(currentTask.startTime);
+                            const now = new Date();
+                            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                            
+                            if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
+                                addLogEntry();
+                            }
+                        }
+                    }
+                }, 1000);
+            }
+            
+            function updateStopwatchDisplay() {
+                if (!currentTaskId) return;
+                
+                const currentTask = tasks.find(t => t.id == currentTaskId);
+                if (!currentTask || !currentTask.startTime) return;
+                
+                const startTime = new Date(currentTask.startTime);
+                const now = new Date();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                
+                const hours = Math.floor(elapsedSeconds / 3600);
+                const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+                const seconds = elapsedSeconds % 60;
+                
+                let displayText = '';
+                
+                if (hours > 0) {
+                    displayText = `<b>${hours} JAM ${minutes}</b> MENIT </b>${seconds} DETIK`;
+                } else {
+                    displayText = `<b>${minutes} MENIT </b>${seconds} DETIK`;
+                }
+                
+                stopwatch.innerHTML = displayText;
+            }
+            
+            function updateProgressBar() {
+                if (!currentTaskId) return;
+                
+                const currentTask = tasks.find(t => t.id == currentTaskId);
+                if (!currentTask || !currentTask.startTime) return;
+                
+                const startTime = new Date(currentTask.startTime);
+                const now = new Date();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                
+                // Calculate progress based on current minute (0-59 seconds)
+                const currentSecond = elapsedSeconds % 60;
+                const progressWidth = (100 - (currentSecond / 60) * 100);
+                
+                stopwatchProgress.style.width = `${progressWidth}%`;
+            }
+            
+            function togglePause() {
+                isPaused = !isPaused;
+                localStorage.setItem('isPaused', isPaused);
+            }
+            
+            function addLogEntry(taskParam = null) {
+                const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
+                if (!task) return;
+                
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('id-ID', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                
+                // Create log entry
+                const logEntry = {
+                    id: Date.now(),
+                    taskId: task.id,
+                    taskName: task.name,
+                    time: timeString,
+                    timestamp: now
+                };
+                
+                // Get existing logs or create new array
+                let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
+                logs.push(logEntry);
+                
+                // Save logs
+                localStorage.setItem('timeLogs', JSON.stringify(logs));
+            }
+            
+            function getDurationColor(duration) {
+                // Find max duration for color scaling
+                const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+                
+                // Calculate color intensity (0 to 1)
+                const intensity = Math.min(duration / maxDuration, 1);
+                
+                // Generate color from white to red
+                const r = 255;
+                const g = Math.floor(255 * (1 - intensity));
+                const b = Math.floor(255 * (1 - intensity));
+                
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+            
+            function renderTasks() {
+                if (tasks.length === 0) {
+                    taskListContainer.innerHTML = '<p class="empty-state">BELUM ADA TUGAS</p>';
+                    return;
+                }
+                
+                taskListContainer.innerHTML = '';
+                
+                // Sort tasks by start time (newest first)
+                const sortedTasks = [...tasks].sort((a, b) => {
+                    if (!a.startTime) return 1;
+                    if (!b.startTime) return -1;
+                    return new Date(b.startTime) - new Date(a.startTime);
+                });
+                
+                sortedTasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'task-item';
+                    
+                    if (task.completed) {
+                        taskItem.style.opacity = '0.6';
+                    }
+                    
+                    const statusIcon = task.completed 
+                        ? '✅' 
+                        : (task.id == currentTaskId 
+                            ? '🔥' 
+                            : '○');
+                    
+                    const startTimeText = task.startTime 
+                        ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                          })
+                        : '-';
+                    
+                    const durationColor = task.actualDuration > 0 
+                        ? getDurationColor(task.actualDuration)
+                        : '#666';
+                    
+                    taskItem.innerHTML = `
+                        <div class="task-info">
+                            <div class="task-title">${statusIcon} ${task.name}</div>
+                        </div>
+                        <div class="task-timestamp">${startTimeText}</div>
+                        <div class="task-duration" style="background-color: ${durationColor}; color: #000;">
+                            ${task.actualDuration > 0 ? `${task.actualDuration} MENIT` : ''}
+                        </div>
+                    `;
+                    
+                    taskListContainer.appendChild(taskItem);
+                });
+            }
+            
+            function updateStats() {
+                const totalTasks = tasks.length;
+                const completedTasks = tasks.filter(t => t.completed).length;
+                const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
+                
+                taskListTitle.textContent = ` ${completedTasks}/${totalTasks}`;
+                totalMinutes.textContent = `${totalTime} MENIT`;
+            }
+            
+            function saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+            
+            function resetAll() {
+                if (confirm('APAKAH ANDA YAKIN INGIN MENGHAPUS SEMUA DATA?')) {
+                    // Reset variables
+                    tasks = [];
+                    currentTaskId = null;
+                    isPaused = false;
+                    
+                    // Clear intervals
+                    if (stopwatchInterval) clearInterval(stopwatchInterval);
+                    
+                    // Update UI
+                    stopwatch.innerHTML = '<b>0 MENIT </b>0 DETIK';
+                    stopwatchProgress.style.width = '100%';
+                    currentTaskDiv.style.display = 'none';
+                    
+                    // Clear localStorage
+                    localStorage.removeItem('tasks');
+                    localStorage.removeItem('timeLogs');
+                    localStorage.removeItem('currentTaskId');
+                    localStorage.removeItem('isPaused');
+                    
+                    // Re-render
+                    renderTasks();
+                    updateStats();
+                    
+                    showNotification('SEMUA DATA TELAH DIRESET');
+                }
+            }
+            
+            function showNotification(message) {
+                notification.textContent = message;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
