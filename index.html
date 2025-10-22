@@ -269,7 +269,7 @@
 
         .total-minutes {
             color: yellow;
-            font-weight: 200;
+            font-weight: 800;
             font-size: 3rem;
         }
 
@@ -344,7 +344,7 @@
         }
 
         .task-duration {
-            width: 120px;
+            width: 200px;
             color: #fff;
             text-align: right;
             font-weight: 700;
@@ -369,7 +369,6 @@
         .duration-text {
             padding: 2px 8px;
             border-radius: 3px;
-            background-color: rgba(0, 0, 0, 0.5);
             z-index: 1;
         }
 
@@ -562,7 +561,7 @@
             </div>
             <div class="task-stats">
                 <div class="total-minutes" id="totalMinutes">0 MENIT</div>
-                <button id="resetBtn" class="btn btn-reset">❌ HAPUS SELESAI</button>
+                <button id="resetBtn" class="btn btn-reset">❌ RESET</button>
             </div>
             <div id="taskListContainer">
                 <p class="empty-state">BELUM ADA TUGAS</p>
@@ -990,19 +989,19 @@
             }
             
             function getDurationColor(duration) {
-                // Find max duration for color scaling
-                const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-                
-                // Calculate color intensity (0 to 1)
-                const intensity = Math.min(duration / maxDuration, 1);
-                
-                // Generate color from dark gray to red
-                const r = Math.floor(51 + (255 - 51) * intensity);  // Red increases from 51 to 255
-                const g = Math.floor(51 * (1 - intensity));  // Green decreases from 51 to 0
-                const b = Math.floor(51 * (1 - intensity));  // Blue decreases from 51 to 0
-                
-                return `rgb(${r}, ${g}, ${b})`;
-            }
+    // Find max duration for color scaling
+    const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+    
+    // Calculate color intensity (0 to 1)
+    const intensity = Math.min(duration / maxDuration, 1);
+    
+    // Using HSL for better control: Hue from 0 (red) to 0 (red), Saturation from 0% to 100%, Lightness from 70% to 50%
+    const hue = 0; // Always red
+    const saturation = intensity * 100; // 0% to 100%
+    const lightness = 40 - (intensity * 20); // 70% to 50%
+    
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
             
             function renderTasks() {
                 if (tasks.length === 0) {
