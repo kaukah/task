@@ -344,14 +344,33 @@
         }
 
         .task-duration {
-            width: 80px;
+            width: 120px;
             color: #fff;
             text-align: right;
             font-weight: 700;
-            padding: 2px 8px;
-            border-radius: 3px;
             font-size: 1rem;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+        }
+
+        .duration-bar {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            z-index: -1;
+        }
+
+        .duration-text {
+            padding: 2px 8px;
+            border-radius: 3px;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
         }
 
         .task-stopwatch {
@@ -495,6 +514,10 @@
             .btn-reset {
                 margin-left: 0;
                 margin-top: 10px;
+            }
+            
+            .task-duration {
+                width: 100px;
             }
         }
     </style>
@@ -956,6 +979,16 @@
                 localStorage.setItem('timeLogs', JSON.stringify(logs));
             }
             
+            function getDurationPercentage(duration) {
+                // Find max duration for percentage calculation
+                const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+                
+                // Calculate percentage (0 to 1)
+                const percentage = Math.min(duration / maxDuration, 1);
+                
+                return percentage;
+            }
+            
             function getDurationColor(duration) {
                 // Find max duration for color scaling
                 const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
@@ -1029,10 +1062,6 @@
                           })
                         : '-';
                     
-                    const durationColor = task.actualDuration > 0 
-                        ? getDurationColor(task.actualDuration)
-                        : '#fff';
-                    
                     // Create task stopwatch display
                     let taskStopwatch = '';
                     let taskStopwatchId = `task-stopwatch-${task.id}`;
@@ -1055,6 +1084,21 @@
                         }, 1000);
                     }
                     
+                    // Create sparkline bar for completed tasks
+                    let durationDisplay = '';
+                    if (!task.inProgress && task.actualDuration > 0) {
+                        const durationPercentage = getDurationPercentage(task.actualDuration);
+                        const durationColor = getDurationColor(task.actualDuration);
+                        const barWidth = Math.max(20, durationPercentage * 100); // Minimum 20% width for visibility
+                        
+                        durationDisplay = `
+                            <div class="task-duration">
+                                <div class="duration-bar" style="width: ${barWidth}%; background-color: ${durationColor};"></div>
+                                <div class="duration-text">${task.actualDuration} MENIT</div>
+                            </div>
+                        `;
+                    }
+                    
                     // Modified HTML structure with correct order: checkbox -> timestamp -> title -> duration
                     taskItem.innerHTML = `
                         <div class="task-info">
@@ -1062,9 +1106,7 @@
                             <div class="task-timestamp">${startTimeText}</div>
                             <div class="task-title">${task.name}</div>
                         </div>
-                        ${!task.inProgress ? `<div class="task-duration" style="background-color: ${durationColor};">
-                            ${task.actualDuration > 0 ? `${task.actualDuration} MENIT` : ''}
-                        </div>` : ''}
+                        ${durationDisplay}
                         ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
                         <div class="task-actions">
                             ${!task.completed && !task.inProgress ? `
