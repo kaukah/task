@@ -108,9 +108,9 @@
         .btn-reset {
             background-color: #333;
             color: #fff;
-            margin-top: 10px;
             font-size: 0.875rem;
             padding: 8px 20px;
+            margin-left: auto; /* Untuk mendorong tombol ke kanan */
         }
 
         .stopwatch-container {
@@ -255,9 +255,9 @@
         .task-stats {
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 15px;
             white-space: nowrap;
-            justify-content: center;
             margin: 20px 0;
         }
 
@@ -304,6 +304,7 @@
             font-size: 1.2rem;
             font-weight: 700;
             color: transparent;
+            flex-shrink: 0; /* Mencegah checkbox menyusut */
         }
 
         .task-checkbox.checked {
@@ -319,23 +320,26 @@
             font-size: 1.5rem;
         }
 
-        .task-title {
-            font-weight: 500;
-            text-transform: uppercase;
-            font-size: x-large;
-        }
-
-        .task-meta {
-            font-size: 0.75rem;
-            color: #666;
-            text-transform: uppercase;
-        }
-
         .task-timestamp {
             width: 80px;
             text-align: center;
             font-size: 1.5rem;
             color: #999;
+            text-transform: uppercase;
+            margin-right: 15px; /* Memberi jarak antara timestamp dan nama task */
+            flex-shrink: 0; /* Mencegah timestamp menyusut */
+        }
+
+        .task-title {
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: x-large;
+            flex-grow: 1; /* Memungkinkan nama task untuk mengambil ruang ekstra */
+        }
+
+        .task-meta {
+            font-size: 0.75rem;
+            color: #666;
             text-transform: uppercase;
         }
 
@@ -466,6 +470,7 @@
             
             .task-stats {
                 gap: 10px;
+                flex-direction: column;
             }
             
             .task-counter, .total-minutes {
@@ -485,6 +490,11 @@
             .quick-actions {
                 flex-direction: column;
                 gap: 5px;
+            }
+            
+            .btn-reset {
+                margin-left: 0;
+                margin-top: 10px;
             }
         }
     </style>
@@ -529,11 +539,11 @@
             </div>
             <div class="task-stats">
                 <div class="total-minutes" id="totalMinutes">0 MENIT</div>
+                <button id="resetBtn" class="btn btn-reset">❌ HAPUS SELESAI</button>
             </div>
             <div id="taskListContainer">
                 <p class="empty-state">BELUM ADA TUGAS</p>
             </div>
-            <button id="resetBtn" class="btn btn-reset" style="align-self: flex-end; margin-top: 20px;">❌ RESET</button>
         </div>
     </div>
 
@@ -953,10 +963,10 @@
                 // Calculate color intensity (0 to 1)
                 const intensity = Math.min(duration / maxDuration, 1);
                 
-                // Generate color from white to red
-                const r = 255;
-                const g = Math.floor(255 * (1 - intensity));
-                const b = Math.floor(255 * (1 - intensity));
+                // Generate color from dark gray to red
+                const r = Math.floor(51 + (255 - 51) * intensity);  // Red increases from 51 to 255
+                const g = Math.floor(51 * (1 - intensity));  // Green decreases from 51 to 0
+                const b = Math.floor(51 * (1 - intensity));  // Blue decreases from 51 to 0
                 
                 return `rgb(${r}, ${g}, ${b})`;
             }
@@ -1045,12 +1055,13 @@
                         }, 1000);
                     }
                     
+                    // Modified HTML structure with correct order: checkbox -> timestamp -> title -> duration
                     taskItem.innerHTML = `
                         <div class="task-info">
                             <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
+                            <div class="task-timestamp">${startTimeText}</div>
                             <div class="task-title">${task.name}</div>
                         </div>
-                        <div class="task-timestamp">${startTimeText}</div>
                         ${!task.inProgress ? `<div class="task-duration" style="background-color: ${durationColor};">
                             ${task.actualDuration > 0 ? `${task.actualDuration} MENIT` : ''}
                         </div>` : ''}
@@ -1149,44 +1160,32 @@
                 totalMinutes.textContent = formattedTime;
             }
             
-            function saveTasks() {
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-            
             function resetAll() {
-                if (confirm('❌ Hapus Data?')) {
-                    // Reset variables
-                    tasks = [];
-                    currentTaskId = null;
-                    isPaused = false;
+                // Filter hanya tugas yang sudah selesai (completed)
+                const completedTasks = tasks.filter(task => task.completed);
+                
+                if (completedTasks.length === 0) {
+                    showNotification('TIDAK ADA TUGAS YANG SUDAH SELESAI');
+                    return;
+                }
+                
+                if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
+                    // Hanya hapus tugas yang sudah selesai, biarkan yang belum dikerjakan
+                    tasks = tasks.filter(task => !task.completed);
                     
-                    // Clear intervals
-                    if (stopwatchInterval) clearInterval(stopwatchInterval);
-                    Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
-                    taskStopwatchIntervals = {};
+                    // Simpan perubahan
+                    saveTasks();
                     
-                    // Update UI
-                    if (stopwatchMode === 'text') {
-                        stopwatchText.innerHTML = '<span class="time-number">0</span> MENIT <span class="time-number">0</span> DETIK';
-                    } else {
-                        stopwatchNumber.textContent = '00:00';
-                    }
-                    stopwatchProgress.style.width = '100%';
-                    currentTaskDiv.style.display = 'none';
-                    
-                    // Clear localStorage
-                    localStorage.removeItem('tasks');
-                    localStorage.removeItem('timeLogs');
-                    localStorage.removeItem('currentTaskId');
-                    localStorage.removeItem('isPaused');
-                    localStorage.removeItem('stopwatchMode');
-                    
-                    // Re-render
+                    // Render ulang dan update statistik
                     renderTasks();
                     updateStats();
                     
-                    showNotification('SEMUA DATA TELAH DIRESET');
+                    showNotification(`${completedTasks.length} TUGAS SELESAI TELAH DIHAPUS`);
                 }
+            }
+            
+            function saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
             }
             
             function showNotification(message) {
