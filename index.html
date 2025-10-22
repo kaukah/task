@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MINIMAL TIME TRACKER</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -117,22 +118,6 @@
             margin: -30px 0 20px;
         }
 
-        .stopwatch {
-            font-size: 4rem;
-            font-weight: 100;
-            text-align: center;
-            letter-spacing: -2px;
-            text-transform: uppercase;
-            color: gray;
-            margin-top: 20px;
-        }
-
-        .stopwatch b {
-            font-weight: 900;
-            font-size: 4rem;
-            color: #fff;
-        }
-
         .stopwatch-bar {
             height: 10px;
             background-color: #333;
@@ -150,6 +135,63 @@
             transition: width 0.5s linear;
             border-radius: 999px;
             width: 100%;
+        }
+
+        .stopwatch-display {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .stopwatch-text {
+            font-size: 5rem;
+            font-weight: 400;
+            text-align: center;
+            letter-spacing: -2px;
+            text-transform: uppercase;
+            color: WHITE;
+            margin-bottom: 5px;
+        }
+
+        .stopwatch-number {
+            font-size: 12rem;
+            font-weight: 900;
+            text-align: center;
+            letter-spacing: 2px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .stopwatch-toggle {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: 0px solid #333;
+            color: #999;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 0;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            color: #fff;
+            border-color: #fff;
+        }
+
+        .toggle-btn.active {
+            color: #fff;
+            border-color: #fff;
+            background-color: #333;
         }
 
         .current-task {
@@ -187,6 +229,27 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             white-space: nowrap;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .quick-action-btn {
+            padding: 8px 15px;
+            background-color: #fff;
+            color: #000;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .quick-action-btn:hover {
+            opacity: 0.9;
         }
 
         .task-stats {
@@ -276,7 +339,7 @@
 
         .task-duration {
             width: 80px;
-            color: #000;
+            color: #fff;
             text-align: right;
             font-weight: 700;
             padding: 2px 8px;
@@ -291,6 +354,7 @@
             font-size: 2rem;
             color: #fff;
             font-weight: 700;
+            font-family: 'Inter', sans-serif;
         }
 
         .task-actions {
@@ -386,12 +450,12 @@
                 justify-content: space-between;
             }
             
-            .stopwatch {
-                font-size: 1.8rem;
+            .stopwatch-text {
+                font-size: 1rem;
             }
             
-            .stopwatch b {
-                font-size: 2rem;
+            .stopwatch-number {
+                font-size: 2.5rem;
             }
             
             .current-task h1 {
@@ -414,7 +478,12 @@
             
             .task-stopwatch {
                 width: 70px;
-                font-size: 2rem;
+                font-size: 1.8rem;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+                gap: 5px;
             }
         }
     </style>
@@ -425,7 +494,16 @@
             <div class="stopwatch-bar">
                 <div class="stopwatch-progress" id="stopwatchProgress"></div>
             </div>
-            <div class="stopwatch" id="stopwatch"><b>0 MENIT </b>0 DETIK</div>
+            <div class="stopwatch-display">
+                <div class="stopwatch-text" id="stopwatchText">
+                    <span class="time-number">0</span> MENIT <span class="time-number">0</span> DETIK
+                </div>
+                <div class="stopwatch-number" id="stopwatchNumber">00:00</div>
+                <div class="stopwatch-toggle">
+                    <button class="toggle-btn active" id="textToggle">TEXT</button>
+                    <button class="toggle-btn" id="numberToggle">ANGKA</button>
+                </div>
+            </div>
         </div>
 
         <div class="current-task" id="currentTask" style="display: none;">
@@ -443,6 +521,12 @@
         <div class="task-list">
             <div class="task-list-header">
                 <h2 id="taskListTitle">📋 DAFTAR ANTRIAN</h2>
+                <div class="quick-actions">
+                    <button id="breakBtn" class="quick-action-btn">⏳ BREAK</button>
+                    <button id="sholatBtn" class="quick-action-btn">⏳ SHOLAT</button>
+                </div>
+            </div>
+            <div class="task-stats">
                 <div class="total-minutes" id="totalMinutes">0 MENIT</div>
             </div>
             <div id="taskListContainer">
@@ -474,14 +558,16 @@
             let isPaused = localStorage.getItem('isPaused') === 'true' || false;
             let taskStopwatchIntervals = {}; // Store intervals for each task stopwatch
             let editingTaskId = null;
+            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'text'; // 'text' or 'number'
             
             // DOM Elements
             const taskInput = document.getElementById('taskInput');
             const addTaskBtn = document.getElementById('addTaskBtn');
             const executeTaskBtn = document.getElementById('executeTaskBtn');
+            const breakBtn = document.getElementById('breakBtn');
+            const sholatBtn = document.getElementById('sholatBtn');
             const resetBtn = document.getElementById('resetBtn');
             const taskListContainer = document.getElementById('taskListContainer');
-            const stopwatch = document.getElementById('stopwatch');
             const stopwatchProgress = document.getElementById('stopwatchProgress');
             const currentTaskDiv = document.getElementById('currentTask');
             const currentTaskName = document.getElementById('currentTaskName');
@@ -492,10 +578,15 @@
             const editTaskInput = document.getElementById('editTaskInput');
             const cancelEditBtn = document.getElementById('cancelEditBtn');
             const saveEditBtn = document.getElementById('saveEditBtn');
+            const stopwatchText = document.getElementById('stopwatchText');
+            const stopwatchNumber = document.getElementById('stopwatchNumber');
+            const textToggle = document.getElementById('textToggle');
+            const numberToggle = document.getElementById('numberToggle');
             
             // Initialize
             renderTasks();
             updateStats();
+            updateStopwatchMode();
             
             // If there's a current task, restore it
             if (currentTaskId) {
@@ -517,11 +608,22 @@
             // Event Listeners
             addTaskBtn.addEventListener('click', addTaskToQueue);
             executeTaskBtn.addEventListener('click', executeTask);
+            breakBtn.addEventListener('click', () => executeQuickTask('⏳ BREAK'));
+            sholatBtn.addEventListener('click', () => executeQuickTask('⏳ SHOLAT'));
             resetBtn.addEventListener('click', resetAll);
             taskInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     addTaskToQueue();
                 }
+            });
+            
+            // Stopwatch toggle event listeners
+            textToggle.addEventListener('click', function() {
+                setStopwatchMode('text');
+            });
+            
+            numberToggle.addEventListener('click', function() {
+                setStopwatchMode('number');
             });
             
             // Edit modal event listeners
@@ -541,6 +643,26 @@
             });
             
             // Functions
+            function setStopwatchMode(mode) {
+                stopwatchMode = mode;
+                localStorage.setItem('stopwatchMode', mode);
+                updateStopwatchMode();
+            }
+            
+            function updateStopwatchMode() {
+                if (stopwatchMode === 'text') {
+                    textToggle.classList.add('active');
+                    numberToggle.classList.remove('active');
+                    stopwatchText.style.display = 'block';
+                    stopwatchNumber.style.display = 'none';
+                } else {
+                    textToggle.classList.remove('active');
+                    numberToggle.classList.add('active');
+                    stopwatchText.style.display = 'none';
+                    stopwatchNumber.style.display = 'block';
+                }
+            }
+            
             function addTaskToQueue() {
                 const taskName = taskInput.value.trim();
                 if (!taskName) return;
@@ -609,6 +731,43 @@
                 taskInput.value = '';
                 
                 showNotification(`TUGAS DIEKSEKUSI: "${taskName}"`);
+            }
+            
+            function executeQuickTask(taskName) {
+                // Complete current task if exists
+                if (currentTaskId) {
+                    completeCurrentTask();
+                }
+                
+                const newTask = {
+                    id: Date.now(),
+                    name: taskName,
+                    startTime: new Date(),
+                    endTime: null,
+                    actualDuration: 0,
+                    completed: false,
+                    inProgress: true
+                };
+                
+                tasks.push(newTask);
+                currentTaskId = newTask.id;
+                
+                // Save current task ID to localStorage
+                localStorage.setItem('currentTaskId', currentTaskId);
+                
+                // Show current task div
+                currentTaskDiv.style.display = 'block';
+                currentTaskName.textContent = taskName;
+                
+                // Start stopwatch
+                startStopwatch();
+                
+                // Save and render
+                saveTasks();
+                renderTasks();
+                updateStats();
+                
+                showNotification(`${taskName} DIMULAI`);
             }
             
             function startTask(taskId) {
@@ -715,15 +874,26 @@
                 const minutes = Math.floor((elapsedSeconds % 3600) / 60);
                 const seconds = elapsedSeconds % 60;
                 
-                let displayText = '';
-                
+                // Update text version
+                let textDisplay = '';
                 if (hours > 0) {
-                    displayText = `<b>${hours} JAM ${minutes}</b> MENIT </b>${seconds} DETIK`;
+                    textDisplay = `<span class="time-number">${hours}</span> JAM <span class="time-number">${minutes}</span> MENIT <span class="time-number">${seconds}</span> DETIK`;
                 } else {
-                    displayText = `<b>${minutes} MENIT </b>${seconds} DETIK`;
+                    textDisplay = `<span class="time-number">${minutes}</span> MENIT <span class="time-number">${seconds}</span> DETIK`;
                 }
                 
-                stopwatch.innerHTML = displayText;
+                // Update number version
+                const minutesFormatted = minutes.toString().padStart(2, '0');
+                const secondsFormatted = seconds.toString().padStart(2, '0');
+                let numberDisplay = `${minutesFormatted}:${secondsFormatted}`;
+                
+                if (hours > 0) {
+                    const hoursFormatted = hours.toString().padStart(2, '0');
+                    numberDisplay = `${hoursFormatted}:${minutesFormatted}:${secondsFormatted}`;
+                }
+                
+                stopwatchText.innerHTML = textDisplay;
+                stopwatchNumber.textContent = numberDisplay;
             }
             
             function updateProgressBar() {
@@ -956,7 +1126,7 @@
                 const completedTasks = tasks.filter(t => t.completed).length;
                 const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
                 
-                taskListTitle.textContent = `🔘`;
+                taskListTitle.textContent = `🟰`;
                 
                 // Format total minutes to hours and minutes if needed
                 let formattedTime = '';
@@ -988,7 +1158,11 @@
                     taskStopwatchIntervals = {};
                     
                     // Update UI
-                    stopwatch.innerHTML = '<b>0 MENIT </b>0 DETIK';
+                    if (stopwatchMode === 'text') {
+                        stopwatchText.innerHTML = '<span class="time-number">0</span> MENIT <span class="time-number">0</span> DETIK';
+                    } else {
+                        stopwatchNumber.textContent = '00:00';
+                    }
                     stopwatchProgress.style.width = '100%';
                     currentTaskDiv.style.display = 'none';
                     
@@ -997,6 +1171,7 @@
                     localStorage.removeItem('timeLogs');
                     localStorage.removeItem('currentTaskId');
                     localStorage.removeItem('isPaused');
+                    localStorage.removeItem('stopwatchMode');
                     
                     // Re-render
                     renderTasks();
