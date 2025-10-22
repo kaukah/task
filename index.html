@@ -257,8 +257,7 @@
         .task-title {
             font-weight: 500;
             text-transform: uppercase;
-                font-size: x-large;
-
+            font-size: x-large;
         }
 
         .task-meta {
@@ -294,6 +293,27 @@
             font-weight: 700;
         }
 
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-action-btn {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 4px 8px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+
+        .task-action-btn:hover {
+            color: #fff;
+            background-color: #333;
+        }
+
         .empty-state {
             text-align: center;
             padding: 40px 0;
@@ -318,6 +338,47 @@
 
         .notification.show {
             opacity: 1;
+        }
+
+        .edit-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .edit-modal-content {
+            background-color: #111;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 0;
+        }
+
+        .edit-modal-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.5rem;
+            background-color: #222;
+            border: 1px solid #333;
+            border-radius: 0;
+            color: #fff;
+            text-align: center;
+            outline: none;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        .edit-modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
         }
 
         @media (max-width: 600px) {
@@ -391,6 +452,17 @@
         </div>
     </div>
 
+    <!-- Edit Modal -->
+    <div id="editModal" class="edit-modal" style="display: none;">
+        <div class="edit-modal-content">
+            <input type="text" id="editTaskInput" class="edit-modal-input" placeholder="NAMA TUGAS">
+            <div class="edit-modal-buttons">
+                <button id="cancelEditBtn" class="btn btn-secondary">BATAL</button>
+                <button id="saveEditBtn" class="btn">SIMPAN</button>
+            </div>
+        </div>
+    </div>
+
     <div class="notification" id="notification"></div>
 
     <script>
@@ -401,6 +473,7 @@
             let stopwatchInterval = null;
             let isPaused = localStorage.getItem('isPaused') === 'true' || false;
             let taskStopwatchIntervals = {}; // Store intervals for each task stopwatch
+            let editingTaskId = null;
             
             // DOM Elements
             const taskInput = document.getElementById('taskInput');
@@ -415,6 +488,10 @@
             const notification = document.getElementById('notification');
             const taskListTitle = document.getElementById('taskListTitle');
             const totalMinutes = document.getElementById('totalMinutes');
+            const editModal = document.getElementById('editModal');
+            const editTaskInput = document.getElementById('editTaskInput');
+            const cancelEditBtn = document.getElementById('cancelEditBtn');
+            const saveEditBtn = document.getElementById('saveEditBtn');
             
             // Initialize
             renderTasks();
@@ -444,6 +521,22 @@
             taskInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     addTaskToQueue();
+                }
+            });
+            
+            // Edit modal event listeners
+            cancelEditBtn.addEventListener('click', closeEditModal);
+            saveEditBtn.addEventListener('click', saveTaskEdit);
+            editTaskInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    saveTaskEdit();
+                }
+            });
+            
+            // Close modal when clicking outside
+            editModal.addEventListener('click', function(e) {
+                if (e.target === editModal) {
+                    closeEditModal();
                 }
             });
             
@@ -784,6 +877,12 @@
                             ${task.actualDuration > 0 ? `${task.actualDuration} MENIT` : ''}
                         </div>` : ''}
                         ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
+                        <div class="task-actions">
+                            ${!task.completed && !task.inProgress ? `
+                                <button class="task-action-btn" onclick="editTask(${task.id})">✏️</button>
+                            ` : ''}
+                            <button class="task-action-btn" onclick="deleteTask(${task.id})">🗑️</button>
+                        </div>
                     `;
                     
                     taskListContainer.appendChild(taskItem);
@@ -795,6 +894,61 @@
                 if (!task || task.completed || task.inProgress) return;
                 
                 startTask(taskId);
+            }
+            
+            function editTask(taskId) {
+                const task = tasks.find(t => t.id == taskId);
+                if (!task || task.completed || task.inProgress) return;
+                
+                editingTaskId = taskId;
+                editTaskInput.value = task.name;
+                editModal.style.display = 'flex';
+                
+                // Focus on input
+                setTimeout(() => {
+                    editTaskInput.focus();
+                    editTaskInput.select();
+                }, 100);
+            }
+            
+            function saveTaskEdit() {
+                const newName = editTaskInput.value.trim();
+                if (!newName) return;
+                
+                const task = tasks.find(t => t.id == editingTaskId);
+                if (task) {
+                    task.name = newName;
+                    saveTasks();
+                    renderTasks();
+                    showNotification(`TUGAS DIPERBARUI: "${newName}"`);
+                }
+                
+                closeEditModal();
+            }
+            
+            function closeEditModal() {
+                editModal.style.display = 'none';
+                editTaskInput.value = '';
+                editingTaskId = null;
+            }
+            
+            function deleteTask(taskId) {
+                const task = tasks.find(t => t.id == taskId);
+                if (!task) return;
+                
+                if (confirm(`HAPUS TUGAS: "${task.name}"?`)) {
+                    // If deleting the current task, complete it first
+                    if (currentTaskId == taskId) {
+                        completeCurrentTask();
+                    }
+                    
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    saveTasks();
+                    renderTasks();
+                    updateStats();
+                    
+                    showNotification(`TUGAS DIHAPUS: "${task.name}"`);
+                }
             }
             
             function updateStats() {
@@ -863,6 +1017,8 @@
             
             // Make functions globally accessible
             window.handleTaskClick = handleTaskClick;
+            window.editTask = editTask;
+            window.deleteTask = deleteTask;
         });
     </script>
 </body>
