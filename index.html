@@ -515,8 +515,8 @@
             <input type="text" id="taskInput" class="task-input" placeholder="KETIK TUGAS BARU..." autofocus>
             <div class="btn-group">
                 <div class="quick-actions">
-                    <button id="breakBtn" class="quick-action-btn">⏳ BREAK</button>
-                    <button id="sholatBtn" class="quick-action-btn">⏳ SHOLAT</button>
+                    <button id="breakBtn" class="quick-action-btn">☕ BREAK</button>
+                    <button id="sholatBtn" class="quick-action-btn">🤲 SHOLAT</button>
                 </div>
                 <button id="addTaskBtn" class="btn btn-secondary">+ TAMBAH</button>
                 <button id="executeTaskBtn" class="btn">EKSEKUSI 🚀</button>
@@ -609,8 +609,8 @@
             // Event Listeners
             addTaskBtn.addEventListener('click', addTaskToQueue);
             executeTaskBtn.addEventListener('click', executeTask);
-            breakBtn.addEventListener('click', () => executeQuickTask('⏳ BREAK'));
-            sholatBtn.addEventListener('click', () => executeQuickTask('⏳ SHOLAT'));
+            breakBtn.addEventListener('click', () => executeQuickTask('☕ BREAK'));
+            sholatBtn.addEventListener('click', () => executeQuickTask('🤲 SHOLAT'));
             resetBtn.addEventListener('click', resetAll);
             taskInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
