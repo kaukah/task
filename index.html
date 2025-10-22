@@ -257,6 +257,8 @@
             align-items: center;
             gap: 15px;
             white-space: nowrap;
+            justify-content: center;
+            margin: 20px 0;
         }
 
         .task-counter {
@@ -512,6 +514,10 @@
         <div class="input-section">
             <input type="text" id="taskInput" class="task-input" placeholder="KETIK TUGAS BARU..." autofocus>
             <div class="btn-group">
+                <div class="quick-actions">
+                    <button id="breakBtn" class="quick-action-btn">⏳ BREAK</button>
+                    <button id="sholatBtn" class="quick-action-btn">⏳ SHOLAT</button>
+                </div>
                 <button id="addTaskBtn" class="btn btn-secondary">+ TAMBAH</button>
                 <button id="executeTaskBtn" class="btn">EKSEKUSI 🚀</button>
             </div>
@@ -520,10 +526,6 @@
         <div class="task-list">
             <div class="task-list-header">
                 <h2 id="taskListTitle">📋 DAFTAR ANTRIAN</h2>
-                <div class="quick-actions">
-                    <button id="breakBtn" class="quick-action-btn">⏳ BREAK</button>
-                    <button id="sholatBtn" class="quick-action-btn">⏳ SHOLAT</button>
-                </div>
             </div>
             <div class="task-stats">
                 <div class="total-minutes" id="totalMinutes">0 MENIT</div>
@@ -971,10 +973,17 @@
                 Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
                 taskStopwatchIntervals = {};
                 
-                // Sort tasks: in progress first, then by creation time (oldest first)
+                // Sort tasks: completed tasks at the bottom, then in progress, then by creation time
                 const sortedTasks = [...tasks].sort((a, b) => {
+                    // Completed tasks go to bottom
+                    if (a.completed && !b.completed) return 1;
+                    if (!a.completed && b.completed) return -1;
+                    
+                    // Among non-completed tasks, in progress comes first
                     if (a.inProgress && !b.inProgress) return -1;
                     if (!a.inProgress && b.inProgress) return 1;
+                    
+                    // Otherwise, sort by creation time (oldest first)
                     if (!a.startTime && !b.startTime) return a.id - b.id;
                     if (a.startTime && !b.startTime) return -1;
                     if (!a.startTime && b.startTime) return 1;
