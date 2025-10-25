@@ -131,10 +131,17 @@
             top: 0;
             left: 0;
             height: 100%;
-            background: linear-gradient(90deg, #4aa8ff, #8b5cf6);
+            background-color: #ff0000;
             transition: width 0.5s linear;
             border-radius: 999px;
             width: 100%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
         .stopwatch-display {
@@ -152,6 +159,7 @@
             text-transform: uppercase;
             color: WHITE;
             margin-bottom: 5px;
+            display: none; /* Sembunyikan teks stopwatch */
         }
 
         .stopwatch-number {
@@ -165,10 +173,7 @@
 
         .stopwatch-toggle {
             margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: none; /* Sembunyikan toggle karena tidak diperlukan */
         }
 
         .toggle-btn {
@@ -202,11 +207,12 @@
 
         .current-task h1 {
             font-size: 5rem;
-            color: yellow;
+            color: white;
             letter-spacing: 0px;
             margin-bottom: 5px;
             font-weight: 700;
             text-transform: uppercase;
+            animation: blink 1s infinite;
         }
 
         .task-list {
@@ -610,10 +616,6 @@
                     <div class="stat-value" id="endTime">-</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">TASK TERLAMA</div>
-                    <div class="stat-value highlight" id="longestTask">-</div>
-                </div>
-                <div class="stat-item">
                     <div class="stat-label">TOTAL BREAK</div>
                     <div class="stat-value" id="totalBreak">0 MENIT</div>
                 </div>
@@ -625,7 +627,10 @@
                     <div class="stat-label">WAKTU KERJA</div>
                     <div class="stat-value highlight" id="workTime">0 MENIT</div>
                 </div>
-
+                <div class="stat-item">
+                    <div class="stat-label">TASK TERLAMA</div>
+                    <div class="stat-value highlight" id="longestTask">-</div>
+                </div>
             </div>
             
             <div id="taskListContainer">
@@ -656,7 +661,7 @@
             let isPaused = localStorage.getItem('isPaused') === 'true' || false;
             let taskStopwatchIntervals = {}; // Store intervals for each task stopwatch
             let editingTaskId = null;
-            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'text'; // 'text' or 'number'
+            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number'; // 'text' or 'number' - default to number
             
             // DOM Elements
             const taskInput = document.getElementById('taskInput');
@@ -720,7 +725,13 @@
             resetBtn.addEventListener('click', resetAll);
             taskInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
-                    addTaskToQueue();
+                    if (e.shiftKey) {
+                        // Shift + Enter untuk eksekusi langsung
+                        executeTask();
+                    } else {
+                        // Enter biasa untuk tambah ke antrian
+                        addTaskToQueue();
+                    }
                 }
             });
             
@@ -757,6 +768,7 @@
             }
             
             function updateStopwatchMode() {
+                // Default ke mode angka, sembunyikan teks
                 if (stopwatchMode === 'text') {
                     textToggle.classList.add('active');
                     numberToggle.classList.remove('active');
