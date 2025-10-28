@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕒 TIME BLOCK</title>
+    <title>🕒 TIME BLOCKER</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -1107,15 +1107,15 @@
                 Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
                 taskStopwatchIntervals = {};
                 
-                // Sort tasks: completed tasks at the bottom, then in progress, then by their position in array
+                // Sort tasks: in progress tasks at the bottom, then non-completed tasks by their position in array, then completed tasks
                 const sortedTasks = [...tasks].sort((a, b) => {
+                    // In progress tasks go to bottom
+                    if (a.inProgress && !b.inProgress) return 1;
+                    if (!a.inProgress && b.inProgress) return -1;
+                    
                     // Completed tasks go to bottom
                     if (a.completed && !b.completed) return 1;
                     if (!a.completed && b.completed) return -1;
-                    
-                    // Among non-completed tasks, in progress comes first
-                    if (a.inProgress && !b.inProgress) return -1;
-                    if (!a.inProgress && b.inProgress) return 1;
                     
                     // For other tasks, maintain their order in the array
                     return tasks.indexOf(a) - tasks.indexOf(b);
@@ -1200,6 +1200,9 @@
                             ${!task.completed && !task.inProgress ? `
                                 <button class="task-action-btn" onclick="moveTaskToTop(${task.id})">⬆️</button>
                                 <button class="task-action-btn" onclick="editTask(${task.id})">✏️</button>
+                            ` : ''}
+                            ${task.completed ? `
+                                <button class="task-action-btn" onclick="repeatTask(${task.id})">🔄</button>
                             ` : ''}
                             <button class="task-action-btn" onclick="deleteTask(${task.id})">🗑️</button>
                         </div>
@@ -1306,6 +1309,48 @@
                 renderTasks();
                 
                 showNotification(`TUGAS "${task.name}" DIPINDAH KE ATAS`);
+            }
+            
+            function repeatTask(taskId) {
+                const task = tasks.find(t => t.id == taskId);
+                if (!task || !task.completed) return;
+                
+                // Complete current task if exists
+                if (currentTaskId) {
+                    completeCurrentTask();
+                }
+                
+                // Create a new task based on the completed task
+                const newTask = {
+                    id: Date.now(),
+                    name: task.name,
+                    startTime: new Date(),
+                    endTime: null,
+                    actualDuration: 0,
+                    completed: false,
+                    inProgress: true
+                };
+                
+                tasks.push(newTask);
+                currentTaskId = newTask.id;
+                
+                // Save current task ID to localStorage
+                localStorage.setItem('currentTaskId', currentTaskId);
+                
+                // Show current task div
+                currentTaskDiv.style.display = 'block';
+                currentTaskName.textContent = task.name;
+                
+                // Start stopwatch
+                startStopwatch();
+                
+                // Save and render
+                saveTasks();
+                renderTasks();
+                updateStats();
+                updateDetailedStats();
+                
+                showNotification(`TUGAS "${task.name}" DIULANG`);
             }
             
             function editTask(taskId) {
@@ -1427,6 +1472,7 @@
             // Make functions globally accessible
             window.handleTaskClick = handleTaskClick;
             window.moveTaskToTop = moveTaskToTop;
+            window.repeatTask = repeatTask;
             window.editTask = editTask;
             window.deleteTask = deleteTask;
         });
