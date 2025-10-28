@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MINIMAL TIME TRACKER</title>
+    <title>🕒 TIME BLOCK</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
@@ -1107,7 +1107,7 @@
                 Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
                 taskStopwatchIntervals = {};
                 
-                // Sort tasks: completed tasks at the bottom, then in progress, then by creation time
+                // Sort tasks: completed tasks at the bottom, then in progress, then by their position in array
                 const sortedTasks = [...tasks].sort((a, b) => {
                     // Completed tasks go to bottom
                     if (a.completed && !b.completed) return 1;
@@ -1117,11 +1117,8 @@
                     if (a.inProgress && !b.inProgress) return -1;
                     if (!a.inProgress && b.inProgress) return 1;
                     
-                    // Otherwise, sort by creation time (oldest first)
-                    if (!a.startTime && !b.startTime) return a.id - b.id;
-                    if (a.startTime && !b.startTime) return -1;
-                    if (!a.startTime && b.startTime) return 1;
-                    return new Date(a.startTime) - new Date(b.startTime);
+                    // For other tasks, maintain their order in the array
+                    return tasks.indexOf(a) - tasks.indexOf(b);
                 });
                 
                 sortedTasks.forEach(task => {
@@ -1201,6 +1198,7 @@
                         ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
                         <div class="task-actions">
                             ${!task.completed && !task.inProgress ? `
+                                <button class="task-action-btn" onclick="moveTaskToTop(${task.id})">⬆️</button>
                                 <button class="task-action-btn" onclick="editTask(${task.id})">✏️</button>
                             ` : ''}
                             <button class="task-action-btn" onclick="deleteTask(${task.id})">🗑️</button>
@@ -1287,6 +1285,27 @@
                 if (!task || task.completed || task.inProgress) return;
                 
                 startTask(taskId);
+            }
+            
+            function moveTaskToTop(taskId) {
+                const task = tasks.find(t => t.id == taskId);
+                if (!task || task.completed || task.inProgress) return;
+                
+                // Cari indeks tugas yang akan dipindahkan
+                const taskIndex = tasks.findIndex(t => t.id == taskId);
+                if (taskIndex === -1) return;
+                
+                // Hapus tugas dari posisi saat ini
+                tasks.splice(taskIndex, 1);
+                
+                // Tambahkan tugas ke posisi paling atas (indeks 0)
+                tasks.unshift(task);
+                
+                // Simpan dan render ulang
+                saveTasks();
+                renderTasks();
+                
+                showNotification(`TUGAS "${task.name}" DIPINDAH KE ATAS`);
             }
             
             function editTask(taskId) {
@@ -1407,6 +1426,7 @@
             
             // Make functions globally accessible
             window.handleTaskClick = handleTaskClick;
+            window.moveTaskToTop = moveTaskToTop;
             window.editTask = editTask;
             window.deleteTask = deleteTask;
         });
