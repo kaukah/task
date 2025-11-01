@@ -743,8 +743,6 @@
             const totalBreakEl = document.getElementById('totalBreak');
             const totalSholatEl = document.getElementById('totalSholat');
             const workTimeEl = document.getElementById('workTime');
-            // const totalDurationTimeEl = document.getElementById('totalDurationTime'); // Referensi dihapus
-            // const longestTaskEl = document.getElementById('longestTask'); // Referensi dihapus
             const breakPercentageEl = document.getElementById('breakPercentage');
             const productiveBarEl = document.getElementById('productiveBar');
             const breakBarEl = document.getElementById('breakBar');
@@ -1162,19 +1160,31 @@
                 Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
                 taskStopwatchIntervals = {};
                 
-                // Sort tasks: in progress tasks at the bottom, then non-completed tasks by their position in array, then completed tasks
+                // PERBAIKAN SORTING DIMULAI DI SINI
                 const sortedTasks = [...tasks].sort((a, b) => {
-                    // In progress tasks go to bottom
+                    // Prioritas 1: Tugas yang sedang berjalan (In Progress) selalu di bagian paling bawah
                     if (a.inProgress && !b.inProgress) return 1;
                     if (!a.inProgress && b.inProgress) return -1;
-                    
-                    // Completed tasks go to bottom
+
+                    // Prioritas 2: Tugas yang Selesai (Completed) selalu di bagian bawah dari antrian
                     if (a.completed && !b.completed) return 1;
                     if (!a.completed && b.completed) return -1;
-                    
-                    // For other tasks, maintain their order in the array
+
+                    // Prioritas 3: Jika keduanya Selesai (Completed), urutkan berdasarkan waktu mulai (terbaru di atas)
+                    if (a.completed && b.completed) {
+                        // Pastikan kedua task memiliki startTime (seharusnya selalu ada jika completed)
+                        if (a.startTime && b.startTime) {
+                            const timeA = new Date(a.startTime);
+                            const timeB = new Date(b.startTime);
+                            // Urutkan secara Descending (waktu terbaru di atas)
+                            return timeB - timeA;
+                        }
+                    }
+
+                    // Prioritas 4: Tugas Antrian (belum selesai, tidak sedang berjalan) diurutkan berdasarkan posisi array (queue order)
                     return tasks.indexOf(a) - tasks.indexOf(b);
                 });
+                // PERBAIKAN SORTING BERAKHIR DI SINI
                 
                 sortedTasks.forEach(task => {
                     const taskItem = document.createElement('div');
@@ -1301,8 +1311,6 @@
                     totalBreakEl.textContent = defaultTime;
                     totalSholatEl.textContent = defaultTime;
                     workTimeEl.textContent = defaultTime;
-                    // totalDurationTimeEl.textContent = defaultTime; // Dihapus
-                    // longestTaskEl.textContent = defaultText; // Dihapus
                     breakPercentageEl.textContent = '0%';
                     productiveBarEl.style.width = '0%';
                     breakBarEl.style.width = '0%';
@@ -1349,7 +1357,6 @@
                 totalBreakEl.textContent = formatTimeDisplay(totalBreakTime);
                 totalSholatEl.textContent = formatTimeDisplay(totalSholatTime);
                 workTimeEl.textContent = formatTimeDisplay(totalWorkTime);
-                // totalDurationTimeEl.textContent = formatTimeDisplay(totalDuration); // Dihapus
                 
                 // Calculate Break Percentage (Break time vs Total Duration)
                 let breakPercentage = 0;
@@ -1359,8 +1366,6 @@
                 
                 const breakPercentageRounded = breakPercentage.toFixed(0);
                 breakPercentageEl.textContent = `${breakPercentageRounded}%`;
-                
-                // Blok untuk mencari "TUGAS TERLAMA" dihapus karena elemen HTML-nya sudah dihapus
                 
                 // Color coding for Break Percentage
                 if (breakPercentage < 10 && breakPercentage > 0) {
