@@ -6,6 +6,7 @@
     <title>🕒 TIME BLOCKER</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -105,12 +106,28 @@
             color: #fff;
         }
 
+        /* Revisi: Hapus margin-left: auto dari .btn-reset */
         .btn-reset {
             background-color: #333;
             color: #fff;
             font-size: 0.875rem;
             padding: 8px 20px;
-            margin-left: auto; /* Untuk mendorong tombol ke kanan */
+        }
+        
+        /* NEW: Style untuk tombol STOP di bagian statistik */
+        .btn-stat-stop {
+            background-color: #ff0000;
+            color: #fff;
+            font-size: 0.875rem;
+            padding: 8px 20px;
+            font-weight: 700;
+            border: none;
+            border-radius: 0;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .btn-stat-stop:hover {
+            background-color: #cc0000;
         }
 
         .stopwatch-container {
@@ -258,13 +275,21 @@
             opacity: 0.9;
         }
 
+        /* Revisi: Mengubah justify-content agar tombol bisa berada di kanan */
         .task-stats {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 15px;
+            justify-content: space-between; /* Diganti dari center */
+            gap: 15px; /* Gap hanya berlaku jika flex-wrap: wrap */
             white-space: nowrap;
             margin: 20px 0;
+        }
+        
+        /* Wrapper untuk tombol STOP dan RESET */
+        .stat-buttons-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
         }
 
         .task-counter {
@@ -571,8 +596,14 @@
             .task-stats {
                 gap: 10px;
                 flex-direction: column;
+                justify-content: center;
             }
             
+            .stat-buttons-group {
+                gap: 10px;
+                margin-top: 10px;
+            }
+
             .task-counter, .total-minutes {
                 font-size: 1.5rem;
             }
@@ -594,7 +625,7 @@
             
             .btn-reset {
                 margin-left: 0;
-                margin-top: 10px;
+                margin-top: 0;
             }
             
             .task-duration {
@@ -637,7 +668,7 @@
                     <button id="sholatBtn" class="quick-action-btn">🤲 SHOLAT</button>
                 </div>
                 <button id="addTaskBtn" class="btn btn-secondary">+ TAMBAH</button>
-                <button id="executeTaskBtn" class="btn">EKSEKUSI 🚀</button>
+                <button id="executeTaskBtn" class="btn">MULAI 🚀</button>
             </div>
         </div>
 
@@ -647,7 +678,10 @@
             </div>
             <div class="task-stats">
                 <div class="total-minutes" id="totalMinutes">0 MENIT</div>
-                <button id="resetBtn" class="btn btn-reset">❌ HAPUS SELESAI</button>
+                <div class="stat-buttons-group">
+                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;">🛑 STOP KERJA</button>
+                    <button id="resetBtn" class="btn btn-reset">❌ HAPUS SELESAI</button>
+                </div>
             </div>
             
             <div class="stats-details">
@@ -710,14 +744,15 @@
             let currentTaskId = localStorage.getItem('currentTaskId') || null;
             let stopwatchInterval = null;
             let isPaused = localStorage.getItem('isPaused') === 'true' || false;
-            let taskStopwatchIntervals = {}; // Store intervals for each task stopwatch
+            let taskStopwatchIntervals = {};
             let editingTaskId = null;
-            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number'; // 'text' or 'number' - default to number
+            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
             
             // DOM Elements
             const taskInput = document.getElementById('taskInput');
             const addTaskBtn = document.getElementById('addTaskBtn');
             const executeTaskBtn = document.getElementById('executeTaskBtn');
+            const stopTaskBtn = document.getElementById('stopTaskBtn'); // Diambil dari lokasi baru
             const breakBtn = document.getElementById('breakBtn');
             const sholatBtn = document.getElementById('sholatBtn');
             const resetBtn = document.getElementById('resetBtn');
@@ -736,6 +771,10 @@
             const stopwatchNumber = document.getElementById('stopwatchNumber');
             const textToggle = document.getElementById('textToggle');
             const numberToggle = document.getElementById('numberToggle');
+
+            // Audio Cues
+            const dingAudio = new Audio('ding.mp3');
+            const taraAudio = new Audio('tara.mp3');
             
             // Statistik Elements
             const startTimeEl = document.getElementById('startTime');
@@ -747,6 +786,26 @@
             const productiveBarEl = document.getElementById('productiveBar');
             const breakBarEl = document.getElementById('breakBar');
             
+            // Functions for new features
+            function fireConfetti() {
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            // REVISI LOGIC: Hanya mengontrol tombol STOP
+            function toggleStartStopButtons(isTaskRunning) {
+                // Tombol executeTaskBtn (MULAI) kini selalu terlihat.
+                // Hanya tombol stopTaskBtn yang diatur visibilitasnya.
+                if (isTaskRunning) {
+                    stopTaskBtn.style.display = 'block';
+                } else {
+                    stopTaskBtn.style.display = 'none';
+                }
+            }
+            
             // Initialize
             renderTasks();
             updateStats();
@@ -757,32 +816,31 @@
             if (currentTaskId) {
                 const currentTask = tasks.find(t => t.id == currentTaskId);
                 if (currentTask && !currentTask.completed) {
-                    // Show current task
                     currentTaskDiv.style.display = 'block';
                     currentTaskName.textContent = currentTask.name;
-                    
-                    // Start stopwatch
                     startStopwatch();
+                    toggleStartStopButtons(true);
                 } else {
-                    // Task is completed or not found, reset currentTaskId
                     currentTaskId = null;
                     localStorage.removeItem('currentTaskId');
+                    toggleStartStopButtons(false);
                 }
+            } else {
+                toggleStartStopButtons(false);
             }
             
             // Event Listeners
             addTaskBtn.addEventListener('click', addTaskToQueue);
             executeTaskBtn.addEventListener('click', executeTask);
+            stopTaskBtn.addEventListener('click', completeCurrentTask); // Listener untuk tombol STOP di stats
             breakBtn.addEventListener('click', () => executeQuickTask('☕ BREAK'));
             sholatBtn.addEventListener('click', () => executeQuickTask('🤲 SHOLAT'));
             resetBtn.addEventListener('click', resetAll);
             taskInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     if (e.shiftKey) {
-                        // Shift + Enter untuk eksekusi langsung
                         executeTask();
                     } else {
-                        // Enter biasa untuk tambah ke antrian
                         addTaskToQueue();
                     }
                 }
@@ -821,7 +879,6 @@
             }
             
             function updateStopwatchMode() {
-                // Default ke mode angka, sembunyikan teks
                 if (stopwatchMode === 'text') {
                     textToggle.classList.add('active');
                     numberToggle.classList.remove('active');
@@ -851,13 +908,11 @@
                 
                 tasks.push(newTask);
                 
-                // Save and render
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
                 
-                // Reset input
                 taskInput.value = '';
                 
                 showNotification(`Telah Ditambah "${taskName}"`);
@@ -867,7 +922,6 @@
                 const taskName = taskInput.value.trim();
                 if (!taskName) return;
                 
-                // Complete current task if exists
                 if (currentTaskId) {
                     completeCurrentTask();
                 }
@@ -885,30 +939,27 @@
                 tasks.push(newTask);
                 currentTaskId = newTask.id;
                 
-                // Save current task ID to localStorage
                 localStorage.setItem('currentTaskId', currentTaskId);
                 
-                // Show current task div
                 currentTaskDiv.style.display = 'block';
                 currentTaskName.textContent = taskName;
                 
-                // Start stopwatch
                 startStopwatch();
                 
-                // Save and render
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
                 
-                // Reset input
                 taskInput.value = '';
+
+                fireConfetti();
+                taraAudio.play();
                 
-                showNotification(`TUGAS DIEKSEKUSI: "${taskName}"`);
+                showNotification(`TUGAS DIMULAI: "${taskName}"`);
             }
             
             function executeQuickTask(taskName) {
-                // Complete current task if exists
                 if (currentTaskId) {
                     completeCurrentTask();
                 }
@@ -926,27 +977,25 @@
                 tasks.push(newTask);
                 currentTaskId = newTask.id;
                 
-                // Save current task ID to localStorage
                 localStorage.setItem('currentTaskId', currentTaskId);
                 
-                // Show current task div
                 currentTaskDiv.style.display = 'block';
                 currentTaskName.textContent = taskName;
                 
-                // Start stopwatch
                 startStopwatch();
                 
-                // Save and render
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
+
+                fireConfetti();
+                taraAudio.play();
                 
                 showNotification(`${taskName} DIMULAI`);
             }
             
             function startTask(taskId) {
-                // If there's a current task, complete it first
                 if (currentTaskId) {
                     completeCurrentTask();
                 }
@@ -954,25 +1003,24 @@
                 const task = tasks.find(t => t.id == taskId);
                 if (!task || task.completed) return;
                 
-                // Set task as in progress
                 task.inProgress = true;
                 task.startTime = new Date();
                 
                 currentTaskId = taskId;
                 localStorage.setItem('currentTaskId', currentTaskId);
                 
-                // Show current task div
                 currentTaskDiv.style.display = 'block';
                 currentTaskName.textContent = task.name;
                 
-                // Start stopwatch
                 startStopwatch();
                 
-                // Save and render
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
+
+                fireConfetti();
+                taraAudio.play();
                 
                 showNotification(`TUGAS DIMULAI: "${task.name}"`);
             }
@@ -983,57 +1031,60 @@
                 const task = tasks.find(t => t.id == currentTaskId);
                 if (!task) return;
                 
-                // Mark task as completed
                 task.completed = true;
                 task.inProgress = false;
                 task.endTime = new Date();
                 
-                // Calculate actual duration based on timestamp
                 if (task.startTime) {
                     const startTime = new Date(task.startTime);
                     const endTime = new Date();
                     task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
                 }
                 
-                // Add log entry
                 addLogEntry(task);
                 
-                // Hide current task div
                 currentTaskDiv.style.display = 'none';
                 
-                // Reset current task
                 currentTaskId = null;
                 localStorage.removeItem('currentTaskId');
                 
-                // Clear interval
                 if (stopwatchInterval) clearInterval(stopwatchInterval);
+
+                toggleStartStopButtons(false);
                 
-                // Save and render
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
+
+                showNotification(`TUGAS SELESAI: "${task.name}"`);
             }
             
             function startStopwatch() {
                 if (stopwatchInterval) clearInterval(stopwatchInterval);
                 
-                // Panggil fungsi update segera agar progress bar dan waktu muncul tanpa delay
                 updateStopwatchDisplay();
                 updateProgressBar();
+
+                toggleStartStopButtons(true);
 
                 stopwatchInterval = setInterval(() => {
                     if (!isPaused) {
                         updateStopwatchDisplay();
                         updateProgressBar();
                         
-                        // Add log entry every minute
                         const currentTask = tasks.find(t => t.id == currentTaskId);
                         if (currentTask && currentTask.startTime) {
                             const startTime = new Date(currentTask.startTime);
                             const now = new Date();
                             const elapsedSeconds = Math.floor((now - startTime) / 1000);
                             
+                            // Trigger DING.MP3 every 5 minutes (300 seconds)
+                            if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) {
+                                dingAudio.play();
+                                showNotification('DING! 5 MENIT TELAH BERLALU');
+                            }
+
                             if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
                                 addLogEntry();
                             }
@@ -1056,7 +1107,6 @@
                 const minutes = Math.floor((elapsedSeconds % 3600) / 60);
                 const seconds = elapsedSeconds % 60;
                 
-                // Update text version
                 let textDisplay = '';
                 if (hours > 0) {
                     textDisplay = `<span class="time-number">${hours}</span> JAM <span class="time-number">${minutes}</span> MENIT <span class="time-number">${seconds}</span> DETIK`;
@@ -1064,7 +1114,6 @@
                     textDisplay = `<span class="time-number">${minutes}</span> MENIT <span class="time-number">${seconds}</span> DETIK`;
                 }
                 
-                // Update number version
                 const minutesFormatted = minutes.toString().padStart(2, '0');
                 const secondsFormatted = seconds.toString().padStart(2, '0');
                 let numberDisplay = `${minutesFormatted}:${secondsFormatted}`;
@@ -1088,17 +1137,10 @@
                 const now = new Date();
                 const elapsedSeconds = Math.floor((now - startTime) / 1000);
                 
-                // Calculate progress based on current minute (0-59 seconds)
                 const currentSecond = elapsedSeconds % 60;
-                // Bar should shrink from 100% (at second 0) to 0% (at second 59)
                 const progressWidth = (100 - (currentSecond / 60) * 100);
                 
                 stopwatchProgress.style.width = `${progressWidth}%`;
-            }
-            
-            function togglePause() {
-                isPaused = !isPaused;
-                localStorage.setItem('isPaused', isPaused);
             }
             
             function addLogEntry(taskParam = null) {
@@ -1111,7 +1153,6 @@
                     minute: '2-digit' 
                 });
                 
-                // Create log entry
                 const logEntry = {
                     id: Date.now(),
                     taskId: task.id,
@@ -1120,36 +1161,24 @@
                     timestamp: now
                 };
                 
-                // Get existing logs or create new array
                 let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
                 logs.push(logEntry);
                 
-                // Save logs
                 localStorage.setItem('timeLogs', JSON.stringify(logs));
             }
             
             function getDurationPercentage(duration) {
-                // Find max duration for percentage calculation
                 const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-                
-                // Calculate percentage (0 to 1)
                 const percentage = Math.min(duration / maxDuration, 1);
-                
                 return percentage;
             }
             
             function getDurationColor(duration) {
-                // Find max duration for color scaling
                 const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-                
-                // Calculate color intensity (0 to 1)
                 const intensity = Math.min(duration / maxDuration, 1);
-                
-                // Using HSL for better control: Hue from 0 (red) to 0 (red), Saturation from 0% to 100%, Lightness from 70% to 50%
-                const hue = 0; // Always red
-                const saturation = intensity * 100; // 0% to 100%
-                const lightness = 40 - (intensity * 20); // 70% to 50%
-                
+                const hue = 0;
+                const saturation = intensity * 100;
+                const lightness = 40 - (intensity * 20);
                 return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
             }
             
@@ -1161,35 +1190,26 @@
                 
                 taskListContainer.innerHTML = '';
                 
-                // Clear all task stopwatch intervals
                 Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
                 taskStopwatchIntervals = {};
                 
-                // LOGIKA SORTING TELAH DIPERBAIKI DI SINI
                 const sortedTasks = [...tasks].sort((a, b) => {
-                    // Prioritas 1: Tugas yang sedang berjalan (In Progress) selalu di bagian paling bawah
                     if (a.inProgress && !b.inProgress) return 1;
                     if (!a.inProgress && b.inProgress) return -1;
 
-                    // Prioritas 2: Tugas yang Selesai (Completed) selalu di bagian bawah dari antrian
                     if (a.completed && !b.completed) return 1;
                     if (!a.completed && b.completed) return -1;
 
-                    // Prioritas 3: Jika keduanya Selesai (Completed), urutkan berdasarkan waktu mulai (terlama di atas)
                     if (a.completed && b.completed) {
-                        // Pastikan kedua task memiliki startTime (seharusnya selalu ada jika completed)
                         if (a.startTime && b.startTime) {
                             const timeA = new Date(a.startTime);
                             const timeB = new Date(b.startTime);
-                            // Urutkan secara Ascending (Oldest first/Waktu paling awal di atas)
-                            return timeA - timeB; 
+                            return timeA - timeB; // Oldest first (ASCENDING)
                         }
                     }
 
-                    // Prioritas 4: Tugas Antrian (belum selesai, tidak sedang berjalan) diurutkan berdasarkan posisi array (queue order)
                     return tasks.indexOf(a) - tasks.indexOf(b);
                 });
-                // AKHIR PERBAIKAN LOGIKA SORTING
                 
                 sortedTasks.forEach(task => {
                     const taskItem = document.createElement('div');
@@ -1220,14 +1240,12 @@
                           })
                         : '-';
                     
-                    // Create task stopwatch display
                     let taskStopwatch = '';
                     let taskStopwatchId = `task-stopwatch-${task.id}`;
                     
                     if (task.inProgress && task.startTime) {
                         taskStopwatch = `<span id="${taskStopwatchId}">00:00</span>`;
                         
-                        // Start interval for this task's stopwatch
                         taskStopwatchIntervals[task.id] = setInterval(() => {
                             const startTime = new Date(task.startTime);
                             const now = new Date();
@@ -1242,12 +1260,11 @@
                         }, 1000);
                     }
                     
-                    // Create sparkline bar for completed tasks
                     let durationDisplay = '';
                     if (!task.inProgress && task.actualDuration > 0) {
                         const durationPercentage = getDurationPercentage(task.actualDuration);
                         const durationColor = getDurationColor(task.actualDuration);
-                        const barWidth = Math.max(20, durationPercentage * 100); // Minimum 20% width for visibility
+                        const barWidth = Math.max(20, durationPercentage * 100);
                         
                         durationDisplay = `
                             <div class="task-duration">
@@ -1257,7 +1274,6 @@
                         `;
                     }
                     
-                    // Modified HTML structure with correct order: checkbox -> timestamp -> title -> duration
                     taskItem.innerHTML = `
                         <div class="task-info">
                             <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
@@ -1282,20 +1298,18 @@
                 });
             }
             
-            // Fungsi baru untuk memformat menit ke HH:MM:SS atau MM:SS
             function formatTimeDisplay(totalMinutes) {
                 if (totalMinutes === 0) return '00:00';
                 
                 const totalSeconds = totalMinutes * 60;
                 const hours = Math.floor(totalSeconds / 3600);
                 const minutes = Math.floor((totalSeconds % 3600) / 60);
-                // Menghilangkan detik karena data aktual durasi hanya dalam menit, tapi formatnya tetap MM:SS
                 
                 const minsFormatted = minutes.toString().padStart(2, '0');
-                const secsFormatted = '00'; // Set detik ke 00 untuk format statis
+                const secsFormatted = '00';
                 
                 if (hours > 0) {
-                    const hoursFormatted = hours.toString();
+                    const hoursFormatted = hours.toString().padStart(2, '0');
                     return `${hoursFormatted}:${minsFormatted}:${secsFormatted}`;
                 } else {
                     return `${minsFormatted}:${secsFormatted}`;
@@ -1303,10 +1317,7 @@
             }
             
             function updateDetailedStats() {
-                // Get completed tasks only
                 const completedTasks = tasks.filter(task => task.completed);
-                
-                // Set default text for stats
                 const defaultTime = '00:00';
                 const defaultText = '-';
                 
@@ -1325,14 +1336,12 @@
                     return;
                 }
                 
-                // Find earliest start time and latest end time
                 const startTimes = completedTasks.map(task => new Date(task.startTime)).filter(time => !isNaN(time));
                 const endTimes = completedTasks.map(task => new Date(task.endTime)).filter(time => !isNaN(time));
                 
                 const earliestStart = startTimes.length > 0 ? new Date(Math.min(...startTimes)) : null;
                 const latestEnd = endTimes.length > 0 ? new Date(Math.max(...endTimes)) : null;
                 
-                // Format times
                 startTimeEl.textContent = earliestStart ? earliestStart.toLocaleTimeString('id-ID', { 
                     hour: '2-digit', 
                     minute: '2-digit' 
@@ -1343,27 +1352,24 @@
                     minute: '2-digit' 
                 }) : defaultText;
                 
-                // Calculate total duration (in minutes)
                 const totalDuration = completedTasks.reduce((sum, task) => sum + task.actualDuration, 0);
                 
-                // Calculate total break and sholat time (in minutes)
-                const breakTasks = completedTasks.filter(task => task.name.includes('BREAK'));
-                const sholatTasks = completedTasks.filter(task => task.name.includes('SHOLAT'));
+                const totalBreakTime = completedTasks
+                    .filter(task => task.name.includes('BREAK'))
+                    .reduce((sum, task) => sum + task.actualDuration, 0);
+
+                const totalSholatTime = completedTasks
+                    .filter(task => task.name.includes('SHOLAT'))
+                    .reduce((sum, task) => sum + task.actualDuration, 0);
                 
-                const totalBreakTime = breakTasks.reduce((sum, task) => sum + task.actualDuration, 0);
-                const totalSholatTime = sholatTasks.reduce((sum, task) => sum + task.actualDuration, 0);
-                
-                // Calculate work time (excluding break and sholat) (in minutes)
                 const totalWorkTime = completedTasks
                     .filter(task => !task.name.includes('BREAK') && !task.name.includes('SHOLAT'))
                     .reduce((sum, task) => sum + task.actualDuration, 0);
                 
-                // Update Time Display (format 00:00)
                 totalBreakEl.textContent = formatTimeDisplay(totalBreakTime);
                 totalSholatEl.textContent = formatTimeDisplay(totalSholatTime);
                 workTimeEl.textContent = formatTimeDisplay(totalWorkTime);
                 
-                // Calculate Break Percentage (Break time vs Total Duration)
                 let breakPercentage = 0;
                 if (totalDuration > 0) {
                     breakPercentage = ((totalBreakTime / totalDuration) * 100); 
@@ -1372,17 +1378,15 @@
                 const breakPercentageRounded = breakPercentage.toFixed(0);
                 breakPercentageEl.textContent = `${breakPercentageRounded}%`;
                 
-                // Color coding for Break Percentage
                 if (breakPercentage < 10 && breakPercentage > 0) {
-                    breakPercentageEl.style.color = '#00ff00'; // Green if < 10%
+                    breakPercentageEl.style.color = '#00ff00';
                 } else if (breakPercentage >= 10) {
-                    breakPercentageEl.style.color = '#ff0000'; // Red if >= 10%
+                    breakPercentageEl.style.color = '#ff0000';
                 } else {
-                    breakPercentageEl.style.color = '#fff'; // White if 0%
+                    breakPercentageEl.style.color = '#fff';
                 }
                 
-                // --- Bar Chart Update ---
-                const productiveDuration = totalWorkTime + totalSholatTime; // Waktu Produktif + Sholat
+                const productiveDuration = totalWorkTime + totalSholatTime;
                 const chartTotal = productiveDuration + totalBreakTime;
 
                 let productivePercentage = 0;
@@ -1424,17 +1428,12 @@
                 const task = tasks.find(t => t.id == taskId);
                 if (!task || task.completed || task.inProgress) return;
                 
-                // Cari indeks tugas yang akan dipindahkan
                 const taskIndex = tasks.findIndex(t => t.id == taskId);
                 if (taskIndex === -1) return;
                 
-                // Hapus tugas dari posisi saat ini
                 tasks.splice(taskIndex, 1);
-                
-                // Tambahkan tugas ke posisi paling atas (indeks 0)
                 tasks.unshift(task);
                 
-                // Simpan dan render ulang
                 saveTasks();
                 renderTasks();
                 
@@ -1445,12 +1444,10 @@
                 const task = tasks.find(t => t.id == taskId);
                 if (!task || !task.completed) return;
                 
-                // Complete current task if exists
                 if (currentTaskId) {
                     completeCurrentTask();
                 }
                 
-                // Create a new task based on the completed task
                 const newTask = {
                     id: Date.now(),
                     name: task.name,
@@ -1464,21 +1461,20 @@
                 tasks.push(newTask);
                 currentTaskId = newTask.id;
                 
-                // Save current task ID to localStorage
                 localStorage.setItem('currentTaskId', currentTaskId);
                 
-                // Show current task div
                 currentTaskDiv.style.display = 'block';
                 currentTaskName.textContent = task.name;
                 
-                // Start stopwatch
                 startStopwatch();
                 
-                // Save and render
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
+
+                fireConfetti();
+                taraAudio.play();
                 
                 showNotification(`TUGAS "${task.name}" DIULANG`);
             }
@@ -1491,7 +1487,6 @@
                 editTaskInput.value = task.name;
                 editModal.style.display = 'flex';
                 
-                // Focus on input
                 setTimeout(() => {
                     editTaskInput.focus();
                     editTaskInput.select();
@@ -1526,7 +1521,6 @@
                 if (!task) return;
                 
                 if (confirm(`HAPUS TUGAS: "${task.name}"?`)) {
-                    // If deleting the current task, complete it first
                     if (currentTaskId == taskId) {
                         completeCurrentTask();
                     }
@@ -1542,13 +1536,10 @@
             }
             
             function updateStats() {
-                const totalTasks = tasks.length;
-                const completedTasks = tasks.filter(t => t.completed).length;
                 const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
                 
                 taskListTitle.textContent = `TOTAL JAM KERJA`;
                 
-                // Format total minutes to hours and minutes if needed (keep original verbose format here)
                 let formattedTime = '';
                 if (totalTime < 60) {
                     formattedTime = `${totalTime} MENIT`;
@@ -1562,7 +1553,6 @@
             }
             
             function resetAll() {
-                // Filter hanya tugas yang sudah selesai (completed)
                 const completedTasks = tasks.filter(task => task.completed);
                 
                 if (completedTasks.length === 0) {
@@ -1571,13 +1561,9 @@
                 }
                 
                 if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
-                    // Hanya hapus tugas yang sudah selesai, biarkan yang belum dikerjakan
                     tasks = tasks.filter(task => !task.completed);
                     
-                    // Simpan perubahan
                     saveTasks();
-                    
-                    // Render ulang dan update statistik
                     renderTasks();
                     updateStats();
                     updateDetailedStats();
