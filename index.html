@@ -60,9 +60,10 @@
         }
 
         .container {
+                    background-color: var(--bg-secondary);
             max-width: 800px;
             margin: 0 auto;
-            padding: 20px 20px;
+            padding: 0px 20px;
             width: 100%;
         }
 
@@ -115,7 +116,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 0px;
             animation: fadeIn 0.8s ease-out;
         }
 
@@ -124,7 +125,7 @@
             max-width: 600px;
             padding: 16px 20px;
             font-size: 1.5rem;
-            background-color: var(--bg-secondary);
+            background-color: #fff;
             border: 2px solid var(--border-color);
             border-radius: 12px;
             color: var(--text-primary);
@@ -367,12 +368,11 @@
             text-align: center;
             margin: 0px 0;
             padding: 0px;
- 
             animation: slideIn 0.5s ease-out;
         }
 
         .current-task h1 {
-            font-size: 6rem;
+            font-size: 5rem;
             color: var(--text-primary);
             font-weight: 700;
             text-transform: uppercase;
@@ -980,18 +980,20 @@
                     <h1 id="currentTaskName">-</h1>
                 </div>
                 
-                
-                 
+                <div class="input-section">
+            <input type="text" id="taskInput" class="task-input" placeholder="Ketik tugas baru..." autofocus>
+                 </div>
 
         <div class="collapse-section">
+            
             <div class="collapse-toggle" id="collapseToggle">
                 HIDE <i class="fas fa-chevron-up"></i>
             </div>
+            
             <div class="collapsible-content" id="collapsibleContent">
                 
                 
                 <div class="input-section">
-            <input type="text" id="taskInput" class="task-input" placeholder="Ketik tugas baru..." autofocus>
             <div class="btn-group">
                 <div class="quick-actions">
                     <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> Break</button>
