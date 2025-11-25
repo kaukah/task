@@ -4,10 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🕒 TIME BLOCKER</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <style>
+        :root {
+            /* Light mode colors */
+            --bg-primary: #ffffff;
+            --bg-secondary: #f3f4f6;
+            --bg-tertiary: #e5e7eb;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --text-tertiary: #6b7280;
+            --accent-primary: #4f46e5;
+            --accent-secondary: #818cf8;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+            --border-color: #d1d5db;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark mode colors */
+            --bg-primary: #121212;
+            --bg-secondary: #1e1e1e;
+            --bg-tertiary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --border-color: #333333;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -16,131 +50,242 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #000;
-            color: #fff;
-            line-height: 1;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            transition: var(--transition);
         }
 
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 20px 20px;
             width: 100%;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
         }
 
         header {
             text-align: center;
-            margin-bottom: 0px;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.6s ease-out;
         }
 
         header h1 {
             font-size: 2.5rem;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
         }
 
         header p {
-            color: #999;
-            margin-top: 0px;
+            color: var(--text-secondary);
             font-size: 1rem;
+            font-weight: 500;
         }
 
         .input-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 60px;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-out;
         }
 
         .task-input {
             width: 100%;
             max-width: 600px;
-            padding: 10px;
-            font-size: 2rem;
-            background-color: #111;
-            border: none;
-            border-radius: 0;
-            color: #fff;
+            padding: 16px 20px;
+            font-size: 1.5rem;
+            background-color: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
             text-align: center;
             outline: none;
-            letter-spacing: 2px;
-            font-weight: 900;
+            font-weight: 700;
             text-transform: uppercase;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .task-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
         }
 
         .task-input::placeholder {
-            color: #555;
-            font-weight: 400;
-            font-size: 2rem;
+            color: var(--text-tertiary);
+            font-weight: 500;
         }
 
         .btn-group {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .btn {
-            padding: 12px 30px;
-            background-color: #fff;
-            color: #000;
+            padding: 12px 24px;
+            background-color: var(--accent-primary);
+            color: white;
             border: none;
-            border-radius: 0;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 700;
-            transition: all 0.2s ease;
+            transition: var(--transition);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
         }
 
         .btn:hover {
-            opacity: 0.9;
+            background-color: var(--accent-secondary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn-secondary {
-            background-color: #333;
-            color: #fff;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
         }
 
-        /* Revisi: Hapus margin-left: auto dari .btn-reset */
+        .btn-secondary:hover {
+            background-color: var(--border-color);
+        }
+
         .btn-reset {
-            background-color: #333;
-            color: #fff;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
             font-size: 0.875rem;
-            padding: 8px 20px;
+            padding: 8px 16px;
         }
         
-        /* NEW: Style untuk tombol STOP di bagian statistik */
         .btn-stat-stop {
-            background-color: #ff0000;
-            color: #fff;
+            background-color: var(--accent-danger);
+            color: white;
             font-size: 0.875rem;
-            padding: 8px 20px;
+            padding: 8px 16px;
             font-weight: 700;
             border: none;
-            border-radius: 0;
+            border-radius: 8px;
             cursor: pointer;
             text-transform: uppercase;
+            box-shadow: var(--shadow-sm);
         }
+        
         .btn-stat-stop:hover {
-            background-color: #cc0000;
+            background-color: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Collapse/Expand Section */
+        .collapse-section {
+            width: 100%;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .collapse-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: var(--transition);
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        .collapse-toggle:hover {
+            color: var(--text-primary);
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .collapse-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .collapse-toggle i {
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .collapse-toggle.collapsed i {
+            transform: rotate(180deg);
+        }
+
+        .collapsible-content {
+            max-height: 580px;
+            overflow: hidden;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
         }
 
         .stopwatch-container {
             position: relative;
-            margin: -30px 0 20px;
+            margin: 0 0 0px;
         }
 
         .stopwatch-bar {
-            height: 10px;
-            background-color: #333;
-            margin-top: 0px;
+            height: 8px;
+            background-color: var(--bg-tertiary);
+            border-radius: 999px;
             position: relative;
             overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .stopwatch-bar {
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .stopwatch-progress {
@@ -148,17 +293,17 @@
             top: 0;
             left: 0;
             height: 100%;
-            background-color: #ff0000;
+            background: linear-gradient(90deg, var(--accent-danger), #f97316);
             transition: width 0.5s linear;
             border-radius: 999px;
             width: 100%;
-            animation: blink 1s infinite;
+            animation: pulse 2s infinite;
         }
 
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
+        @keyframes pulse {
+            0% { opacity: 0.9; }
+            50% { opacity: 0.7; }
+            100% { opacity: 0.9; }
         }
 
         .stopwatch-display {
@@ -169,89 +314,98 @@
         }
 
         .stopwatch-text {
-            font-size: 5rem;
-            font-weight: 400;
+            font-size: 1.25rem;
+            font-weight: 500;
             text-align: center;
-            letter-spacing: -2px;
-            text-transform: uppercase;
-            color: WHITE;
+            color: red;
             margin-bottom: 5px;
-            display: none; /* Sembunyikan teks stopwatch */
+            display: none;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
         }
 
         .stopwatch-number {
-            font-size: 12rem;
-            font-weight: 900;
+            font-size: 4rem;
+            font-weight: 800;
             text-align: center;
-            letter-spacing: 2px;
-            color: #fff;
+            color: red;
             font-family: 'Inter', sans-serif;
+            letter-spacing: 2px;
         }
 
         .stopwatch-toggle {
             margin-top: 10px;
-            display: none; /* Sembunyikan toggle karena tidak diperlukan */
+            display: none;
         }
 
         .toggle-btn {
             background: none;
-            border: 0px solid #333;
-            color: #999;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
             cursor: pointer;
-            padding: 5px 10px;
-            border-radius: 0;
+            padding: 6px 12px;
+            border-radius: 6px;
             font-size: 0.75rem;
             text-transform: uppercase;
-            transition: all 0.2s ease;
+            transition: var(--transition);
+            margin: 0 4px;
+            font-family: 'Inter', sans-serif;
         }
 
         .toggle-btn:hover {
-            color: #fff;
-            border-color: #fff;
+            color: var(--text-primary);
+            border-color: var(--text-primary);
         }
 
         .toggle-btn.active {
-            color: #fff;
-            border-color: #fff;
-            background-color: #333;
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+            background-color: rgba(79, 70, 229, 0.1);
         }
 
         .current-task {
             text-align: center;
-            margin-bottom: 20px;
-            margin-top: 20px;
+            margin: 0px 0;
+            padding: 0px;
+ 
+            animation: slideIn 0.5s ease-out;
         }
 
         .current-task h1 {
-            font-size: 5rem;
-            color: white;
-            letter-spacing: 0px;
-            margin-bottom: 5px;
+            font-size: 6rem;
+            color: var(--text-primary);
             font-weight: 700;
             text-transform: uppercase;
-            animation: blink 1s infinite;
+            letter-spacing: 1px;
+            animation: pulse 1s infinite;
+            font-family: 'Inter', sans-serif;
         }
 
         .task-list {
-            margin-bottom: 50px;
+            margin-bottom: 30px;
             position: relative;
+            animation: fadeInUp 1s ease-out;
         }
 
         .task-list-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: nowrap;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
         }
 
         .task-list h2 {
             font-size: 1.25rem;
-            font-weight: 500;
-            color: #999;
+            font-weight: 700;
+            color: var(--text-primary);
             text-transform: uppercase;
             letter-spacing: 1px;
-            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
         }
 
         .quick-actions {
@@ -260,131 +414,171 @@
         }
 
         .quick-action-btn {
-            padding: 8px 15px;
-            background-color: #fff;
-            color: #000;
+            padding: 10px 16px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
             border: none;
-            border-radius: 0;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.875rem;
-            font-weight: 700;
+            font-weight: 600;
             text-transform: uppercase;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
         }
 
         .quick-action-btn:hover {
-            opacity: 0.9;
+            background-color: var(--border-color);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-        /* Revisi: Mengubah justify-content agar tombol bisa berada di kanan */
         .task-stats {
             display: flex;
             align-items: center;
-            justify-content: space-between; /* Diganti dari center */
-            gap: 15px; /* Gap hanya berlaku jika flex-wrap: wrap */
+            justify-content: space-between;
+            gap: 15px;
             white-space: nowrap;
             margin: 20px 0;
+            flex-wrap: wrap;
         }
         
-        /* Wrapper untuk tombol STOP dan RESET */
         .stat-buttons-group {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
         }
 
         .task-counter {
-            color: #fff;
-            font-weight: 900;
+            color: var(--text-primary);
+            font-weight: 700;
             font-size: 1.25rem;
+            font-family: 'Inter', sans-serif;
         }
 
         .total-minutes {
-            color: yellow;
+            color: var(--accent-warning);
             font-weight: 800;
-            font-size: 3rem;
+            font-size: 2rem;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
         }
 
         .task-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #222;
+            padding: 16px;
+            margin-bottom: 12px;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            border-left: 4px solid transparent;
         }
 
-        .task-item:last-child {
-            border-bottom: none;
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .task-item.completed {
+            opacity: 0.7;
+            border-left-color: var(--accent-success);
+        }
+
+        .task-item.in-progress {
+            border-left-color: var(--accent-primary);
         }
 
         .task-info {
             flex: 1;
             display: flex;
             align-items: center;
+            gap: 12px;
+            overflow: hidden;
         }
 
         .task-checkbox {
-            margin-right: 10px;
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
-            border: 2px solid #fff;
-            border-radius: 4px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-weight: 700;
             color: transparent;
-            flex-shrink: 0; /* Mencegah checkbox menyusut */
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .task-checkbox:hover {
+            border-color: var(--accent-primary);
         }
 
         .task-checkbox.checked {
-            background-color: #3b82f6;
-            border-color: #3b82f6;
-            color: #fff;
+            background-color: var(--accent-success);
+            border-color: var(--accent-success);
+            color: white;
         }
 
         .task-checkbox.active {
             border: none;
             background: none;
-            color: #fff;
-            font-size: 1.5rem;
+            color: var(--accent-primary);
+            font-size: 1.2rem;
         }
 
         .task-timestamp {
-            width: 80px;
+            min-width: 60px;
             text-align: center;
-            font-size: 1.5rem;
-            color: #999;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             text-transform: uppercase;
-            margin-right: 15px; /* Memberi jarak antara timestamp dan nama task */
-            flex-shrink: 0; /* Mencegah timestamp menyusut */
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+            flex-shrink: 0;
         }
 
         .task-title {
-            font-weight: 500;
+            font-weight: 600;
             text-transform: uppercase;
-            font-size: x-large;
-            flex-grow: 1; /* Memungkinkan nama task untuk mengambil ruang ekstra */
+            font-size: 1rem;
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-family: 'Inter', sans-serif;
         }
 
         .task-meta {
             font-size: 0.75rem;
-            color: #666;
+            color: var(--text-tertiary);
             text-transform: uppercase;
+            font-family: 'Inter', sans-serif;
         }
 
         .task-duration {
-            width: 200px;
-            color: #fff;
+            min-width: 120px;
+            color: var(--text-primary);
             text-align: right;
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: 600;
+            font-size: 0.875rem;
             text-transform: uppercase;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             position: relative;
+            margin-left: 12px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
         }
 
         .duration-bar {
@@ -392,52 +586,66 @@
             right: 0;
             top: 0;
             bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            background-color: rgba(79, 70, 229, 0.2);
+            border-radius: 4px;
             z-index: -1;
         }
 
         .duration-text {
-            padding: 2px 8px;
-            border-radius: 3px;
+            padding: 4px 8px;
+            border-radius: 4px;
             z-index: 1;
+            background-color: rgba(255, 255, 255, 0.7);
+        }
+
+        [data-theme="dark"] .duration-text {
+            background-color: rgba(18, 18, 18, 0.7);
         }
 
         .task-stopwatch {
-            width: 80px;
+            min-width: 80px;
             text-align: right;
-            font-size: 2rem;
-            color: #fff;
+            font-size: 1.25rem;
+            color: var(--accent-primary);
             font-weight: 700;
             font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
+            margin-left: 12px;
         }
 
         .task-actions {
             display: flex;
-            gap: 8px;
+            gap: 6px;
+            margin-left: 12px;
         }
 
         .task-action-btn {
             background: none;
             border: none;
-            color: #999;
+            color: var(--text-tertiary);
             cursor: pointer;
             font-size: 1rem;
-            padding: 4px 8px;
-            border-radius: 3px;
-            text-transform: uppercase;
+            padding: 6px;
+            border-radius: 6px;
+            transition: var(--transition);
         }
 
         .task-action-btn:hover {
-            color: #fff;
-            background-color: #333;
+            color: var(--text-primary);
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] .task-action-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
         }
 
         .empty-state {
             text-align: center;
             padding: 40px 0;
-            color: #666;
+            color: var(--text-tertiary);
             text-transform: uppercase;
+            font-weight: 500;
+            font-family: 'Inter', sans-serif;
         }
 
         .notification {
@@ -445,18 +653,23 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 15px 25px;
-            background-color: #333;
-            color: #fff;
-            border-radius: 0;
+            padding: 14px 24px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-radius: 8px;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
             z-index: 1000;
             text-transform: uppercase;
+            font-weight: 600;
+            box-shadow: var(--shadow-lg);
+            transform: translateX(-50%) translateY(10px);
+            font-family: 'Inter', sans-serif;
         }
 
         .notification.show {
             opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
 
         .edit-modal {
@@ -465,93 +678,123 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.5);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 2000;
+            backdrop-filter: blur(4px);
         }
 
         .edit-modal-content {
-            background-color: #111;
+            background-color: var(--bg-secondary);
             padding: 30px;
             width: 90%;
             max-width: 500px;
-            border-radius: 0;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlideIn 0.3s ease-out;
         }
 
         .edit-modal-input {
             width: 100%;
-            padding: 15px;
-            font-size: 1.5rem;
-            background-color: #222;
-            border: 1px solid #333;
-            border-radius: 0;
-            color: #fff;
+            padding: 16px;
+            font-size: 1.25rem;
+            background-color: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
             text-align: center;
             outline: none;
             text-transform: uppercase;
             margin-bottom: 20px;
+            font-weight: 600;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .edit-modal-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
         }
 
         .edit-modal-buttons {
             display: flex;
             justify-content: flex-end;
-            gap: 10px;
+            gap: 12px;
         }
 
         .stats-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #111;
-            border-radius: 0;
+            gap: 16px;
+            margin: 24px 0;
+            padding: 20px;
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
         }
 
         .stat-item {
             text-align: center;
+            padding: 12px;
+            border-radius: 8px;
+            background-color: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .stat-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
         .stat-label {
-            font-size: 1.2rem;
-            color: #999;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             text-transform: uppercase;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
         }
 
         .stat-value {
-            font-size: 1.8rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
         }
 
         .stat-value.highlight {
-            color: yellow;
+            color: var(--accent-warning);
         }
         
-        /* --- Tambahan untuk Bar Chart --- */
         .chart-container {
-            margin-top: 30px;
+            margin-top: 24px;
             margin-bottom: 20px;
         }
 
         .chart-label {
-            font-size: 1.25rem;
+            font-size: 1rem;
             font-weight: 700;
-            color: #fff;
-            margin-bottom: 10px;
+            color: var(--text-primary);
+            margin-bottom: 12px;
             text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Inter', sans-serif;
         }
 
         .chart-bar-container {
             display: flex;
-            height: 30px;
-            background-color: #333; /* Background bar */
-            border-radius: 5px;
+            height: 36px;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] .chart-bar-container {
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         .chart-bar-productive, .chart-bar-break {
@@ -560,21 +803,72 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             font-weight: 700;
-            color: #000;
+            color: var(--text-primary);
             white-space: nowrap;
             padding: 0 10px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 1px;
         }
 
         .chart-bar-productive {
-            background-color: #00ff00; /* Hijau */
+            background: linear-gradient(90deg, var(--accent-success), #34d399);
         }
 
         .chart-bar-break {
-            background-color: #ff0000; /* Merah */
+            background: linear-gradient(90deg, var(--accent-danger), #f87171);
         }
-        /* --- Akhir Tambahan untuk Bar Chart --- */
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
 
         @media (max-width: 600px) {
             .task-list-header {
@@ -582,20 +876,19 @@
             }
             
             .stopwatch-text {
-                font-size: 3rem;
+                font-size: 1rem;
             }
             
             .stopwatch-number {
-                font-size: 10rem;
+                font-size: 3rem;
             }
             
             .current-task h1 {
-                font-size: 2.5rem;
+                font-size: 4rem;
             }
             
             .task-stats {
                 gap: 10px;
-                flex-direction: column;
                 justify-content: center;
             }
             
@@ -609,18 +902,23 @@
             }
             
             .task-timestamp, .task-duration {
-                width: 70px;
-                font-size: 1rem;
+                min-width: 50px;
+                font-size: 0.75rem;
             }
             
             .task-stopwatch {
-                width: 70px;
-                font-size: 1.8rem;
+                min-width: 60px;
+                font-size: 1rem;
             }
             
             .quick-actions {
-                flex-direction: column;
-                gap: 5px;
+                gap: 8px;
+                width: 100%;
+            }
+            
+            .quick-action-btn {
+                width: 100%;
+                justify-content: center;
             }
             
             .btn-reset {
@@ -629,108 +927,161 @@
             }
             
             .task-duration {
-                width: 100px;
+                min-width: 80px;
             }
             
             .stats-details {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+                padding: 16px;
+            }
+            
+            .stat-value {
+                font-size: 1.25rem;
+            }
+            
+            .task-item {
+                padding: 12px;
+            }
+            
+            .task-title {
+                font-size: 0.875rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="stopwatch-container">
-            <div class="stopwatch-bar">
-                <div class="stopwatch-progress" id="stopwatchProgress"></div>
-            </div>
-            <div class="stopwatch-display">
-                <div class="stopwatch-text" id="stopwatchText">
-                    <span class="time-number">0</span> MENIT <span class="time-number">0</span> DETIK
-                </div>
-                <div class="stopwatch-number" id="stopwatchNumber">00:00</div>
-                <div class="stopwatch-toggle">
-                    <button class="toggle-btn active" id="textToggle">TEXT</button>
-                    <button class="toggle-btn" id="numberToggle">ANGKA</button>
-                </div>
-            </div>
-        </div>
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+        <i class="fas fa-moon"></i>
+    </button>
 
-        <div class="current-task" id="currentTask" style="display: none;">
-            <h1 id="currentTaskName">-</h1>
-        </div>
+   	 <div class="container">
 
-        <div class="input-section">
-            <input type="text" id="taskInput" class="task-input" placeholder="KETIK TUGAS BARU..." autofocus>
+
+       <div class="stopwatch-container">
+                    <div class="stopwatch-bar">
+                        <div class="stopwatch-progress" id="stopwatchProgress"></div>
+                    </div>
+                    <div class="stopwatch-display">
+                        <div class="stopwatch-text" id="stopwatchText">
+                            <span class="time-number">0</span> Menit <span class="time-number">0</span> Detik
+                        </div>
+                        <div class="stopwatch-number" id="stopwatchNumber">00:00</div>
+                        <div class="stopwatch-toggle">
+                            <button class="toggle-btn active" id="textToggle">Text</button>
+                            <button class="toggle-btn" id="numberToggle">Angka</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="current-task" id="currentTask" style="display: none;">
+                    <h1 id="currentTaskName">-</h1>
+                </div>
+                
+                
+                 
+
+        <div class="collapse-section">
+            <div class="collapse-toggle" id="collapseToggle">
+                Sembunyikan Kontrol <i class="fas fa-chevron-up"></i>
+            </div>
+            <div class="collapsible-content" id="collapsibleContent">
+                
+                
+                <div class="input-section">
+            <input type="text" id="taskInput" class="task-input" placeholder="Ketik tugas baru..." autofocus>
             <div class="btn-group">
                 <div class="quick-actions">
-                    <button id="breakBtn" class="quick-action-btn">☕ BREAK</button>
-                    <button id="sholatBtn" class="quick-action-btn">🤲 SHOLAT</button>
+                    <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> Break</button>
+                    <button id="sholatBtn" class="quick-action-btn"><i class="fas fa-hands-praying"></i> Sholat</button>
                 </div>
-                <button id="addTaskBtn" class="btn btn-secondary">+ TAMBAH</button>
-                <button id="executeTaskBtn" class="btn">MULAI 🚀</button>
+                <button id="addTaskBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Tambah</button>
+                <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Mulai</button>
             </div>
         </div>
+                
+                
+                
+                
+<div class="task-list">  
 
-        <div class="task-list">
-            <div class="task-list-header">
-                <h2 id="taskListTitle">📋 DAFTAR ANTRIAN</h2>
-            </div>
             <div class="task-stats">
-                <div class="total-minutes" id="totalMinutes">0 MENIT</div>
+                <div class="total-minutes" id="totalMinutes">0 Menit</div>
                 <div class="stat-buttons-group">
-                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;">🛑 STOP KERJA</button>
-                    <button id="resetBtn" class="btn btn-reset">❌ HAPUS SELESAI</button>
+                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
+                    <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> Hapus Selesai</button>
                 </div>
             </div>
+            
+            
+            
             
             <div class="stats-details">
                 <div class="stat-item">
-                    <div class="stat-label">MULAI KERJA</div>
+                    <div class="stat-label">Mulai Kerja</div>
                     <div class="stat-value" id="startTime">-</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">BERHENTI KERJA</div>
+                    <div class="stat-label">Berhenti Kerja</div>
                     <div class="stat-value" id="endTime">-</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">ISTIRAHAT</div>
+                    <div class="stat-label">Istirahat</div>
                     <div class="stat-value" id="totalBreak">00:00</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">SHOLAT</div>
+                    <div class="stat-label">Sholat</div>
                     <div class="stat-value" id="totalSholat">00:00</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">WAKTU PRODUKTIF</div>
+                    <div class="stat-label">Waktu Produktif</div>
                     <div class="stat-value highlight" id="workTime">00:00</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-label">PERSENTASE BREAK</div>
+                    <div class="stat-label">Persentase Break</div>
                     <div class="stat-value" id="breakPercentage">0%</div>
                 </div>
             </div>
-            
             <div class="chart-container">
-                <div class="chart-label">RASIO WAKTU PRODUKTIF VS BREAK</div>
+                <div class="chart-label">Rasio Waktu Produktif vs Break</div>
                 <div class="chart-bar-container">
                     <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
                     <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
                 </div>
             </div>
+            </div>
             
-            <div id="taskListContainer">
-                <p class="empty-state">BELUM ADA TUGAS</p>
+            
+                
+                
+                
             </div>
         </div>
+
+        
+        
+        
+            
+            
+            
+            
+            <div class="task-list">
+            <div id="taskListContainer">
+                <p class="empty-state">Belum ada tugas</p>
+            </div>
+        	</div>
+        
+        
+        
+        
     </div>
 
     <div id="editModal" class="edit-modal" style="display: none;">
         <div class="edit-modal-content">
-            <input type="text" id="editTaskInput" class="edit-modal-input" placeholder="NAMA TUGAS">
+            <input type="text" id="editTaskInput" class="edit-modal-input" placeholder="Nama tugas">
             <div class="edit-modal-buttons">
-                <button id="cancelEditBtn" class="btn btn-secondary">BATAL</button>
-                <button id="saveEditBtn" class="btn">SIMPAN</button>
+                <button id="cancelEditBtn" class="btn btn-secondary">Batal</button>
+                <button id="saveEditBtn" class="btn">Simpan</button>
             </div>
         </div>
     </div>
@@ -738,860 +1089,903 @@
     <div class="notification" id="notification"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize variables
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            let currentTaskId = localStorage.getItem('currentTaskId') || null;
-            let stopwatchInterval = null;
-            let isPaused = localStorage.getItem('isPaused') === 'true' || false;
-            let taskStopwatchIntervals = {};
-            let editingTaskId = null;
-            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
-            
-            // DOM Elements
-            const taskInput = document.getElementById('taskInput');
-            const addTaskBtn = document.getElementById('addTaskBtn');
-            const executeTaskBtn = document.getElementById('executeTaskBtn');
-            const stopTaskBtn = document.getElementById('stopTaskBtn'); // Diambil dari lokasi baru
-            const breakBtn = document.getElementById('breakBtn');
-            const sholatBtn = document.getElementById('sholatBtn');
-            const resetBtn = document.getElementById('resetBtn');
-            const taskListContainer = document.getElementById('taskListContainer');
-            const stopwatchProgress = document.getElementById('stopwatchProgress');
-            const currentTaskDiv = document.getElementById('currentTask');
-            const currentTaskName = document.getElementById('currentTaskName');
-            const notification = document.getElementById('notification');
-            const taskListTitle = document.getElementById('taskListTitle');
-            const totalMinutes = document.getElementById('totalMinutes');
-            const editModal = document.getElementById('editModal');
-            const editTaskInput = document.getElementById('editTaskInput');
-            const cancelEditBtn = document.getElementById('cancelEditBtn');
-            const saveEditBtn = document.getElementById('saveEditBtn');
-            const stopwatchText = document.getElementById('stopwatchText');
-            const stopwatchNumber = document.getElementById('stopwatchNumber');
-            const textToggle = document.getElementById('textToggle');
-            const numberToggle = document.getElementById('numberToggle');
-
-            // Audio Cues
-            const dingAudio = new Audio('ding.mp3');
-            const taraAudio = new Audio('tara.mp3');
-            
-            // Statistik Elements
-            const startTimeEl = document.getElementById('startTime');
-            const endTimeEl = document.getElementById('endTime');
-            const totalBreakEl = document.getElementById('totalBreak');
-            const totalSholatEl = document.getElementById('totalSholat');
-            const workTimeEl = document.getElementById('workTime');
-            const breakPercentageEl = document.getElementById('breakPercentage');
-            const productiveBarEl = document.getElementById('productiveBar');
-            const breakBarEl = document.getElementById('breakBar');
-            
-            // Functions for new features
-            function fireConfetti() {
-                confetti({
-                    particleCount: 100,
-                    spread: 70,
-                    origin: { y: 0.6 }
-                });
+        // Initialize variables
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let currentTaskId = localStorage.getItem('currentTaskId') || null;
+        let stopwatchInterval = null;
+        let isPaused = localStorage.getItem('isPaused') === 'true' || false;
+        let taskStopwatchIntervals = {};
+        let editingTaskId = null;
+        let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
+        
+        // DOM Elements
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const executeTaskBtn = document.getElementById('executeTaskBtn');
+        const stopTaskBtn = document.getElementById('stopTaskBtn');
+        const breakBtn = document.getElementById('breakBtn');
+        const sholatBtn = document.getElementById('sholatBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const taskListContainer = document.getElementById('taskListContainer');
+        const stopwatchProgress = document.getElementById('stopwatchProgress');
+        const currentTaskDiv = document.getElementById('currentTask');
+        const currentTaskName = document.getElementById('currentTaskName');
+        const notification = document.getElementById('notification');
+        // taskListTitle Dihapus karena tidak ada elemen di HTML
+        const totalMinutes = document.getElementById('totalMinutes');
+        const editModal = document.getElementById('editModal');
+        const editTaskInput = document.getElementById('editTaskInput');
+        const cancelEditBtn = document.getElementById('cancelEditBtn');
+        const saveEditBtn = document.getElementById('saveEditBtn');
+        const stopwatchText = document.getElementById('stopwatchText');
+        const stopwatchNumber = document.getElementById('stopwatchNumber');
+        const textToggle = document.getElementById('textToggle');
+        const numberToggle = document.getElementById('numberToggle');
+        
+        // Collapse elements
+        const collapseToggle = document.getElementById('collapseToggle');
+        const collapsibleContent = document.getElementById('collapsibleContent');
+        
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light
+        const currentTheme = localStorage.getItem('theme') || 'light';
+        if (currentTheme === 'dark') {
+            html.setAttribute('data-theme', 'dark');
+            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        // Audio Cues - DINONAKTIFKAN SEMENTARA karena Base64 URL tidak valid/mengganggu
+        const dingAudio = { play: () => {} }; // Dummy function to prevent errors
+        const taraAudio = { play: () => {} }; // Dummy function to prevent errors
+        
+        // Statistik Elements
+        const startTimeEl = document.getElementById('startTime');
+        const endTimeEl = document.getElementById('endTime');
+        const totalBreakEl = document.getElementById('totalBreak');
+        const totalSholatEl = document.getElementById('totalSholat');
+        const workTimeEl = document.getElementById('workTime');
+        const breakPercentageEl = document.getElementById('breakPercentage');
+        const productiveBarEl = document.getElementById('productiveBar');
+        const breakBarEl = document.getElementById('breakBar');
+        
+        // Initialize
+        renderTasks();
+        updateStats();
+        updateDetailedStats();
+        updateStopwatchMode();
+        
+        // If there's a current task, restore it
+        if (currentTaskId) {
+            const currentTask = tasks.find(t => t.id == currentTaskId);
+            if (currentTask && !currentTask.completed) {
+                currentTaskDiv.style.display = 'block';
+                currentTaskName.textContent = currentTask.name;
+                startStopwatch();
+                toggleStartStopButtons(true);
+            } else {
+                currentTaskId = null;
+                localStorage.removeItem('currentTaskId');
+                toggleStartStopButtons(false);
             }
-
-            // REVISI LOGIC: Hanya mengontrol tombol STOP
-            function toggleStartStopButtons(isTaskRunning) {
-                // Tombol executeTaskBtn (MULAI) kini selalu terlihat.
-                // Hanya tombol stopTaskBtn yang diatur visibilitasnya.
-                if (isTaskRunning) {
-                    stopTaskBtn.style.display = 'block';
+        } else {
+            toggleStartStopButtons(false);
+        }
+        
+        // Event Listeners
+        // Theme toggle
+        themeToggle.addEventListener('click', function() {
+            if (html.getAttribute('data-theme') === 'dark') {
+                html.setAttribute('data-theme', 'light');
+                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.setAttribute('data-theme', 'dark');
+                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+        // Input event listeners
+        taskInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                if (e.shiftKey) {
+                    executeTask();
                 } else {
-                    stopTaskBtn.style.display = 'none';
+                    addTaskToQueue();
                 }
             }
+        });
+        
+        // Button event listeners
+        addTaskBtn.addEventListener('click', addTaskToQueue);
+        executeTaskBtn.addEventListener('click', executeTask);
+        stopTaskBtn.addEventListener('click', completeCurrentTask);
+        breakBtn.addEventListener('click', function() {
+            executeQuickTask('☕ Break');
+        });
+        sholatBtn.addEventListener('click', function() {
+            executeQuickTask('🤲 Sholat');
+        });
+        resetBtn.addEventListener('click', resetAll);
+        
+        // Collapse toggle event listener
+        collapseToggle.addEventListener('click', function() {
+            collapsibleContent.classList.toggle('collapsed');
+            collapseToggle.classList.toggle('collapsed');
             
-            // Initialize
+            if (collapsibleContent.classList.contains('collapsed')) {
+                collapseToggle.innerHTML = 'Tampilkan Kontrol <i class="fas fa-chevron-down"></i>';
+            } else {
+                collapseToggle.innerHTML = 'Sembunyikan Kontrol <i class="fas fa-chevron-up"></i>';
+            }
+        });
+        
+        // Stopwatch toggle event listeners
+        textToggle.addEventListener('click', function() {
+            setStopwatchMode('text');
+        });
+        
+        numberToggle.addEventListener('click', function() {
+            setStopwatchMode('number');
+        });
+        
+        // Edit modal event listeners
+        cancelEditBtn.addEventListener('click', closeEditModal);
+        saveEditBtn.addEventListener('click', saveTaskEdit);
+        editTaskInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveTaskEdit();
+            }
+        });
+        
+        // Close modal when clicking outside
+        editModal.addEventListener('click', function(e) {
+            if (e.target === editModal) {
+                closeEditModal();
+            }
+        });
+        
+        // Functions
+        function fireConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        function toggleStartStopButtons(isTaskRunning) {
+            if (isTaskRunning) {
+                stopTaskBtn.style.display = 'block';
+            } else {
+                stopTaskBtn.style.display = 'none';
+            }
+        }
+        
+        function setStopwatchMode(mode) {
+            stopwatchMode = mode;
+            localStorage.setItem('stopwatchMode', mode);
+            updateStopwatchMode();
+        }
+        
+        function updateStopwatchMode() {
+            if (stopwatchMode === 'text') {
+                textToggle.classList.add('active');
+                numberToggle.classList.remove('active');
+                stopwatchText.style.display = 'block';
+                stopwatchNumber.style.display = 'none';
+            } else {
+                textToggle.classList.remove('active');
+                numberToggle.classList.add('active');
+                stopwatchText.style.display = 'none';
+                stopwatchNumber.style.display = 'block';
+            }
+        }
+        
+        function addTaskToQueue() {
+            const taskName = taskInput.value.trim();
+            if (!taskName) return;
+            
+            const newTask = {
+                id: Date.now(),
+                name: taskName,
+                startTime: null,
+                endTime: null,
+                actualDuration: 0,
+                completed: false,
+                inProgress: false
+            };
+            
+            tasks.push(newTask);
+            
+            saveTasks();
             renderTasks();
             updateStats();
             updateDetailedStats();
-            updateStopwatchMode();
             
-            // If there's a current task, restore it
+            taskInput.value = '';
+            
+            showNotification(`Telah ditambah "${taskName}"`);
+        }
+        
+        function executeTask() {
+            const taskName = taskInput.value.trim();
+            if (!taskName) return;
+            
             if (currentTaskId) {
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (currentTask && !currentTask.completed) {
-                    currentTaskDiv.style.display = 'block';
-                    currentTaskName.textContent = currentTask.name;
-                    startStopwatch();
-                    toggleStartStopButtons(true);
-                } else {
-                    currentTaskId = null;
-                    localStorage.removeItem('currentTaskId');
-                    toggleStartStopButtons(false);
+                completeCurrentTask();
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                name: taskName,
+                startTime: new Date(),
+                endTime: null,
+                actualDuration: 0,
+                completed: false,
+                inProgress: true
+            };
+            
+            tasks.push(newTask);
+            currentTaskId = newTask.id;
+            
+            localStorage.setItem('currentTaskId', currentTaskId);
+            
+            currentTaskDiv.style.display = 'block';
+            currentTaskName.textContent = taskName;
+            
+            startStopwatch();
+            
+            saveTasks();
+            renderTasks();
+            updateStats();
+            updateDetailedStats();
+            
+            taskInput.value = '';
+
+            fireConfetti();
+            taraAudio.play();
+            
+            showNotification(`Tugas dimulai: "${taskName}"`);
+        }
+        
+        function executeQuickTask(taskName) {
+            if (currentTaskId) {
+                completeCurrentTask();
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                name: taskName,
+                startTime: new Date(),
+                endTime: null,
+                actualDuration: 0,
+                completed: false,
+                inProgress: true
+            };
+            
+            tasks.push(newTask);
+            currentTaskId = newTask.id;
+            
+            localStorage.setItem('currentTaskId', currentTaskId);
+            
+            currentTaskDiv.style.display = 'block';
+            currentTaskName.textContent = taskName;
+            
+            startStopwatch();
+            
+            saveTasks();
+            renderTasks();
+            updateStats();
+            updateDetailedStats();
+
+            fireConfetti();
+            taraAudio.play();
+            
+            showNotification(`${taskName} dimulai`);
+        }
+        
+        function startTask(taskId) {
+            if (currentTaskId) {
+                completeCurrentTask();
+            }
+            
+            const task = tasks.find(t => t.id == taskId);
+            if (!task || task.completed) return;
+            
+            task.inProgress = true;
+            task.startTime = new Date();
+            
+            currentTaskId = taskId;
+            localStorage.setItem('currentTaskId', currentTaskId);
+            
+            currentTaskDiv.style.display = 'block';
+            currentTaskName.textContent = task.name;
+            
+            startStopwatch();
+            
+            saveTasks();
+            renderTasks();
+            updateStats();
+            updateDetailedStats();
+
+            fireConfetti();
+            taraAudio.play();
+            
+            showNotification(`Tugas dimulai: "${task.name}"`);
+        }
+        
+        function completeCurrentTask() {
+            if (!currentTaskId) return;
+            
+            const task = tasks.find(t => t.id == currentTaskId);
+            if (!task) return;
+            
+            task.completed = true;
+            task.inProgress = false;
+            task.endTime = new Date();
+            
+            if (task.startTime) {
+                const startTime = new Date(task.startTime);
+                const endTime = new Date();
+                task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
+            }
+            
+            addLogEntry(task);
+            
+            currentTaskDiv.style.display = 'none';
+            
+            currentTaskId = null;
+            localStorage.removeItem('currentTaskId');
+            
+            if (stopwatchInterval) clearInterval(stopwatchInterval);
+
+            toggleStartStopButtons(false);
+            
+            saveTasks();
+            renderTasks();
+            updateStats();
+            updateDetailedStats();
+
+            showNotification(`Tugas selesai: "${task.name}"`);
+        }
+        
+        function startStopwatch() {
+            if (stopwatchInterval) clearInterval(stopwatchInterval);
+            
+            updateStopwatchDisplay();
+            updateProgressBar();
+
+            toggleStartStopButtons(true);
+
+            stopwatchInterval = setInterval(() => {
+                if (!isPaused) {
+                    updateStopwatchDisplay();
+                    updateProgressBar();
+                    
+                    const currentTask = tasks.find(t => t.id == currentTaskId);
+                    if (currentTask && currentTask.startTime) {
+                        const startTime = new Date(currentTask.startTime);
+                        const now = new Date();
+                        const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                        
+                        // Trigger audio every 5 minutes (300 seconds)
+                        if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) {
+                            dingAudio.play();
+                            showNotification('Ding! 5 menit telah berlalu');
+                        }
+
+                        if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
+                            addLogEntry();
+                        }
+                    }
                 }
+            }, 1000);
+        }
+        
+        function updateStopwatchDisplay() {
+            if (!currentTaskId) return;
+            
+            const currentTask = tasks.find(t => t.id == currentTaskId);
+            if (!currentTask || !currentTask.startTime) return;
+            
+            const startTime = new Date(currentTask.startTime);
+            const now = new Date();
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            
+            const hours = Math.floor(elapsedSeconds / 3600);
+            const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+            const seconds = elapsedSeconds % 60;
+            
+            let textDisplay = '';
+            if (hours > 0) {
+                textDisplay = `<span class="time-number">${hours}</span> Jam <span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
             } else {
-                toggleStartStopButtons(false);
+                textDisplay = `<span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
             }
             
-            // Event Listeners
-            addTaskBtn.addEventListener('click', addTaskToQueue);
-            executeTaskBtn.addEventListener('click', executeTask);
-            stopTaskBtn.addEventListener('click', completeCurrentTask); // Listener untuk tombol STOP di stats
-            breakBtn.addEventListener('click', () => executeQuickTask('☕ BREAK'));
-            sholatBtn.addEventListener('click', () => executeQuickTask('🤲 SHOLAT'));
-            resetBtn.addEventListener('click', resetAll);
-            taskInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    if (e.shiftKey) {
-                        executeTask();
-                    } else {
-                        addTaskToQueue();
+            const minutesFormatted = minutes.toString().padStart(2, '0');
+            const secondsFormatted = seconds.toString().padStart(2, '0');
+            let numberDisplay = `${minutesFormatted}:${secondsFormatted}`;
+            
+            if (hours > 0) {
+                const hoursFormatted = hours.toString().padStart(2, '0');
+                numberDisplay = `${hoursFormatted}:${minutesFormatted}:${secondsFormatted}`;
+            }
+            
+            stopwatchText.innerHTML = textDisplay;
+            stopwatchNumber.textContent = numberDisplay;
+        }
+        
+        function updateProgressBar() {
+            if (!currentTaskId) return;
+            
+            const currentTask = tasks.find(t => t.id == currentTaskId);
+            if (!currentTask || !currentTask.startTime) return;
+            
+            const startTime = new Date(currentTask.startTime);
+            const now = new Date();
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            
+            const currentSecond = elapsedSeconds % 60;
+            const progressWidth = (100 - (currentSecond / 60) * 100);
+            
+            stopwatchProgress.style.width = `${progressWidth}%`;
+        }
+        
+        function addLogEntry(taskParam = null) {
+            const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
+            if (!task) return;
+            
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            const logEntry = {
+                id: Date.now(),
+                taskId: task.id,
+                taskName: task.name,
+                time: timeString,
+                timestamp: now
+            };
+            
+            let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
+            logs.push(logEntry);
+            
+            localStorage.setItem('timeLogs', JSON.stringify(logs));
+        }
+        
+        function getDurationPercentage(duration) {
+            const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+            const percentage = Math.min(duration / maxDuration, 1);
+            return percentage;
+        }
+        
+        function getDurationColor(duration) {
+            const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+            const intensity = Math.min(duration / maxDuration, 1);
+            const hue = 230;
+            const saturation = 70;
+            const lightness = 50 - (intensity * 20);
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+        
+        function renderTasks() {
+            if (tasks.length === 0) {
+                taskListContainer.innerHTML = '<p class="empty-state">Belum ada tugas</p>';
+                return;
+            }
+            
+            taskListContainer.innerHTML = '';
+            
+            Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
+            taskStopwatchIntervals = {};
+            
+            const sortedTasks = [...tasks].sort((a, b) => {
+                if (a.inProgress && !b.inProgress) return -1;
+                if (!a.inProgress && b.inProgress) return 1;
+
+                if (a.completed && !b.completed) return 1;
+                if (!a.completed && b.completed) return -1;
+
+                if (a.completed && b.completed) {
+                    if (a.startTime && b.startTime) {
+                        const timeA = new Date(a.startTime);
+                        const timeB = new Date(b.startTime);
+                        return timeA - timeB; // Oldest first (ASCENDING)
                     }
                 }
+
+                return tasks.indexOf(a) - tasks.indexOf(b);
             });
             
-            // Stopwatch toggle event listeners
-            textToggle.addEventListener('click', function() {
-                setStopwatchMode('text');
-            });
-            
-            numberToggle.addEventListener('click', function() {
-                setStopwatchMode('number');
-            });
-            
-            // Edit modal event listeners
-            cancelEditBtn.addEventListener('click', closeEditModal);
-            saveEditBtn.addEventListener('click', saveTaskEdit);
-            editTaskInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    saveTaskEdit();
+            sortedTasks.forEach(task => {
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
+                
+                if (task.completed) {
+                    taskItem.classList.add('completed');
+                } else if (task.inProgress) {
+                    taskItem.classList.add('in-progress');
                 }
-            });
-            
-            // Close modal when clicking outside
-            editModal.addEventListener('click', function(e) {
-                if (e.target === editModal) {
-                    closeEditModal();
-                }
-            });
-            
-            // Functions
-            function setStopwatchMode(mode) {
-                stopwatchMode = mode;
-                localStorage.setItem('stopwatchMode', mode);
-                updateStopwatchMode();
-            }
-            
-            function updateStopwatchMode() {
-                if (stopwatchMode === 'text') {
-                    textToggle.classList.add('active');
-                    numberToggle.classList.remove('active');
-                    stopwatchText.style.display = 'block';
-                    stopwatchNumber.style.display = 'none';
+                
+                let checkboxContent = '';
+                let checkboxClass = '';
+                
+                if (task.completed) {
+                    checkboxContent = '✓';
+                    checkboxClass = 'checked';
+                } else if (task.inProgress) {
+                    checkboxContent = '🚀';
+                    checkboxClass = 'active';
                 } else {
-                    textToggle.classList.remove('active');
-                    numberToggle.classList.add('active');
-                    stopwatchText.style.display = 'none';
-                    stopwatchNumber.style.display = 'block';
-                }
-            }
-            
-            function addTaskToQueue() {
-                const taskName = taskInput.value.trim();
-                if (!taskName) return;
-                
-                const newTask = {
-                    id: Date.now(),
-                    name: taskName,
-                    startTime: null,
-                    endTime: null,
-                    actualDuration: 0,
-                    completed: false,
-                    inProgress: false
-                };
-                
-                tasks.push(newTask);
-                
-                saveTasks();
-                renderTasks();
-                updateStats();
-                updateDetailedStats();
-                
-                taskInput.value = '';
-                
-                showNotification(`Telah Ditambah "${taskName}"`);
-            }
-            
-            function executeTask() {
-                const taskName = taskInput.value.trim();
-                if (!taskName) return;
-                
-                if (currentTaskId) {
-                    completeCurrentTask();
+                    checkboxContent = '';
+                    checkboxClass = '';
                 }
                 
-                const newTask = {
-                    id: Date.now(),
-                    name: taskName,
-                    startTime: new Date(),
-                    endTime: null,
-                    actualDuration: 0,
-                    completed: false,
-                    inProgress: true
-                };
+                const startTimeText = task.startTime 
+                    ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })
+                    : '-';
                 
-                tasks.push(newTask);
-                currentTaskId = newTask.id;
+                let taskStopwatch = '';
+                let taskStopwatchId = `task-stopwatch-${task.id}`;
                 
-                localStorage.setItem('currentTaskId', currentTaskId);
-                
-                currentTaskDiv.style.display = 'block';
-                currentTaskName.textContent = taskName;
-                
-                startStopwatch();
-                
-                saveTasks();
-                renderTasks();
-                updateStats();
-                updateDetailedStats();
-                
-                taskInput.value = '';
-
-                fireConfetti();
-                taraAudio.play();
-                
-                showNotification(`TUGAS DIMULAI: "${taskName}"`);
-            }
-            
-            function executeQuickTask(taskName) {
-                if (currentTaskId) {
-                    completeCurrentTask();
-                }
-                
-                const newTask = {
-                    id: Date.now(),
-                    name: taskName,
-                    startTime: new Date(),
-                    endTime: null,
-                    actualDuration: 0,
-                    completed: false,
-                    inProgress: true
-                };
-                
-                tasks.push(newTask);
-                currentTaskId = newTask.id;
-                
-                localStorage.setItem('currentTaskId', currentTaskId);
-                
-                currentTaskDiv.style.display = 'block';
-                currentTaskName.textContent = taskName;
-                
-                startStopwatch();
-                
-                saveTasks();
-                renderTasks();
-                updateStats();
-                updateDetailedStats();
-
-                fireConfetti();
-                taraAudio.play();
-                
-                showNotification(`${taskName} DIMULAI`);
-            }
-            
-            function startTask(taskId) {
-                if (currentTaskId) {
-                    completeCurrentTask();
-                }
-                
-                const task = tasks.find(t => t.id == taskId);
-                if (!task || task.completed) return;
-                
-                task.inProgress = true;
-                task.startTime = new Date();
-                
-                currentTaskId = taskId;
-                localStorage.setItem('currentTaskId', currentTaskId);
-                
-                currentTaskDiv.style.display = 'block';
-                currentTaskName.textContent = task.name;
-                
-                startStopwatch();
-                
-                saveTasks();
-                renderTasks();
-                updateStats();
-                updateDetailedStats();
-
-                fireConfetti();
-                taraAudio.play();
-                
-                showNotification(`TUGAS DIMULAI: "${task.name}"`);
-            }
-            
-            function completeCurrentTask() {
-                if (!currentTaskId) return;
-                
-                const task = tasks.find(t => t.id == currentTaskId);
-                if (!task) return;
-                
-                task.completed = true;
-                task.inProgress = false;
-                task.endTime = new Date();
-                
-                if (task.startTime) {
-                    const startTime = new Date(task.startTime);
-                    const endTime = new Date();
-                    task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
-                }
-                
-                addLogEntry(task);
-                
-                currentTaskDiv.style.display = 'none';
-                
-                currentTaskId = null;
-                localStorage.removeItem('currentTaskId');
-                
-                if (stopwatchInterval) clearInterval(stopwatchInterval);
-
-                toggleStartStopButtons(false);
-                
-                saveTasks();
-                renderTasks();
-                updateStats();
-                updateDetailedStats();
-
-                showNotification(`TUGAS SELESAI: "${task.name}"`);
-            }
-            
-            function startStopwatch() {
-                if (stopwatchInterval) clearInterval(stopwatchInterval);
-                
-                updateStopwatchDisplay();
-                updateProgressBar();
-
-                toggleStartStopButtons(true);
-
-                stopwatchInterval = setInterval(() => {
-                    if (!isPaused) {
-                        updateStopwatchDisplay();
-                        updateProgressBar();
+                if (task.inProgress && task.startTime) {
+                    taskStopwatch = `<span id="${taskStopwatchId}">00:00</span>`;
+                    
+                    taskStopwatchIntervals[task.id] = setInterval(() => {
+                        const startTime = new Date(task.startTime);
+                        const now = new Date();
+                        const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                        const minutes = Math.floor(elapsedSeconds / 60);
+                        const seconds = elapsedSeconds % 60;
                         
-                        const currentTask = tasks.find(t => t.id == currentTaskId);
-                        if (currentTask && currentTask.startTime) {
-                            const startTime = new Date(currentTask.startTime);
-                            const now = new Date();
-                            const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                            
-                            // Trigger DING.MP3 every 5 minutes (300 seconds)
-                            if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) {
-                                dingAudio.play();
-                                showNotification('DING! 5 MENIT TELAH BERLALU');
-                            }
-
-                            if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
-                                addLogEntry();
-                            }
+                        const stopwatchElement = document.getElementById(taskStopwatchId);
+                        if (stopwatchElement) {
+                            stopwatchElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                         }
-                    }
-                }, 1000);
-            }
-            
-            function updateStopwatchDisplay() {
-                if (!currentTaskId) return;
-                
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (!currentTask || !currentTask.startTime) return;
-                
-                const startTime = new Date(currentTask.startTime);
-                const now = new Date();
-                const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                
-                const hours = Math.floor(elapsedSeconds / 3600);
-                const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-                const seconds = elapsedSeconds % 60;
-                
-                let textDisplay = '';
-                if (hours > 0) {
-                    textDisplay = `<span class="time-number">${hours}</span> JAM <span class="time-number">${minutes}</span> MENIT <span class="time-number">${seconds}</span> DETIK`;
-                } else {
-                    textDisplay = `<span class="time-number">${minutes}</span> MENIT <span class="time-number">${seconds}</span> DETIK`;
+                    }, 1000);
                 }
                 
-                const minutesFormatted = minutes.toString().padStart(2, '0');
-                const secondsFormatted = seconds.toString().padStart(2, '0');
-                let numberDisplay = `${minutesFormatted}:${secondsFormatted}`;
-                
-                if (hours > 0) {
-                    const hoursFormatted = hours.toString().padStart(2, '0');
-                    numberDisplay = `${hoursFormatted}:${minutesFormatted}:${secondsFormatted}`;
-                }
-                
-                stopwatchText.innerHTML = textDisplay;
-                stopwatchNumber.textContent = numberDisplay;
-            }
-            
-            function updateProgressBar() {
-                if (!currentTaskId) return;
-                
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (!currentTask || !currentTask.startTime) return;
-                
-                const startTime = new Date(currentTask.startTime);
-                const now = new Date();
-                const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                
-                const currentSecond = elapsedSeconds % 60;
-                const progressWidth = (100 - (currentSecond / 60) * 100);
-                
-                stopwatchProgress.style.width = `${progressWidth}%`;
-            }
-            
-            function addLogEntry(taskParam = null) {
-                const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
-                if (!task) return;
-                
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('id-ID', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                });
-                
-                const logEntry = {
-                    id: Date.now(),
-                    taskId: task.id,
-                    taskName: task.name,
-                    time: timeString,
-                    timestamp: now
-                };
-                
-                let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
-                logs.push(logEntry);
-                
-                localStorage.setItem('timeLogs', JSON.stringify(logs));
-            }
-            
-            function getDurationPercentage(duration) {
-                const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-                const percentage = Math.min(duration / maxDuration, 1);
-                return percentage;
-            }
-            
-            function getDurationColor(duration) {
-                const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-                const intensity = Math.min(duration / maxDuration, 1);
-                const hue = 0;
-                const saturation = intensity * 100;
-                const lightness = 40 - (intensity * 20);
-                return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            }
-            
-            function renderTasks() {
-                if (tasks.length === 0) {
-                    taskListContainer.innerHTML = '<p class="empty-state">BELUM ADA TUGAS</p>';
-                    return;
-                }
-                
-                taskListContainer.innerHTML = '';
-                
-                Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
-                taskStopwatchIntervals = {};
-                
-                const sortedTasks = [...tasks].sort((a, b) => {
-                    if (a.inProgress && !b.inProgress) return 1;
-                    if (!a.inProgress && b.inProgress) return -1;
-
-                    if (a.completed && !b.completed) return 1;
-                    if (!a.completed && b.completed) return -1;
-
-                    if (a.completed && b.completed) {
-                        if (a.startTime && b.startTime) {
-                            const timeA = new Date(a.startTime);
-                            const timeB = new Date(b.startTime);
-                            return timeA - timeB; // Oldest first (ASCENDING)
-                        }
-                    }
-
-                    return tasks.indexOf(a) - tasks.indexOf(b);
-                });
-                
-                sortedTasks.forEach(task => {
-                    const taskItem = document.createElement('div');
-                    taskItem.className = 'task-item';
+                let durationDisplay = '';
+                if (!task.inProgress && task.actualDuration > 0) {
+                    const durationPercentage = getDurationPercentage(task.actualDuration);
+                    const durationColor = getDurationColor(task.actualDuration);
+                    const barWidth = Math.max(20, durationPercentage * 100);
                     
-                    if (task.completed) {
-                        taskItem.style.opacity = '0.6';
-                    }
-                    
-                    let checkboxContent = '';
-                    let checkboxClass = '';
-                    
-                    if (task.completed) {
-                        checkboxContent = '✓';
-                        checkboxClass = 'checked';
-                    } else if (task.inProgress) {
-                        checkboxContent = '🚀';
-                        checkboxClass = 'active';
-                    } else {
-                        checkboxContent = '';
-                        checkboxClass = '';
-                    }
-                    
-                    const startTimeText = task.startTime 
-                        ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
-                            hour: '2-digit', 
-                            minute: '2-digit' 
-                          })
-                        : '-';
-                    
-                    let taskStopwatch = '';
-                    let taskStopwatchId = `task-stopwatch-${task.id}`;
-                    
-                    if (task.inProgress && task.startTime) {
-                        taskStopwatch = `<span id="${taskStopwatchId}">00:00</span>`;
-                        
-                        taskStopwatchIntervals[task.id] = setInterval(() => {
-                            const startTime = new Date(task.startTime);
-                            const now = new Date();
-                            const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                            const minutes = Math.floor(elapsedSeconds / 60);
-                            const seconds = elapsedSeconds % 60;
-                            
-                            const stopwatchElement = document.getElementById(taskStopwatchId);
-                            if (stopwatchElement) {
-                                stopwatchElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                            }
-                        }, 1000);
-                    }
-                    
-                    let durationDisplay = '';
-                    if (!task.inProgress && task.actualDuration > 0) {
-                        const durationPercentage = getDurationPercentage(task.actualDuration);
-                        const durationColor = getDurationColor(task.actualDuration);
-                        const barWidth = Math.max(20, durationPercentage * 100);
-                        
-                        durationDisplay = `
-                            <div class="task-duration">
-                                <div class="duration-bar" style="width: ${barWidth}%; background-color: ${durationColor};"></div>
-                                <div class="duration-text">${task.actualDuration} MENIT</div>
-                            </div>
-                        `;
-                    }
-                    
-                    taskItem.innerHTML = `
-                        <div class="task-info">
-                            <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
-                            <div class="task-timestamp">${startTimeText}</div>
-                            <div class="task-title">${task.name}</div>
-                        </div>
-                        ${durationDisplay}
-                        ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
-                        <div class="task-actions">
-                            ${!task.completed && !task.inProgress ? `
-                                <button class="task-action-btn" onclick="moveTaskToTop(${task.id})">⬆️</button>
-                                <button class="task-action-btn" onclick="editTask(${task.id})">✏️</button>
-                            ` : ''}
-                            ${task.completed ? `
-                                <button class="task-action-btn" onclick="repeatTask(${task.id})">🔄</button>
-                            ` : ''}
-                            <button class="task-action-btn" onclick="deleteTask(${task.id})">🗑️</button>
+                    durationDisplay = `
+                        <div class="task-duration">
+                            <div class="duration-bar" style="width: ${barWidth}%; background-color: ${durationColor};"></div>
+                            <div class="duration-text">${task.actualDuration} Menit</div>
                         </div>
                     `;
-                    
-                    taskListContainer.appendChild(taskItem);
-                });
-            }
-            
-            function formatTimeDisplay(totalMinutes) {
-                if (totalMinutes === 0) return '00:00';
-                
-                const totalSeconds = totalMinutes * 60;
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                
-                const minsFormatted = minutes.toString().padStart(2, '0');
-                const secsFormatted = '00';
-                
-                if (hours > 0) {
-                    const hoursFormatted = hours.toString().padStart(2, '0');
-                    return `${hoursFormatted}:${minsFormatted}:${secsFormatted}`;
-                } else {
-                    return `${minsFormatted}:${secsFormatted}`;
-                }
-            }
-            
-            function updateDetailedStats() {
-                const completedTasks = tasks.filter(task => task.completed);
-                const defaultTime = '00:00';
-                const defaultText = '-';
-                
-                if (completedTasks.length === 0) {
-                    startTimeEl.textContent = defaultText;
-                    endTimeEl.textContent = defaultText;
-                    totalBreakEl.textContent = defaultTime;
-                    totalSholatEl.textContent = defaultTime;
-                    workTimeEl.textContent = defaultTime;
-                    breakPercentageEl.textContent = '0%';
-                    productiveBarEl.style.width = '0%';
-                    breakBarEl.style.width = '0%';
-                    productiveBarEl.textContent = '';
-                    breakBarEl.textContent = '';
-                    breakPercentageEl.style.color = '#fff';
-                    return;
                 }
                 
-                const startTimes = completedTasks.map(task => new Date(task.startTime)).filter(time => !isNaN(time));
-                const endTimes = completedTasks.map(task => new Date(task.endTime)).filter(time => !isNaN(time));
+                taskItem.innerHTML = `
+                    <div class="task-info">
+                        <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
+                        <div class="task-timestamp">${startTimeText}</div>
+                        <div class="task-title">${task.name}</div>
+                    </div>
+                    ${durationDisplay}
+                    ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
+                    <div class="task-actions">
+                        ${!task.completed && !task.inProgress ? `
+                            <button class="task-action-btn" onclick="moveTaskToTop(${task.id})" title="Pindahkan ke atas"><i class="fas fa-arrow-up"></i></button>
+                            <button class="task-action-btn" onclick="editTask(${task.id})" title="Edit"><i class="fas fa-edit"></i></button>
+                        ` : ''}
+                        ${task.completed ? `
+                            <button class="task-action-btn" onclick="repeatTask(${task.id})" title="Ulangi"><i class="fas fa-redo"></i></button>
+                        ` : ''}
+                        <button class="task-action-btn" onclick="deleteTask(${task.id})" title="Hapus"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
                 
-                const earliestStart = startTimes.length > 0 ? new Date(Math.min(...startTimes)) : null;
-                const latestEnd = endTimes.length > 0 ? new Date(Math.max(...endTimes)) : null;
-                
-                startTimeEl.textContent = earliestStart ? earliestStart.toLocaleTimeString('id-ID', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                }) : defaultText;
-                
-                endTimeEl.textContent = latestEnd ? latestEnd.toLocaleTimeString('id-ID', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                }) : defaultText;
-                
-                const totalDuration = completedTasks.reduce((sum, task) => sum + task.actualDuration, 0);
-                
-                const totalBreakTime = completedTasks
-                    .filter(task => task.name.includes('BREAK'))
-                    .reduce((sum, task) => sum + task.actualDuration, 0);
+                taskListContainer.appendChild(taskItem);
+            });
+        }
+        
+        function formatTimeDisplay(totalMinutes) {
+            if (totalMinutes === 0) return '00:00';
+            
+            const totalSeconds = totalMinutes * 60;
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            
+            const minsFormatted = minutes.toString().padStart(2, '0');
+            const secsFormatted = '00';
+            
+            if (hours > 0) {
+                const hoursFormatted = hours.toString().padStart(2, '0');
+                return `${hoursFormatted}:${minsFormatted}:${secsFormatted}`;
+            } else {
+                return `${minsFormatted}:${secsFormatted}`;
+            }
+        }
+        
+        function updateDetailedStats() {
+            const completedTasks = tasks.filter(task => task.completed);
+            const defaultTime = '00:00';
+            const defaultText = '-';
+            
+            if (completedTasks.length === 0) {
+                startTimeEl.textContent = defaultText;
+                endTimeEl.textContent = defaultText;
+                totalBreakEl.textContent = defaultTime;
+                totalSholatEl.textContent = defaultTime;
+                workTimeEl.textContent = defaultTime;
+                breakPercentageEl.textContent = '0%';
+                productiveBarEl.style.width = '0%';
+                breakBarEl.style.width = '0%';
+                productiveBarEl.textContent = '';
+                breakBarEl.textContent = '';
+                breakPercentageEl.style.color = 'var(--text-primary)';
+                return;
+            }
+            
+            const startTimes = completedTasks.map(task => new Date(task.startTime)).filter(time => !isNaN(time));
+            const endTimes = completedTasks.map(task => new Date(task.endTime)).filter(time => !isNaN(time));
+            
+            const earliestStart = startTimes.length > 0 ? new Date(Math.min(...startTimes)) : null;
+            const latestEnd = endTimes.length > 0 ? new Date(Math.max(...endTimes)) : null;
+            
+            startTimeEl.textContent = earliestStart ? earliestStart.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            }) : defaultText;
+            
+            endTimeEl.textContent = latestEnd ? latestEnd.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            }) : defaultText;
+            
+            const totalDuration = completedTasks.reduce((sum, task) => sum + task.actualDuration, 0);
+            
+            const totalBreakTime = completedTasks
+                .filter(task => task.name.includes('Break'))
+                .reduce((sum, task) => sum + task.actualDuration, 0);
 
-                const totalSholatTime = completedTasks
-                    .filter(task => task.name.includes('SHOLAT'))
-                    .reduce((sum, task) => sum + task.actualDuration, 0);
-                
-                const totalWorkTime = completedTasks
-                    .filter(task => !task.name.includes('BREAK') && !task.name.includes('SHOLAT'))
-                    .reduce((sum, task) => sum + task.actualDuration, 0);
-                
-                totalBreakEl.textContent = formatTimeDisplay(totalBreakTime);
-                totalSholatEl.textContent = formatTimeDisplay(totalSholatTime);
-                workTimeEl.textContent = formatTimeDisplay(totalWorkTime);
-                
-                let breakPercentage = 0;
-                if (totalDuration > 0) {
-                    breakPercentage = ((totalBreakTime / totalDuration) * 100); 
-                }
-                
-                const breakPercentageRounded = breakPercentage.toFixed(0);
-                breakPercentageEl.textContent = `${breakPercentageRounded}%`;
-                
-                if (breakPercentage < 10 && breakPercentage > 0) {
-                    breakPercentageEl.style.color = '#00ff00';
-                } else if (breakPercentage >= 10) {
-                    breakPercentageEl.style.color = '#ff0000';
-                } else {
-                    breakPercentageEl.style.color = '#fff';
-                }
-                
-                const productiveDuration = totalWorkTime + totalSholatTime;
-                const chartTotal = productiveDuration + totalBreakTime;
-
-                let productivePercentage = 0;
-                let chartBreakPercentage = 0;
-
-                if (chartTotal > 0) {
-                    productivePercentage = ((productiveDuration / chartTotal) * 100);
-                    chartBreakPercentage = ((totalBreakTime / chartTotal) * 100);
-                }
-                
-                const productivePercentageRounded = productivePercentage.toFixed(0);
-                const chartBreakPercentageRounded = chartBreakPercentage.toFixed(0);
-
-                productiveBarEl.style.width = `${productivePercentageRounded}%`;
-                productiveBarEl.textContent = productivePercentageRounded > 0 ? `${productivePercentageRounded}% PRODUKTIF` : '';
-                
-                breakBarEl.style.width = `${chartBreakPercentageRounded}%`;
-                breakBarEl.textContent = chartBreakPercentageRounded > 0 ? `${chartBreakPercentageRounded}% BREAK` : '';
+            const totalSholatTime = completedTasks
+                .filter(task => task.name.includes('Sholat'))
+                .reduce((sum, task) => sum + task.actualDuration, 0);
+            
+            const totalWorkTime = completedTasks
+                .filter(task => !task.name.includes('Break') && !task.name.includes('Sholat'))
+                .reduce((sum, task) => sum + task.actualDuration, 0);
+            
+            totalBreakEl.textContent = formatTimeDisplay(totalBreakTime);
+            totalSholatEl.textContent = formatTimeDisplay(totalSholatTime);
+            workTimeEl.textContent = formatTimeDisplay(totalWorkTime);
+            
+            let breakPercentage = 0;
+            if (totalDuration > 0) {
+                breakPercentage = ((totalBreakTime / totalDuration) * 100); 
             }
             
-            function formatDuration(minutes) {
-                if (minutes < 60) {
-                    return `${minutes} MENIT`;
-                } else {
-                    const hours = Math.floor(minutes / 60);
-                    const mins = minutes % 60;
-                    return mins > 0 ? `${hours} JAM ${mins} MENIT` : `${hours} JAM`;
-                }
+            const breakPercentageRounded = breakPercentage.toFixed(0);
+            breakPercentageEl.textContent = `${breakPercentageRounded}%`;
+            
+            if (breakPercentage < 10 && breakPercentage > 0) {
+                breakPercentageEl.style.color = 'var(--accent-success)';
+            } else if (breakPercentage >= 10) {
+                breakPercentageEl.style.color = 'var(--accent-danger)';
+            } else {
+                breakPercentageEl.style.color = 'var(--text-primary)';
             }
             
-            function handleTaskClick(taskId) {
-                const task = tasks.find(t => t.id == taskId);
-                if (!task || task.completed || task.inProgress) return;
-                
-                startTask(taskId);
+            const productiveDuration = totalWorkTime + totalSholatTime;
+            const chartTotal = productiveDuration + totalBreakTime;
+
+            let productivePercentage = 0;
+            let chartBreakPercentage = 0;
+
+            if (chartTotal > 0) {
+                productivePercentage = ((productiveDuration / chartTotal) * 100);
+                chartBreakPercentage = ((totalBreakTime / chartTotal) * 100);
             }
             
-            function moveTaskToTop(taskId) {
-                const task = tasks.find(t => t.id == taskId);
-                if (!task || task.completed || task.inProgress) return;
-                
-                const taskIndex = tasks.findIndex(t => t.id == taskId);
-                if (taskIndex === -1) return;
-                
-                tasks.splice(taskIndex, 1);
-                tasks.unshift(task);
-                
+            const productivePercentageRounded = productivePercentage.toFixed(0);
+            const chartBreakPercentageRounded = chartBreakPercentage.toFixed(0);
+
+            productiveBarEl.style.width = `${productivePercentageRounded}%`;
+            productiveBarEl.textContent = productivePercentageRounded > 0 ? `${productivePercentageRounded}% Produktif` : '';
+            
+            breakBarEl.style.width = `${chartBreakPercentageRounded}%`;
+            breakBarEl.textContent = chartBreakPercentageRounded > 0 ? `${chartBreakPercentageRounded}% Break` : '';
+        }
+        
+        function formatDuration(minutes) {
+            if (minutes < 60) {
+                return `${minutes} Menit`;
+            } else {
+                const hours = Math.floor(minutes / 60);
+                const mins = minutes % 60;
+                return mins > 0 ? `${hours} Jam ${mins} Menit` : `${hours} Jam`;
+            }
+        }
+        
+        function handleTaskClick(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (!task || task.completed || task.inProgress) return;
+            
+            startTask(taskId);
+        }
+        
+        function moveTaskToTop(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (!task || task.completed || task.inProgress) return;
+            
+            const taskIndex = tasks.findIndex(t => t.id == taskId);
+            if (taskIndex === -1) return;
+            
+            tasks.splice(taskIndex, 1);
+            tasks.unshift(task);
+            
+            saveTasks();
+            renderTasks();
+            
+            showNotification(`Tugas "${task.name}" dipindah ke atas`);
+        }
+        
+        function repeatTask(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (!task || !task.completed) return;
+            
+            if (currentTaskId) {
+                completeCurrentTask();
+            }
+            
+            const newTask = {
+                id: Date.now(),
+                name: task.name,
+                startTime: new Date(),
+                endTime: null,
+                actualDuration: 0,
+                completed: false,
+                inProgress: true
+            };
+            
+            tasks.push(newTask);
+            currentTaskId = newTask.id;
+            
+            localStorage.setItem('currentTaskId', currentTaskId);
+            
+            currentTaskDiv.style.display = 'block';
+            currentTaskName.textContent = task.name;
+            
+            startStopwatch();
+            
+            saveTasks();
+            renderTasks();
+            updateStats();
+            updateDetailedStats();
+
+            fireConfetti();
+            taraAudio.play();
+            
+            showNotification(`Tugas "${task.name}" diulang`);
+        }
+        
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (!task || task.completed || task.inProgress) return;
+            
+            editingTaskId = taskId;
+            editTaskInput.value = task.name;
+            editModal.style.display = 'flex';
+            
+            setTimeout(() => {
+                editTaskInput.focus();
+                editTaskInput.select();
+            }, 100);
+        }
+        
+        function saveTaskEdit() {
+            const newName = editTaskInput.value.trim();
+            if (!newName) return;
+            
+            const task = tasks.find(t => t.id == editingTaskId);
+            if (task) {
+                task.name = newName;
                 saveTasks();
                 renderTasks();
-                
-                showNotification(`TUGAS "${task.name}" DIPINDAH KE ATAS`);
+                updateStats();
+                updateDetailedStats();
+                showNotification(`Tugas diperbarui: "${newName}"`);
             }
             
-            function repeatTask(taskId) {
-                const task = tasks.find(t => t.id == taskId);
-                if (!task || !task.completed) return;
-                
-                if (currentTaskId) {
+            closeEditModal();
+        }
+        
+        function closeEditModal() {
+            editModal.style.display = 'none';
+            editTaskInput.value = '';
+            editingTaskId = null;
+        }
+        
+        function deleteTask(taskId) {
+            const task = tasks.find(t => t.id == taskId);
+            if (!task) return;
+            
+            if (confirm(`Hapus tugas: "${task.name}"?`)) {
+                if (currentTaskId == taskId) {
                     completeCurrentTask();
                 }
                 
-                const newTask = {
-                    id: Date.now(),
-                    name: task.name,
-                    startTime: new Date(),
-                    endTime: null,
-                    actualDuration: 0,
-                    completed: false,
-                    inProgress: true
-                };
+                tasks = tasks.filter(t => t.id !== taskId);
+                saveTasks();
+                renderTasks();
+                updateStats();
+                updateDetailedStats();
                 
-                tasks.push(newTask);
-                currentTaskId = newTask.id;
-                
-                localStorage.setItem('currentTaskId', currentTaskId);
-                
-                currentTaskDiv.style.display = 'block';
-                currentTaskName.textContent = task.name;
-                
-                startStopwatch();
+                showNotification(`Tugas dihapus: "${task.name}"`);
+            }
+        }
+        
+        function updateStats() {
+            const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
+            
+            // taskListTitle.textContent = `Total Jam Kerja`; // Baris ini telah dihapus
+            
+            let formattedTime = '';
+            if (totalTime < 60) {
+                formattedTime = `${totalTime} Menit`;
+            } else {
+                const hours = Math.floor(totalTime / 60);
+                const minutes = totalTime % 60;
+                formattedTime = minutes > 0 ? `${hours} Jam ${minutes} Menit` : `${hours} Jam`;
+            }
+            
+            totalMinutes.textContent = formattedTime;
+        }
+        
+        function resetAll() {
+            const completedTasks = tasks.filter(task => task.completed);
+            
+            if (completedTasks.length === 0) {
+                showNotification('Tidak ada tugas yang sudah selesai');
+                return;
+            }
+            
+            if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
+                tasks = tasks.filter(task => !task.completed);
                 
                 saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
-
-                fireConfetti();
-                taraAudio.play();
                 
-                showNotification(`TUGAS "${task.name}" DIULANG`);
+                showNotification(`${completedTasks.length} tugas selesai telah dihapus`);
             }
+        }
+        
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+        
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.classList.add('show');
             
-            function editTask(taskId) {
-                const task = tasks.find(t => t.id == taskId);
-                if (!task || task.completed || task.inProgress) return;
-                
-                editingTaskId = taskId;
-                editTaskInput.value = task.name;
-                editModal.style.display = 'flex';
-                
-                setTimeout(() => {
-                    editTaskInput.focus();
-                    editTaskInput.select();
-                }, 100);
-            }
-            
-            function saveTaskEdit() {
-                const newName = editTaskInput.value.trim();
-                if (!newName) return;
-                
-                const task = tasks.find(t => t.id == editingTaskId);
-                if (task) {
-                    task.name = newName;
-                    saveTasks();
-                    renderTasks();
-                    updateStats();
-                    updateDetailedStats();
-                    showNotification(`TUGAS DIPERBARUI: "${newName}"`);
-                }
-                
-                closeEditModal();
-            }
-            
-            function closeEditModal() {
-                editModal.style.display = 'none';
-                editTaskInput.value = '';
-                editingTaskId = null;
-            }
-            
-            function deleteTask(taskId) {
-                const task = tasks.find(t => t.id == taskId);
-                if (!task) return;
-                
-                if (confirm(`HAPUS TUGAS: "${task.name}"?`)) {
-                    if (currentTaskId == taskId) {
-                        completeCurrentTask();
-                    }
-                    
-                    tasks = tasks.filter(t => t.id !== taskId);
-                    saveTasks();
-                    renderTasks();
-                    updateStats();
-                    updateDetailedStats();
-                    
-                    showNotification(`TUGAS DIHAPUS: "${task.name}"`);
-                }
-            }
-            
-            function updateStats() {
-                const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
-                
-                taskListTitle.textContent = `TOTAL JAM KERJA`;
-                
-                let formattedTime = '';
-                if (totalTime < 60) {
-                    formattedTime = `${totalTime} MENIT`;
-                } else {
-                    const hours = Math.floor(totalTime / 60);
-                    const minutes = totalTime % 60;
-                    formattedTime = minutes > 0 ? `${hours} JAM ${minutes} MENIT` : `${hours} JAM`;
-                }
-                
-                totalMinutes.textContent = formattedTime;
-            }
-            
-            function resetAll() {
-                const completedTasks = tasks.filter(task => task.completed);
-                
-                if (completedTasks.length === 0) {
-                    showNotification('TIDAK ADA TUGAS YANG SUDAH SELESAI');
-                    return;
-                }
-                
-                if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
-                    tasks = tasks.filter(task => !task.completed);
-                    
-                    saveTasks();
-                    renderTasks();
-                    updateStats();
-                    updateDetailedStats();
-                    
-                    showNotification(`${completedTasks.length} TUGAS SELESAI TELAH DIHAPUS`);
-                }
-            }
-            
-            function saveTasks() {
-                localStorage.setItem('tasks', JSON.stringify(tasks));
-            }
-            
-            function showNotification(message) {
-                notification.textContent = message;
-                notification.classList.add('show');
-                
-                setTimeout(() => {
-                    notification.classList.remove('show');
-                }, 3000);
-            }
-            
-            // Make functions globally accessible
-            window.handleTaskClick = handleTaskClick;
-            window.moveTaskToTop = moveTaskToTop;
-            window.repeatTask = repeatTask;
-            window.editTask = editTask;
-            window.deleteTask = deleteTask;
-        });
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Make functions globally accessible
+        window.handleTaskClick = handleTaskClick;
+        window.moveTaskToTop = moveTaskToTop;
+        window.repeatTask = repeatTask;
+        window.editTask = editTask;
+        window.deleteTask = deleteTask;
     </script>
 </body>
 </html>
