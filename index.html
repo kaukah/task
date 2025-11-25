@@ -472,10 +472,9 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 16px;
-            margin-bottom: 12px;
+            margin-bottom: 4px;
+            padding:10px;
             background-color: var(--bg-secondary);
-            border-radius: 12px;
             box-shadow: var(--shadow-sm);
             transition: var(--transition);
             border-left: 4px solid transparent;
@@ -489,6 +488,7 @@
         .task-item.completed {
             opacity: 0.7;
             border-left-color: var(--accent-success);
+            color:#c2c2c2;
         }
 
         .task-item.in-progress {
@@ -943,7 +943,7 @@
             }
             
             .task-item {
-                padding: 12px;
+                padding: 5px;
             }
             
             .task-title {
@@ -985,7 +985,7 @@
 
         <div class="collapse-section">
             <div class="collapse-toggle" id="collapseToggle">
-                Sembunyikan Kontrol <i class="fas fa-chevron-up"></i>
+                HIDE <i class="fas fa-chevron-up"></i>
             </div>
             <div class="collapsible-content" id="collapsibleContent">
                 
@@ -1219,9 +1219,9 @@
             collapseToggle.classList.toggle('collapsed');
             
             if (collapsibleContent.classList.contains('collapsed')) {
-                collapseToggle.innerHTML = 'Tampilkan Kontrol <i class="fas fa-chevron-down"></i>';
+                collapseToggle.innerHTML = 'SHOW <i class="fas fa-chevron-down"></i>';
             } else {
-                collapseToggle.innerHTML = 'Sembunyikan Kontrol <i class="fas fa-chevron-up"></i>';
+                collapseToggle.innerHTML = 'HIDE <i class="fas fa-chevron-up"></i>';
             }
         });
         
