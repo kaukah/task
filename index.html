@@ -60,7 +60,7 @@
         }
 
         .container {
-                    background-color: var(--bg-secondary);
+            background-color: var(--bg-secondary);
             max-width: 800px;
             margin: 0 auto;
             padding: 0px 20px;
@@ -273,7 +273,7 @@
 
         .stopwatch-container {
             position: relative;
-            margin: 0 0 0px;
+            margin: 10px 0 -30px;
         }
 
         .stopwatch-bar {
@@ -311,7 +311,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 20px;
+            margin-top: 0px;
         }
 
         .stopwatch-text {
@@ -366,7 +366,8 @@
 
         .current-task {
             text-align: center;
-            margin: 0px 0;
+            letter-spacing: -3px !important;
+            margin: 20px 0;
             padding: 0px;
             animation: slideIn 0.5s ease-out;
         }
@@ -376,9 +377,9 @@
             color: var(--text-primary);
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
             animation: pulse 1s infinite;
             font-family: 'Inter', sans-serif;
+            line-height: 0.9;
         }
 
         .task-list {
@@ -957,127 +958,100 @@
         <i class="fas fa-moon"></i>
     </button>
 
-   	 <div class="container">
+    <div class="container">
 
-
-       <div class="stopwatch-container">
-                    <div class="stopwatch-bar">
-                        <div class="stopwatch-progress" id="stopwatchProgress"></div>
-                    </div>
-                    <div class="stopwatch-display">
-                        <div class="stopwatch-text" id="stopwatchText">
-                            <span class="time-number">0</span> Menit <span class="time-number">0</span> Detik
-                        </div>
-                        <div class="stopwatch-number" id="stopwatchNumber">00:00</div>
-                        <div class="stopwatch-toggle">
-                            <button class="toggle-btn active" id="textToggle">Text</button>
-                            <button class="toggle-btn" id="numberToggle">Angka</button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="current-task" id="currentTask" style="display: none;">
-                    <h1 id="currentTaskName">-</h1>
-                </div>
-                
-                <div class="input-section">
+        <div class="input-section">
             <input type="text" id="taskInput" class="task-input" placeholder="Ketik tugas baru..." autofocus>
-                 </div>
+        </div>
+        
+        <div class="stopwatch-container">
+            <div class="stopwatch-bar">
+                <div class="stopwatch-progress" id="stopwatchProgress"></div>
+            </div>
+            <div class="stopwatch-display">
+                <div class="stopwatch-text" id="stopwatchText">
+                    <span class="time-number">0</span> Menit <span class="time-number">0</span> Detik
+                </div>
+                <div class="stopwatch-number" id="stopwatchNumber">00:00</div>
+                <div class="stopwatch-toggle">
+                    <button class="toggle-btn active" id="textToggle">Text</button>
+                    <button class="toggle-btn" id="numberToggle">Angka</button>
+                </div>
+            </div>
+        </div>
 
+        <div class="current-task" id="currentTask" style="display: none;">
+            <h1 id="currentTaskName">-</h1>
+        </div>
+        
         <div class="collapse-section">
-            
-            <div class="collapse-toggle" id="collapseToggle">
-                HIDE <i class="fas fa-chevron-up"></i>
+            <div class="collapse-toggle collapsed" id="collapseToggle">
+                SHOW <i class="fas fa-chevron-down"></i>
             </div>
             
-            <div class="collapsible-content" id="collapsibleContent">
-                
-                
+            <div class="collapsible-content collapsed" id="collapsibleContent">
                 <div class="input-section">
-            <div class="btn-group">
-                <div class="quick-actions">
-                    <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> Break</button>
-                    <button id="sholatBtn" class="quick-action-btn"><i class="fas fa-hands-praying"></i> Sholat</button>
+                    <div class="btn-group">
+                        <div class="quick-actions">
+                            <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> Break</button>
+                            <button id="sholatBtn" class="quick-action-btn"><i class="fas fa-hands-praying"></i> Sholat</button>
+                        </div>
+                        <button id="addTaskBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Tambah</button>
+                        <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Mulai</button>
+                    </div>
                 </div>
-                <button id="addTaskBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Tambah</button>
-                <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Mulai</button>
+                
+                <div class="task-list">  
+                    <div class="task-stats">
+                        <div class="total-minutes" id="totalMinutes">0 Menit</div>
+                        <div class="stat-buttons-group">
+                            <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
+                            <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> Hapus Selesai</button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-details">
+                        <div class="stat-item">
+                            <div class="stat-label">Mulai Kerja</div>
+                            <div class="stat-value" id="startTime">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Berhenti Kerja</div>
+                            <div class="stat-value" id="endTime">-</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Istirahat</div>
+                            <div class="stat-value" id="totalBreak">00:00</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Sholat</div>
+                            <div class="stat-value" id="totalSholat">00:00</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Waktu Produktif</div>
+                            <div class="stat-value highlight" id="workTime">00:00</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Persentase Break</div>
+                            <div class="stat-value" id="breakPercentage">0%</div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-label">Rasio Waktu Produktif vs Break</div>
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
+                            <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-                
-                
-                
-                
-<div class="task-list">  
-
-            <div class="task-stats">
-                <div class="total-minutes" id="totalMinutes">0 Menit</div>
-                <div class="stat-buttons-group">
-                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
-                    <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> Hapus Selesai</button>
-                </div>
-            </div>
-            
-            
-            
-            
-            <div class="stats-details">
-                <div class="stat-item">
-                    <div class="stat-label">Mulai Kerja</div>
-                    <div class="stat-value" id="startTime">-</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Berhenti Kerja</div>
-                    <div class="stat-value" id="endTime">-</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Istirahat</div>
-                    <div class="stat-value" id="totalBreak">00:00</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Sholat</div>
-                    <div class="stat-value" id="totalSholat">00:00</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Waktu Produktif</div>
-                    <div class="stat-value highlight" id="workTime">00:00</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Persentase Break</div>
-                    <div class="stat-value" id="breakPercentage">0%</div>
-                </div>
-            </div>
-            <div class="chart-container">
-                <div class="chart-label">Rasio Waktu Produktif vs Break</div>
-                <div class="chart-bar-container">
-                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-                </div>
-            </div>
-            </div>
-            
-            
-                
-                
-                
-            </div>
-        </div>
-
         
-        
-        
-            
-            
-            
-            
-            <div class="task-list">
+        <div class="task-list">
             <div id="taskListContainer">
                 <p class="empty-state">Belum ada tugas</p>
             </div>
-        	</div>
-        
-        
-        
-        
+        </div>
     </div>
 
     <div id="editModal" class="edit-modal" style="display: none;">
@@ -1115,7 +1089,6 @@
         const currentTaskDiv = document.getElementById('currentTask');
         const currentTaskName = document.getElementById('currentTaskName');
         const notification = document.getElementById('notification');
-        // taskListTitle Dihapus karena tidak ada elemen di HTML
         const totalMinutes = document.getElementById('totalMinutes');
         const editModal = document.getElementById('editModal');
         const editTaskInput = document.getElementById('editTaskInput');
@@ -1303,7 +1276,8 @@
                 inProgress: false
             };
             
-            tasks.push(newTask);
+            // Menambahkan task di awal array, bukan di akhir
+            tasks.unshift(newTask);
             
             saveTasks();
             renderTasks();
@@ -1333,7 +1307,8 @@
                 inProgress: true
             };
             
-            tasks.push(newTask);
+            // Menambahkan task di awal array, bukan di akhir
+            tasks.unshift(newTask);
             currentTaskId = newTask.id;
             
             localStorage.setItem('currentTaskId', currentTaskId);
@@ -1371,7 +1346,8 @@
                 inProgress: true
             };
             
-            tasks.push(newTask);
+            // Menambahkan task di awal array, bukan di akhir
+            tasks.unshift(newTask);
             currentTaskId = newTask.id;
             
             localStorage.setItem('currentTaskId', currentTaskId);
@@ -1857,7 +1833,8 @@
                 inProgress: true
             };
             
-            tasks.push(newTask);
+            // Menambahkan task di awal array, bukan di akhir
+            tasks.unshift(newTask);
             currentTaskId = newTask.id;
             
             localStorage.setItem('currentTaskId', currentTaskId);
@@ -1936,8 +1913,6 @@
         
         function updateStats() {
             const totalTime = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
-            
-            // taskListTitle.textContent = `Total Jam Kerja`; // Baris ini telah dihapus
             
             let formattedTime = '';
             if (totalTime < 60) {
