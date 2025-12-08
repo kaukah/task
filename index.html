@@ -651,30 +651,6 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 24px;
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border-radius: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            z-index: 1000;
-            text-transform: uppercase;
-            font-weight: 600;
-            box-shadow: var(--shadow-lg);
-            transform: translateX(-50%) translateY(10px);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .notification.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
         .edit-modal {
             position: fixed;
             top: 0;
@@ -821,6 +797,18 @@
 
         .chart-bar-break {
             background: linear-gradient(90deg, var(--accent-danger), #f87171);
+        }
+
+        /* Hashtag capsule styles */
+        .hashtag-capsule {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin: 0 2px;
+            color: white;
+            text-transform: uppercase;
         }
 
         /* Animations */
@@ -970,9 +958,9 @@
             </div>
             <div class="stopwatch-display">
                 <div class="stopwatch-text" id="stopwatchText">
-                    <span class="time-number">0</span> Menit <span class="time-number">0</span> Detik
+                    <span class="time-number">0</span> Menit
                 </div>
-                <div class="stopwatch-number" id="stopwatchNumber">00:00</div>
+                <div class="stopwatch-number" id="stopwatchNumber">00 Menit</div>
                 <div class="stopwatch-toggle">
                     <button class="toggle-btn active" id="textToggle">Text</button>
                     <button class="toggle-btn" id="numberToggle">Angka</button>
@@ -1064,8 +1052,6 @@
         </div>
     </div>
 
-    <div class="notification" id="notification"></div>
-
     <script>
         // Initialize variables
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
@@ -1075,6 +1061,20 @@
         let taskStopwatchIntervals = {};
         let editingTaskId = null;
         let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
+        
+        // Hashtag colors configuration
+        const HASHTAG_COLORS = {
+            "#RED":        "#e53935",   // merah terang
+            "#SHOPEE":     "#fb8c00",   // oranye tebal
+            "#YELLOW":     "#fdd835",   // kuning modern
+            "#GREEN":      "#43a047",   // hijau solid
+            "#TEAL":       "#00897b",   // hijau kebiruan elegan
+            "#BLUE":       "#1e88e5",   // biru cerah
+            "#SKY":        "#29b6f6",   // biru langit lembut
+            "#TIKTOK":     "#8e24aa",   // ungu mewah
+            "#PINK":       "#d81b60",   // pink fuchsia
+            "#KAUKAH":     "#6d4c41",   // coklat profesional
+        };
         
         // DOM Elements
         const taskInput = document.getElementById('taskInput');
@@ -1088,7 +1088,6 @@
         const stopwatchProgress = document.getElementById('stopwatchProgress');
         const currentTaskDiv = document.getElementById('currentTask');
         const currentTaskName = document.getElementById('currentTaskName');
-        const notification = document.getElementById('notification');
         const totalMinutes = document.getElementById('totalMinutes');
         const editModal = document.getElementById('editModal');
         const editTaskInput = document.getElementById('editTaskInput');
@@ -1139,7 +1138,7 @@
             const currentTask = tasks.find(t => t.id == currentTaskId);
             if (currentTask && !currentTask.completed) {
                 currentTaskDiv.style.display = 'block';
-                currentTaskName.textContent = currentTask.name;
+                currentTaskName.innerHTML = processHashtags(currentTask.name);
                 startStopwatch();
                 toggleStartStopButtons(true);
             } else {
@@ -1262,6 +1261,15 @@
             }
         }
         
+        function processHashtags(text) {
+            // Process hashtags in text and convert them to colored capsules
+            return text.replace(/#(\w+)/g, function(match, hashtag) {
+                const hashtagUpper = '#' + hashtag.toUpperCase();
+                const color = HASHTAG_COLORS[hashtagUpper] || '#888888'; // Default gray if not found
+                return `<span class="hashtag-capsule" style="background-color: ${color}">${hashtagUpper}</span>`;
+            });
+        }
+        
         function addTaskToQueue() {
             const taskName = taskInput.value.trim();
             if (!taskName) return;
@@ -1285,8 +1293,6 @@
             updateDetailedStats();
             
             taskInput.value = '';
-            
-            showNotification(`Telah ditambah "${taskName}"`);
         }
         
         function executeTask() {
@@ -1314,7 +1320,7 @@
             localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
-            currentTaskName.textContent = taskName;
+            currentTaskName.innerHTML = processHashtags(taskName);
             
             startStopwatch();
             
@@ -1327,8 +1333,6 @@
 
             fireConfetti();
             taraAudio.play();
-            
-            showNotification(`Tugas dimulai: "${taskName}"`);
         }
         
         function executeQuickTask(taskName) {
@@ -1353,7 +1357,7 @@
             localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
-            currentTaskName.textContent = taskName;
+            currentTaskName.innerHTML = processHashtags(taskName);
             
             startStopwatch();
             
@@ -1364,8 +1368,6 @@
 
             fireConfetti();
             taraAudio.play();
-            
-            showNotification(`${taskName} dimulai`);
         }
         
         function startTask(taskId) {
@@ -1383,7 +1385,7 @@
             localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
-            currentTaskName.textContent = task.name;
+            currentTaskName.innerHTML = processHashtags(task.name);
             
             startStopwatch();
             
@@ -1394,8 +1396,6 @@
 
             fireConfetti();
             taraAudio.play();
-            
-            showNotification(`Tugas dimulai: "${task.name}"`);
         }
         
         function completeCurrentTask() {
@@ -1429,8 +1429,6 @@
             renderTasks();
             updateStats();
             updateDetailedStats();
-
-            showNotification(`Tugas selesai: "${task.name}"`);
         }
         
         function startStopwatch() {
@@ -1455,7 +1453,6 @@
                         // Trigger audio every 5 minutes (300 seconds)
                         if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) {
                             dingAudio.play();
-                            showNotification('Ding! 5 menit telah berlalu');
                         }
 
                         if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
@@ -1480,20 +1477,21 @@
             const minutes = Math.floor((elapsedSeconds % 3600) / 60);
             const seconds = elapsedSeconds % 60;
             
+            // Format stopwatch based on duration
             let textDisplay = '';
-            if (hours > 0) {
-                textDisplay = `<span class="time-number">${hours}</span> Jam <span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
-            } else {
-                textDisplay = `<span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
-            }
-            
-            const minutesFormatted = minutes.toString().padStart(2, '0');
-            const secondsFormatted = seconds.toString().padStart(2, '0');
-            let numberDisplay = `${minutesFormatted}:${secondsFormatted}`;
+            let numberDisplay = '';
             
             if (hours > 0) {
+                // More than 60 minutes: "00 Jam 00 Menit"
                 const hoursFormatted = hours.toString().padStart(2, '0');
-                numberDisplay = `${hoursFormatted}:${minutesFormatted}:${secondsFormatted}`;
+                const minutesFormatted = minutes.toString().padStart(2, '0');
+                textDisplay = `<span class="time-number">${hoursFormatted}</span> Jam <span class="time-number">${minutesFormatted}</span> Menit`;
+                numberDisplay = `${hoursFormatted} Jam ${minutesFormatted} Menit`;
+            } else {
+                // Less than 60 minutes: "00 Menit"
+                const minutesFormatted = minutes.toString().padStart(2, '0');
+                textDisplay = `<span class="time-number">${minutesFormatted}</span> Menit`;
+                numberDisplay = `${minutesFormatted} Menit`;
             }
             
             stopwatchText.innerHTML = textDisplay;
@@ -1653,7 +1651,7 @@
                     <div class="task-info">
                         <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
                         <div class="task-timestamp">${startTimeText}</div>
-                        <div class="task-title">${task.name}</div>
+                        <div class="task-title">${processHashtags(task.name)}</div>
                     </div>
                     ${durationDisplay}
                     ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
@@ -1811,8 +1809,6 @@
             
             saveTasks();
             renderTasks();
-            
-            showNotification(`Tugas "${task.name}" dipindah ke atas`);
         }
         
         function repeatTask(taskId) {
@@ -1840,7 +1836,7 @@
             localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
-            currentTaskName.textContent = task.name;
+            currentTaskName.innerHTML = processHashtags(task.name);
             
             startStopwatch();
             
@@ -1851,8 +1847,6 @@
 
             fireConfetti();
             taraAudio.play();
-            
-            showNotification(`Tugas "${task.name}" diulang`);
         }
         
         function editTask(taskId) {
@@ -1880,7 +1874,6 @@
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
-                showNotification(`Tugas diperbarui: "${newName}"`);
             }
             
             closeEditModal();
@@ -1906,8 +1899,6 @@
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
-                
-                showNotification(`Tugas dihapus: "${task.name}"`);
             }
         }
         
@@ -1930,7 +1921,6 @@
             const completedTasks = tasks.filter(task => task.completed);
             
             if (completedTasks.length === 0) {
-                showNotification('Tidak ada tugas yang sudah selesai');
                 return;
             }
             
@@ -1941,22 +1931,11 @@
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
-                
-                showNotification(`${completedTasks.length} tugas selesai telah dihapus`);
             }
         }
         
         function saveTasks() {
             localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
-        
-        function showNotification(message) {
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
         }
         
         // Make functions globally accessible
