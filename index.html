@@ -1054,7 +1054,23 @@
 
     <script>
         // Initialize variables
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let tasks = [];
+        try {
+            const storedTasks = localStorage.getItem('tasks');
+            if (storedTasks) {
+                const parsedTasks = JSON.parse(storedTasks);
+                if (Array.isArray(parsedTasks)) {
+                    tasks = parsedTasks;
+                } else {
+                    console.error("Data in 'tasks' localStorage key is not an array. Resetting to empty.");
+                    localStorage.removeItem('tasks'); // Hapus data yang tidak valid
+                }
+            }
+        } catch (error) {
+            console.error("Failed to load tasks from localStorage:", error);
+            // 'tasks' sudah berupa array kosong, jadi aman.
+        }
+        
         let currentTaskId = localStorage.getItem('currentTaskId') || null;
         let stopwatchInterval = null;
         let isPaused = localStorage.getItem('isPaused') === 'true' || false;
@@ -1554,6 +1570,13 @@
         }
         
         function renderTasks() {
+            // Defensive check: Ensure 'tasks' is an array before proceeding.
+            if (!Array.isArray(tasks)) {
+                console.error("CRITICAL: 'tasks' variable is not an array in renderTasks. Halting render.");
+                taskListContainer.innerHTML = '<p class="empty-state">Error: Data tugas tidak valid.</p>';
+                return;
+            }
+
             if (tasks.length === 0) {
                 taskListContainer.innerHTML = '<p class="empty-state">Belum ada tugas</p>';
                 return;
