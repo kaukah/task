@@ -3,11 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕒 TIME BLOCKER v3</title>
+    <title>🕒 TIME BLOCKER</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    
+    <!-- FIREBASE SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
     <style>
+        /* ... SEMUA STYLE ANDA TETAP SAMA ... */
         :root {
             /* Light mode colors */
             --bg-primary: #ffffff;
@@ -1053,30 +1059,32 @@
     </div>
 
     <script>
-        // Initialize variables
-        let tasks = [];
-        try {
-            const storedTasks = localStorage.getItem('tasks');
-            if (storedTasks) {
-                const parsedTasks = JSON.parse(storedTasks);
-                if (Array.isArray(parsedTasks)) {
-                    tasks = parsedTasks;
-                } else {
-                    console.error("Data in 'tasks' localStorage key is not an array. Resetting to empty.");
-                    localStorage.removeItem('tasks'); // Hapus data yang tidak valid
-                }
-            }
-        } catch (error) {
-            console.error("Failed to load tasks from localStorage:", error);
-            // 'tasks' sudah berupa array kosong, jadi aman.
-        }
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCRhiKXUqBPJAqTDRRE5Mc82Ymt2mZXaHI",
+  authDomain: "tasks-time.firebaseapp.com",
+  projectId: "tasks-time",
+  storageBucket: "tasks-time.firebasestorage.app",
+  messagingSenderId: "410564711314",
+  appId: "1:410564711314:web:62d29b9ee5b3424258674b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
         
-        let currentTaskId = localStorage.getItem('currentTaskId') || null;
+        // Initialize variables
+        let tasks = []; // Data akan dimuat dari Firebase
+        let currentTaskId = null; // currentTaskId juga bisa disimpan di Firebase jika ingin sinkron
         let stopwatchInterval = null;
-        let isPaused = localStorage.getItem('isPaused') === 'true' || false;
+        let isPaused = false;
         let taskStopwatchIntervals = {};
         let editingTaskId = null;
-        let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
+        let stopwatchMode = 'number'; // Tetap gunakan localStorage untuk preferensi mode
         
         // Hashtag colors configuration
         const HASHTAG_COLORS = {
@@ -1143,13 +1151,47 @@
         const productiveBarEl = document.getElementById('productiveBar');
         const breakBarEl = document.getElementById('breakBar');
         
+        // --- FIREBASE FUNCTIONS ---
+        async function loadTasks() {
+            try {
+                const docRef = db.collection('tasks').doc('appData');
+                const doc = await docRef.get();
+                
+                if (doc.exists) {
+                    tasks = doc.data().tasks || [];
+                    console.log("Tasks successfully loaded from Firestore!");
+                } else {
+                    console.log("No tasks found in Firestore, starting fresh.");
+                    tasks = [];
+                }
+            } catch (error) {
+                console.error("Error getting document:", error);
+                tasks = [];
+            }
+        }
+
+        async function saveTasks() {
+            try {
+                await db.collection('tasks').doc('appData').set({
+                    tasks: tasks
+                });
+                console.log("Tasks successfully saved to Firestore!");
+            } catch (error) {
+                console.error("Error writing document: ", error);
+            }
+        }
+
         // Initialize
-        renderTasks();
-        updateStats();
-        updateDetailedStats();
-        updateStopwatchMode();
+        loadTasks().then(() => {
+            renderTasks();
+            updateStats();
+            updateDetailedStats();
+            updateStopwatchMode();
+        });
         
         // If there's a current task, restore it
+        // Note: Untuk sinkronisasi sempurna, currentTaskId juga harus disimpan di Firebase
+        // Saat ini, currentTaskId hanya lokal
         if (currentTaskId) {
             const currentTask = tasks.find(t => t.id == currentTaskId);
             if (currentTask && !currentTask.completed) {
@@ -1159,7 +1201,6 @@
                 toggleStartStopButtons(true);
             } else {
                 currentTaskId = null;
-                localStorage.removeItem('currentTaskId');
                 toggleStartStopButtons(false);
             }
         } else {
@@ -1286,7 +1327,7 @@
             });
         }
         
-        function addTaskToQueue() {
+        async function addTaskToQueue() {
             const taskName = taskInput.value.trim();
             if (!taskName) return;
             
@@ -1300,10 +1341,9 @@
                 inProgress: false
             };
             
-            // Menambahkan task di awal array, bukan di akhir
             tasks.unshift(newTask);
             
-            saveTasks();
+            await saveTasks(); // Gunakan await karena ini fungsi async
             renderTasks();
             updateStats();
             updateDetailedStats();
@@ -1311,12 +1351,12 @@
             taskInput.value = '';
         }
         
-        function executeTask() {
+        async function executeTask() {
             const taskName = taskInput.value.trim();
             if (!taskName) return;
             
             if (currentTaskId) {
-                completeCurrentTask();
+                await completeCurrentTask(); // Tunggu task selesai disimpan
             }
             
             const newTask = {
@@ -1329,18 +1369,15 @@
                 inProgress: true
             };
             
-            // Menambahkan task di awal array, bukan di akhir
             tasks.unshift(newTask);
             currentTaskId = newTask.id;
-            
-            localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
             currentTaskName.innerHTML = processHashtags(taskName);
             
             startStopwatch();
             
-            saveTasks();
+            await saveTasks(); // Simpan ke Firebase
             renderTasks();
             updateStats();
             updateDetailedStats();
@@ -1351,9 +1388,9 @@
             taraAudio.play();
         }
         
-        function executeQuickTask(taskName) {
+        async function executeQuickTask(taskName) {
             if (currentTaskId) {
-                completeCurrentTask();
+                await completeCurrentTask();
             }
             
             const newTask = {
@@ -1366,18 +1403,15 @@
                 inProgress: true
             };
             
-            // Menambahkan task di awal array, bukan di akhir
             tasks.unshift(newTask);
             currentTaskId = newTask.id;
-            
-            localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
             currentTaskName.innerHTML = processHashtags(taskName);
             
             startStopwatch();
             
-            saveTasks();
+            await saveTasks();
             renderTasks();
             updateStats();
             updateDetailedStats();
@@ -1386,9 +1420,9 @@
             taraAudio.play();
         }
         
-        function startTask(taskId) {
+        async function startTask(taskId) {
             if (currentTaskId) {
-                completeCurrentTask();
+                await completeCurrentTask();
             }
             
             const task = tasks.find(t => t.id == taskId);
@@ -1398,14 +1432,13 @@
             task.startTime = new Date();
             
             currentTaskId = taskId;
-            localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
             currentTaskName.innerHTML = processHashtags(task.name);
             
             startStopwatch();
             
-            saveTasks();
+            await saveTasks();
             renderTasks();
             updateStats();
             updateDetailedStats();
@@ -1414,7 +1447,7 @@
             taraAudio.play();
         }
         
-        function completeCurrentTask() {
+        async function completeCurrentTask() {
             if (!currentTaskId) return;
             
             const task = tasks.find(t => t.id == currentTaskId);
@@ -1435,13 +1468,12 @@
             currentTaskDiv.style.display = 'none';
             
             currentTaskId = null;
-            localStorage.removeItem('currentTaskId');
             
             if (stopwatchInterval) clearInterval(stopwatchInterval);
 
             toggleStartStopButtons(false);
             
-            saveTasks();
+            await saveTasks(); // Simpan perubahan ke Firebase
             renderTasks();
             updateStats();
             updateDetailedStats();
@@ -1548,6 +1580,7 @@
                 timestamp: now
             };
             
+            // Log ini masih menggunakan localStorage, bisa juga dipindahkan ke Firebase jika perlu
             let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
             logs.push(logEntry);
             
@@ -1570,7 +1603,6 @@
         }
         
         function renderTasks() {
-            // Defensive check: Ensure 'tasks' is an array before proceeding.
             if (!Array.isArray(tasks)) {
                 console.error("CRITICAL: 'tasks' variable is not an array in renderTasks. Halting render.");
                 taskListContainer.innerHTML = '<p class="empty-state">Error: Data tugas tidak valid.</p>';
@@ -1820,7 +1852,7 @@
             startTask(taskId);
         }
         
-        function moveTaskToTop(taskId) {
+        async function moveTaskToTop(taskId) {
             const task = tasks.find(t => t.id == taskId);
             if (!task || task.completed || task.inProgress) return;
             
@@ -1830,16 +1862,16 @@
             tasks.splice(taskIndex, 1);
             tasks.unshift(task);
             
-            saveTasks();
+            await saveTasks();
             renderTasks();
         }
         
-        function repeatTask(taskId) {
+        async function repeatTask(taskId) {
             const task = tasks.find(t => t.id == taskId);
             if (!task || !task.completed) return;
             
             if (currentTaskId) {
-                completeCurrentTask();
+                await completeCurrentTask();
             }
             
             const newTask = {
@@ -1852,18 +1884,15 @@
                 inProgress: true
             };
             
-            // Menambahkan task di awal array, bukan di akhir
             tasks.unshift(newTask);
             currentTaskId = newTask.id;
-            
-            localStorage.setItem('currentTaskId', currentTaskId);
             
             currentTaskDiv.style.display = 'block';
             currentTaskName.innerHTML = processHashtags(task.name);
             
             startStopwatch();
             
-            saveTasks();
+            await saveTasks();
             renderTasks();
             updateStats();
             updateDetailedStats();
@@ -1886,14 +1915,14 @@
             }, 100);
         }
         
-        function saveTaskEdit() {
+        async function saveTaskEdit() {
             const newName = editTaskInput.value.trim();
             if (!newName) return;
             
             const task = tasks.find(t => t.id == editingTaskId);
             if (task) {
                 task.name = newName;
-                saveTasks();
+                await saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
@@ -1908,17 +1937,17 @@
             editingTaskId = null;
         }
         
-        function deleteTask(taskId) {
+        async function deleteTask(taskId) {
             const task = tasks.find(t => t.id == taskId);
             if (!task) return;
             
             if (confirm(`Hapus tugas: "${task.name}"?`)) {
                 if (currentTaskId == taskId) {
-                    completeCurrentTask();
+                    await completeCurrentTask();
                 }
                 
                 tasks = tasks.filter(t => t.id !== taskId);
-                saveTasks();
+                await saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
@@ -1940,7 +1969,7 @@
             totalMinutes.textContent = formattedTime;
         }
         
-        function resetAll() {
+        async function resetAll() {
             const completedTasks = tasks.filter(task => task.completed);
             
             if (completedTasks.length === 0) {
@@ -1950,15 +1979,11 @@
             if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
                 tasks = tasks.filter(task => !task.completed);
                 
-                saveTasks();
+                await saveTasks();
                 renderTasks();
                 updateStats();
                 updateDetailedStats();
             }
-        }
-        
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
         }
         
         // Make functions globally accessible
