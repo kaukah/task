@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🕒 TIME BLOCKER v5</title>
+    <title>🕒 Time Blocker v6</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
@@ -132,7 +132,6 @@
             text-align: center;
             outline: none;
             font-weight: 700;
-            text-transform: uppercase;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
             font-family: 'Inter', sans-serif;
@@ -326,12 +325,14 @@
         }
 
         .stopwatch-number {
-            font-size: 4rem;
-            font-weight: 800;
+            font-size: 2rem;
+            font-weight: 200;
+            text-transform: uppercase;
             text-align: center;
             color: red;
             font-family: 'Inter', sans-serif;
             letter-spacing: 2px;
+            margin:20px 0 20px;
         }
 
         .stopwatch-toggle {
@@ -376,7 +377,6 @@
             font-size: 5rem;
             color: var(--text-primary);
             font-weight: 700;
-            text-transform: uppercase;
             animation: pulse 1s infinite;
             font-family: 'Inter', sans-serif;
             line-height: 0.9;
@@ -486,15 +486,7 @@
             box-shadow: var(--shadow-md);
         }
 
-        .task-item.completed {
-            opacity: 0.7;
-            border-left-color: var(--accent-success);
-            color:#c2c2c2;
-        }
 
-        .task-item.in-progress {
-            border-left-color: var(--accent-primary);
-        }
 
         .task-info {
             flex: 1;
@@ -542,7 +534,7 @@
         .task-timestamp {
             min-width: 60px;
             text-align: center;
-            font-size: 0.875rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             text-transform: uppercase;
             font-family: 'Inter', sans-serif;
@@ -551,7 +543,7 @@
         }
 
         .task-title {
-            font-weight: 600;
+            font-weight: 300;
             text-transform: uppercase;
             font-size: 1rem;
             flex-grow: 1;
@@ -870,9 +862,7 @@
                 font-size: 1rem;
             }
             
-            .stopwatch-number {
-                font-size: 3rem;
-            }
+           
             
             .current-task h1 {
                 font-size: 4rem;
@@ -894,7 +884,7 @@
             
             .task-timestamp, .task-duration {
                 min-width: 50px;
-                font-size: 0.75rem;
+                font-size: 1rem;
             }
             
             .task-stopwatch {
@@ -949,7 +939,7 @@
     <div class="container">
 
         <div class="input-section">
-            <input type="text" id="taskInput" class="task-input" placeholder="Ketik tugas baru..." autofocus>
+            <input type="text" id="taskInput" class="task-input" placeholder="Ketik Tugas Baru (Shift + Enter)" autofocus>
         </div>
         
         <div class="stopwatch-container">
