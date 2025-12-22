@@ -463,7 +463,6 @@
 
         .total-minutes {
             color: var(--accent-warning);
-            font-weight: 800;
             font-size: 2rem;
             font-family: 'Inter', sans-serif;
             letter-spacing: 1px;
@@ -977,19 +976,28 @@
                             <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> Break</button>
                             <button id="sholatBtn" class="quick-action-btn"><i class="fas fa-hands-praying"></i> Sholat</button>
                         </div>
-                        <button id="addTaskBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Tambah</button>
-                        <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Mulai</button>
+                        <button id="addTaskBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> Add</button>
+                        <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Start</button>
+                        <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
+                            <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> Reset</button>
                     </div>
                 </div>
                 
                 <div class="task-list">  
-                    <div class="task-stats">
-                        <div class="total-minutes" id="totalMinutes">0 Menit</div>
-                        <div class="stat-buttons-group">
-                            <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
-                            <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> Hapus Selesai</button>
+                    
+                    
+                    
+                    <div class="chart-container">
+                        <div class="chart-bar-container">
+                            <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
+                            <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
                         </div>
                     </div>
+                    
+                    <div class="task-stats">
+                        Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
+                    </div>
+                    
                     
                     <div class="stats-details">
                         <div class="stat-item">
@@ -1017,13 +1025,7 @@
                             <div class="stat-value" id="breakPercentage">0%</div>
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <div class="chart-label">Rasio Waktu Produktif vs Break</div>
-                        <div class="chart-bar-container">
-                            <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                            <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         </div>
