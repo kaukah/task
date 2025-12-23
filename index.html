@@ -314,25 +314,25 @@
         }
 
         .stopwatch-text {
-            font-size: 5rem;
-            font-weight: 500;
+            font-size: 2rem;
+            font-weight: 900;
             text-align: center;
             color: red;
             margin-bottom: 5px;
             display: none;
             font-family: 'Inter', sans-serif;
-            letter-spacing: 1px;
+            letter-spacing: 0px;
         }
 
         .stopwatch-number {
-            font-size: 5rem;
+            font-size: 2rem;
             font-weight: 200;
-            text-transform: uppercase;
+            /*text-transform: uppercase;*/
             text-align: center;
-            color: red;
+            color: orange;
             font-family: 'Inter', sans-serif;
-            letter-spacing: 2px;
-            margin:0;
+            letter-spacing: 0px;
+            margin:10px 0 0s;
         }
 
         .stopwatch-toggle {
@@ -1358,40 +1358,40 @@
         }
         
         function updateStopwatchDisplay() {
-            if (!currentTaskId) return;
-            
-            const currentTask = tasks.find(t => t.id == currentTaskId);
-            if (!currentTask || !currentTask.startTime) return;
-            
-            const startTime = new Date(currentTask.startTime);
-            const now = new Date();
-            const elapsedSeconds = Math.floor((now - startTime) / 1000);
-            
-            const hours = Math.floor(elapsedSeconds / 3600);
-            const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-            const seconds = elapsedSeconds % 60;
-            
-            // Format stopwatch based on duration
-            let textDisplay = '';
-            let numberDisplay = '';
-            
-            if (hours > 0) {
-                // More than 60 minutes: "00 Jam 00 Menit"
-                const hoursFormatted = hours.toString().padStart(2, '0');
-                const minutesFormatted = minutes.toString().padStart(2, '0');
-                textDisplay = `<span class="time-number">${hoursFormatted}</span> Jam <span class="time-number">${minutesFormatted}</span> Menit`;
-                numberDisplay = `${hoursFormatted} Jam ${minutesFormatted} Menit`;
-            } else {
-                // Less than 60 minutes: "00:00" (with seconds)
-                const minutesFormatted = minutes.toString().padStart(2, '0');
-                const secondsFormatted = seconds.toString().padStart(2, '0');
-                textDisplay = `<span class="time-number">${minutesFormatted}:${secondsFormatted}</span>`;
-                numberDisplay = `${minutesFormatted}:${secondsFormatted}`;
-            }
-            
-            stopwatchText.innerHTML = textDisplay;
-            stopwatchNumber.textContent = numberDisplay;
-        }
+    if (!currentTaskId) return;
+    
+    const currentTask = tasks.find(t => t.id == currentTaskId);
+    if (!currentTask || !currentTask.startTime) return;
+    
+    const startTime = new Date(currentTask.startTime);
+    const now = new Date();
+    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+    
+    const hours = Math.floor(elapsedSeconds / 3600);
+    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+    const seconds = elapsedSeconds % 60;
+    
+    // Format stopwatch based on duration
+    let textDisplay = '';
+    let numberDisplay = '';
+    
+    if (hours > 0) {
+        // More than 60 minutes: "00 Jam 00 Menit"
+        const hoursFormatted = hours.toString().padStart(2, '0');
+        const minutesFormatted = minutes.toString().padStart(2, '0');
+        textDisplay = `<span class="time-number">${hoursFormatted}</span> Jam <span class="time-number">${minutesFormatted}</span> Menit`;
+        numberDisplay = `${hoursFormatted} Jam ${minutesFormatted} Menit`;
+    } else {
+        // Less than 60 minutes: "00 Menit 00 Detik"
+        const minutesFormatted = minutes.toString().padStart(2, '0');
+        const secondsFormatted = seconds.toString().padStart(2, '0');
+        textDisplay = `<span class="time-number">${minutesFormatted}</span> Menit <span class="time-number">${secondsFormatted}</span> Detik`;
+        numberDisplay = `${minutesFormatted} Menit ${secondsFormatted} Detik`;
+    }
+    
+    stopwatchText.innerHTML = textDisplay;
+    stopwatchNumber.textContent = numberDisplay;
+}
         
         function updateProgressBar() {
             if (!currentTaskId) return;
