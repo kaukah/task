@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -121,6 +122,12 @@
         }
 
         .task-input {
+        
+            padding-top: 100px;
+    position: fixed;
+    z-index: 999;
+    background-color: var(--bg-secondary);
+    
             width: 100%;
             max-width: 600px;
             padding: 16px 20px;
@@ -150,7 +157,7 @@
         .btn-group {
             display: flex;
             gap: 12px;
-            margin-top: 20px;
+            /*margin-top: 20px;*/
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -272,7 +279,7 @@
 
         .stopwatch-container {
             position: relative;
-            margin: 10px 0 -30px;
+            margin: 80px 0 -30px;
         }
 
         .stopwatch-bar {
@@ -325,13 +332,13 @@
         }
 
         .stopwatch-number {
-            font-size: 2rem;
-            font-weight: 200;
+            font-size: 3rem;
+            font-weight: 700;
             /*text-transform: uppercase;*/
             text-align: center;
             color: orange;
             font-family: 'Inter', sans-serif;
-            letter-spacing: 0px;
+            letter-spacing: -1px;
             margin:10px 0 0s;
         }
 
@@ -714,7 +721,7 @@
 
         .chart-bar-container {
             display: flex;
-            height: 36px;
+            height: 16px;
             background-color: var(--bg-tertiary);
             border-radius: 8px;
             overflow: hidden;
@@ -878,8 +885,7 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
-        <i class="fas fa-moon"></i>
+    <button  id="themeToggle" title="Toggle dark mode">
     </button>
 
     <div class="container">
@@ -889,9 +895,9 @@
         </div>
         
         <div class="stopwatch-container">
-            <div class="stopwatch-bar">
-                <div class="stopwatch-progress" id="stopwatchProgress"></div>
-            </div>
+
+                <div  id="stopwatchProgress"></div>
+   
             <div class="stopwatch-display">
                 <div class="stopwatch-text" id="stopwatchText">
                     <span class="time-number">0</span> Menit
@@ -908,22 +914,19 @@
             <h1 id="currentTaskName">-</h1>
         </div>
         
-        <div class="collapse-section">
-            <div class="collapse-toggle collapsed" id="collapseToggle">
-                SHOW <i class="fas fa-chevron-down"></i>
-            </div>
-            
-            <div class="collapsible-content collapsed" id="collapsibleContent">
+
+
+
                 <div class="input-section">
                     <div class="btn-group">
                         <div class="quick-actions">
-                            <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> </button>
-                            <button id="sholatBtn" class="quick-action-btn"><i class="fas fa-hands-praying"></i> </button>
+                            <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i>Break </button>
+                            
                         </div>
-                        <button id="addTaskBtn" class="btn btn-secondary"><i class="fas fa-plus"></i> </button>
-                        <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Go</button>
+                        <button id="addTaskBtn"></button>
+                        <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Kerja</button>
                         <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
-                            <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> </button>
+                            <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i>Reset </button>
                     </div>
                 </div>
                 
@@ -939,8 +942,7 @@
                         Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
                     </div>
                 </div>
-            </div>
-        </div>
+     
         
         <div class="task-list">
             <div id="taskListContainer">
@@ -1383,8 +1385,8 @@
         numberDisplay = `${hoursFormatted} Jam ${minutesFormatted} Menit`;
     } else {
         // Less than 60 minutes: "00 Menit 00 Detik"
-        const minutesFormatted = minutes.toString().padStart(2, '0');
-        const secondsFormatted = seconds.toString().padStart(2, '0');
+const minutesFormatted = minutes;
+const secondsFormatted = seconds;
         textDisplay = `<span class="time-number">${minutesFormatted}</span> Menit <span class="time-number">${secondsFormatted}</span> Detik`;
         numberDisplay = `${minutesFormatted} Menit ${secondsFormatted} Detik`;
     }
@@ -1773,3 +1775,4 @@
     </script>
 </body>
 </html>
+
