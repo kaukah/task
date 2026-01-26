@@ -59,6 +59,9 @@
             flex-direction: column;
             transition: var(--transition);
         }
+        html, body {
+            transition: background-color 0.6s ease, color 0.6s ease;
+        }
 
         .container {
             background-color: var(--bg-secondary);
@@ -121,15 +124,17 @@
             animation: fadeIn 0.8s ease-out;
         }
 
+        [data-theme="dark"] .task-input{
+            color:#000;
+        }
+
         .task-input {
-        
-            padding-top: 100px;
-    position: fixed;
-    z-index: 999;
-    background-color: var(--bg-secondary);
-    
+
+            position: fixed;
+            z-index: 1;
+            background-color: var(--bg-secondary);
             width: 100%;
-            max-width: 600px;
+            max-width: 90vw;
             padding: 16px 20px;
             font-size: 1.5rem;
             background-color: #fff;
@@ -138,7 +143,7 @@
             color: var(--text-primary);
             text-align: center;
             outline: none;
-            font-weight: 700;
+            font-weight: 400;
             transition: var(--transition);
             box-shadow: var(--shadow-sm);
             font-family: 'Inter', sans-serif;
@@ -279,7 +284,7 @@
 
         .stopwatch-container {
             position: relative;
-            margin: 80px 0 -30px;
+            margin: 50px 0 -30px;
         }
 
         .stopwatch-bar {
@@ -321,10 +326,10 @@
         }
 
         .stopwatch-text {
-            font-size: 2rem;
-            font-weight: 900;
+            font-size: 3rem;
+            font-weight: 300;
             text-align: center;
-            color: red;
+            color: orange;
             margin-bottom: 5px;
             display: none;
             font-family: 'Inter', sans-serif;
@@ -332,7 +337,7 @@
         }
 
         .stopwatch-number {
-            font-size: 3rem;
+            font-size: 7rem;
             font-weight: 700;
             /*text-transform: uppercase;*/
             text-align: center;
@@ -344,7 +349,7 @@
 
         .stopwatch-toggle {
             margin-top: 10px;
-            display: none;
+            display: block;
         }
 
         .toggle-btn {
@@ -381,7 +386,7 @@
         }
 
         .current-task h1 {
-            font-size: 5rem;
+            font-size: 3rem;
             color: var(--text-primary);
             font-weight: 700;
             animation: pulse 1s infinite;
@@ -823,13 +828,13 @@
             }
             
             .stopwatch-text {
-                font-size: 1rem;
+                font-size: 3rem;
             }
             
-           
+
             
             .current-task h1 {
-                font-size: 4rem;
+                font-size: 3rem;
             }
             
             .task-stats {
@@ -885,8 +890,6 @@
     </style>
 </head>
 <body>
-    <button  id="themeToggle" title="Toggle dark mode">
-    </button>
 
     <div class="container">
 
@@ -896,83 +899,78 @@
         
         <div class="stopwatch-container">
 
-                <div  id="stopwatchProgress"></div>
-   
+            <div  id="stopwatchProgress"></div>
+
             <div class="stopwatch-display">
                 <div class="stopwatch-text" id="stopwatchText">
-                    <span class="time-number">0</span> Menit
+                    <span class="time-number">0</span> Menit</div>
+                    <div class="stopwatch-number" id="stopwatchNumber">00 Menit</div>
+
                 </div>
-                <div class="stopwatch-number" id="stopwatchNumber">00 Menit</div>
-                <div class="stopwatch-toggle">
-                    <button class="toggle-btn active" id="textToggle">Text</button>
-                    <button class="toggle-btn" id="numberToggle">Angka</button>
+            </div>
+
+            <div class="current-task" id="currentTask" style="display: none;">
+                <h1 id="currentTaskName">-</h1>
+            </div>
+
+
+
+
+            <div class="input-section">
+                <div class="btn-group">
+                    <div class="quick-actions">
+                        <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i>Break </button>
+
+                    </div>
+                    <button id="addTaskBtn"></button>
+                    <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Kerja</button>
+                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
+                    <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i>Reset </button>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-bar-container">
+                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
+                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="task-list">
+                <div id="taskListContainer">
+                    <p class="empty-state">Belum ada tugas</p>
+                </div>
+            </div>
+
+            <div class="task-stats">
+                Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
+            </div>
+
+
+        </div>
+
+        <div id="editModal" class="edit-modal" style="display: none;">
+            <div class="edit-modal-content">
+                <input type="text" id="editTaskInput" class="edit-modal-input" placeholder="Nama tugas">
+                <div class="edit-modal-buttons">
+                    <button id="cancelEditBtn" class="btn btn-secondary">Batal</button>
+                    <button id="saveEditBtn" class="btn">Simpan</button>
                 </div>
             </div>
         </div>
 
-        <div class="current-task" id="currentTask" style="display: none;">
-            <h1 id="currentTaskName">-</h1>
-        </div>
-        
-
-
-
-                <div class="input-section">
-                    <div class="btn-group">
-                        <div class="quick-actions">
-                            <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i>Break </button>
-                            
-                        </div>
-                        <button id="addTaskBtn"></button>
-                        <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Kerja</button>
-                        <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
-                            <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i>Reset </button>
-                    </div>
-                </div>
-                
-                <div class="task-list">  
-                    <div class="chart-container">
-                        <div class="chart-bar-container">
-                            <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                            <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="task-stats">
-                        Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
-                    </div>
-                </div>
-     
-        
-        <div class="task-list">
-            <div id="taskListContainer">
-                <p class="empty-state">Belum ada tugas</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="editModal" class="edit-modal" style="display: none;">
-        <div class="edit-modal-content">
-            <input type="text" id="editTaskInput" class="edit-modal-input" placeholder="Nama tugas">
-            <div class="edit-modal-buttons">
-                <button id="cancelEditBtn" class="btn btn-secondary">Batal</button>
-                <button id="saveEditBtn" class="btn">Simpan</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
+        <script>
         // Initialize variables
-        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-        let currentTaskId = localStorage.getItem('currentTaskId') || null;
-        let stopwatchInterval = null;
-        let isPaused = localStorage.getItem('isPaused') === 'true' || false;
-        let taskStopwatchIntervals = {};
-        let editingTaskId = null;
-        let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
-        
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            let currentTaskId = localStorage.getItem('currentTaskId') || null;
+            let stopwatchInterval = null;
+            let isPaused = localStorage.getItem('isPaused') === 'true' || false;
+            let taskStopwatchIntervals = {};
+            let editingTaskId = null;
+            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
+
         // Hashtag colors configuration
-        const HASHTAG_COLORS = {
+            const HASHTAG_COLORS = {
             "#RED":        "#e53935",   // merah terang
             "#SHOPEE":     "#fb8c00",   // oranye tebal
             "#YELLOW":     "#fdd835",   // kuning modern
@@ -991,7 +989,6 @@
         const executeTaskBtn = document.getElementById('executeTaskBtn');
         const stopTaskBtn = document.getElementById('stopTaskBtn');
         const breakBtn = document.getElementById('breakBtn');
-        const sholatBtn = document.getElementById('sholatBtn');
         const resetBtn = document.getElementById('resetBtn');
         const taskListContainer = document.getElementById('taskListContainer');
         const stopwatchProgress = document.getElementById('stopwatchProgress');
@@ -1004,22 +1001,21 @@
         const saveEditBtn = document.getElementById('saveEditBtn');
         const stopwatchText = document.getElementById('stopwatchText');
         const stopwatchNumber = document.getElementById('stopwatchNumber');
-        const textToggle = document.getElementById('textToggle');
-        const numberToggle = document.getElementById('numberToggle');
-        
+
+        updateStopwatchMode();
+
+
         // Collapse elements
-        const collapseToggle = document.getElementById('collapseToggle');
-        const collapsibleContent = document.getElementById('collapsibleContent');
+        // const collapseToggle = document.getElementById('collapseToggle');
+        // const collapsibleContent = document.getElementById('collapsibleContent');
         
         // Theme toggle
-        const themeToggle = document.getElementById('themeToggle');
         const html = document.documentElement;
         
         // Check for saved theme preference or default to light
         const currentTheme = localStorage.getItem('theme') || 'light';
         if (currentTheme === 'dark') {
             html.setAttribute('data-theme', 'dark');
-            themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
         }
         
         // Audio Cues - DINONAKTIFKAN SEMENTARA karena Base64 URL tidak valid/mengganggu
@@ -1052,18 +1048,7 @@
         }
         
         // Event Listeners
-        // Theme toggle
-        themeToggle.addEventListener('click', function() {
-            if (html.getAttribute('data-theme') === 'dark') {
-                html.setAttribute('data-theme', 'light');
-                themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
-                localStorage.setItem('theme', 'light');
-            } else {
-                html.setAttribute('data-theme', 'dark');
-                themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
-                localStorage.setItem('theme', 'dark');
-            }
-        });
+
         
         // Input event listeners
         taskInput.addEventListener('keypress', function(e) {
@@ -1083,31 +1068,24 @@
         breakBtn.addEventListener('click', function() {
             executeQuickTask('☕ Break');
         });
-        sholatBtn.addEventListener('click', function() {
-            executeQuickTask('🤲 Sholat');
-        });
+
         resetBtn.addEventListener('click', resetAll);
         
         // Collapse toggle event listener
-        collapseToggle.addEventListener('click', function() {
-            collapsibleContent.classList.toggle('collapsed');
-            collapseToggle.classList.toggle('collapsed');
-            
-            if (collapsibleContent.classList.contains('collapsed')) {
-                collapseToggle.innerHTML = 'SHOW <i class="fas fa-chevron-down"></i>';
-            } else {
-                collapseToggle.innerHTML = 'HIDE <i class="fas fa-chevron-up"></i>';
-            }
-        });
+        // collapseToggle.addEventListener('click', function() {
+        //     collapsibleContent.classList.toggle('collapsed');
+        //     collapseToggle.classList.toggle('collapsed');
+
+        //     if (collapsibleContent.classList.contains('collapsed')) {
+        //         collapseToggle.innerHTML = 'SHOW <i class="fas fa-chevron-down"></i>';
+        //     } else {
+        //         collapseToggle.innerHTML = 'HIDE <i class="fas fa-chevron-up"></i>';
+        //     }
+        // });
         
-        // Stopwatch toggle event listeners
-        textToggle.addEventListener('click', function() {
-            setStopwatchMode('text');
-        });
+
         
-        numberToggle.addEventListener('click', function() {
-            setStopwatchMode('number');
-        });
+
         
         // Edit modal event listeners
         cancelEditBtn.addEventListener('click', closeEditModal);
@@ -1148,15 +1126,23 @@
             updateStopwatchMode();
         }
         
+        stopwatchText.addEventListener('click', toggleStopwatchMode);
+        stopwatchNumber.addEventListener('click', toggleStopwatchMode);
+
+        function toggleStopwatchMode(){
+            stopwatchMode = stopwatchMode === 'text' ? 'number' : 'text';
+            localStorage.setItem('stopwatchMode', stopwatchMode);
+            updateStopwatchMode();
+        }
+
+
         function updateStopwatchMode() {
             if (stopwatchMode === 'text') {
-                textToggle.classList.add('active');
-                numberToggle.classList.remove('active');
+
                 stopwatchText.style.display = 'block';
                 stopwatchNumber.style.display = 'none';
             } else {
-                textToggle.classList.remove('active');
-                numberToggle.classList.add('active');
+
                 stopwatchText.style.display = 'none';
                 stopwatchNumber.style.display = 'block';
             }
@@ -1223,7 +1209,10 @@
             currentTaskName.innerHTML = processHashtags(taskName);
             
             startStopwatch();
-            
+            html.setAttribute('data-theme','light');
+            localStorage.setItem('theme','light');
+
+
             saveTasks();
             renderTasks();
             updateStats();
@@ -1259,6 +1248,8 @@
             currentTaskName.innerHTML = processHashtags(taskName);
             
             startStopwatch();
+            html.setAttribute('data-theme','light');
+            localStorage.setItem('theme','light');
             
             saveTasks();
             renderTasks();
@@ -1286,7 +1277,10 @@
             currentTaskName.innerHTML = processHashtags(task.name);
             
             startStopwatch();
-            
+            html.setAttribute('data-theme','light');
+            localStorage.setItem('theme','light');
+
+
             saveTasks();
             renderTasks();
             updateStats();
@@ -1314,12 +1308,14 @@
             addLogEntry(task);
             
             currentTaskDiv.style.display = 'none';
-            
+            html.setAttribute('data-theme','dark');
+            localStorage.setItem('theme','dark');
             currentTaskId = null;
             localStorage.removeItem('currentTaskId');
             
             if (stopwatchInterval) clearInterval(stopwatchInterval);
-
+            stopwatchText.innerHTML = '';
+            stopwatchNumber.textContent = '';
             toggleStartStopButtons(false);
             
             saveTasks();
@@ -1360,40 +1356,40 @@
         }
         
         function updateStopwatchDisplay() {
-    if (!currentTaskId) return;
-    
-    const currentTask = tasks.find(t => t.id == currentTaskId);
-    if (!currentTask || !currentTask.startTime) return;
-    
-    const startTime = new Date(currentTask.startTime);
-    const now = new Date();
-    const elapsedSeconds = Math.floor((now - startTime) / 1000);
-    
-    const hours = Math.floor(elapsedSeconds / 3600);
-    const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-    const seconds = elapsedSeconds % 60;
-    
+            if (!currentTaskId) return;
+
+            const currentTask = tasks.find(t => t.id == currentTaskId);
+            if (!currentTask || !currentTask.startTime) return;
+
+            const startTime = new Date(currentTask.startTime);
+            const now = new Date();
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+
+            const hours = Math.floor(elapsedSeconds / 3600);
+            const minutes = Math.floor((elapsedSeconds % 3600) / 60);
+            const seconds = elapsedSeconds % 60;
+
     // Format stopwatch based on duration
-    let textDisplay = '';
-    let numberDisplay = '';
-    
-    if (hours > 0) {
-        // More than 60 minutes: "00 Jam 00 Menit"
-        const hoursFormatted = hours.toString().padStart(2, '0');
-        const minutesFormatted = minutes.toString().padStart(2, '0');
-        textDisplay = `<span class="time-number">${hoursFormatted}</span> Jam <span class="time-number">${minutesFormatted}</span> Menit`;
-        numberDisplay = `${hoursFormatted} Jam ${minutesFormatted} Menit`;
-    } else {
-        // Less than 60 minutes: "00 Menit 00 Detik"
-const minutesFormatted = minutes;
-const secondsFormatted = seconds;
-        textDisplay = `<span class="time-number">${minutesFormatted}</span> Menit <span class="time-number">${secondsFormatted}</span> Detik`;
-        numberDisplay = `${minutesFormatted} Menit ${secondsFormatted} Detik`;
-    }
-    
-    stopwatchText.innerHTML = textDisplay;
-    stopwatchNumber.textContent = numberDisplay;
-}
+            let textDisplay = '';
+            let numberDisplay = '';
+
+            if (hours > 0) {
+    // TEXT: 2 Jam 5 Menit
+                textDisplay = `<span class="time-number">${hours}</span> Jam <span class="time-number">${minutes}</span> Menit`;
+
+    // ANGKA: 02:05:00
+                numberDisplay = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:00`;
+            } else {
+    // TEXT: 2 Menit 9 Detik
+                textDisplay = `<span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
+
+    // ANGKA: 02:09
+                numberDisplay = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+            }
+
+            stopwatchText.innerHTML = textDisplay;
+            stopwatchNumber.textContent = numberDisplay;
+        }
         
         function updateProgressBar() {
             if (!currentTaskId) return;
@@ -1490,6 +1486,7 @@ const secondsFormatted = seconds;
             });
             
             sortedTasks.forEach(task => {
+                if (task.inProgress) return; 
                 const taskItem = document.createElement('div');
                 taskItem.className = 'task-item';
                 
@@ -1514,11 +1511,11 @@ const secondsFormatted = seconds;
                 }
                 
                 const startTimeText = task.startTime 
-                    ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })
-                    : '-';
+                ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })
+                : '-';
                 
                 let taskStopwatch = '';
                 let taskStopwatchId = `task-stopwatch-${task.id}`;
@@ -1563,216 +1560,219 @@ const secondsFormatted = seconds;
                     ${durationDisplay}
                     ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
                     <div class="task-actions">
-                        ${!task.completed && !task.inProgress ? `
+                    ${!task.completed && !task.inProgress ? `
                             <button class="task-action-btn" onclick="moveTaskToTop(${task.id})" title="Pindahkan ke atas"><i class="fas fa-arrow-up"></i></button>
                             <button class="task-action-btn" onclick="editTask(${task.id})" title="Edit"><i class="fas fa-edit"></i></button>
                         ` : ''}
                         ${task.completed ? `
                             <button class="task-action-btn" onclick="repeatTask(${task.id})" title="Ulangi"><i class="fas fa-redo"></i></button>
-                        ` : ''}
+                            ` : ''}
                         <button class="task-action-btn" onclick="deleteTask(${task.id})" title="Hapus"><i class="fas fa-trash"></i></button>
                     </div>
-                `;
-                
-                taskListContainer.appendChild(taskItem);
-            });
-        }
-        
-        function updateStats() {
-            const completedTasks = tasks.filter(task => task.completed);
-            
-            if (completedTasks.length === 0) {
-                totalMinutes.textContent = '0 Menit';
-                productiveBarEl.style.width = '0%';
-                breakBarEl.style.width = '0%';
-                productiveBarEl.textContent = '';
-                breakBarEl.textContent = '';
-                return;
-            }
-            
-            const totalDuration = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
-            
-            const totalBreakTime = completedTasks
-                .filter(task => task.name.includes('Break'))
-                .reduce((sum, task) => sum + task.actualDuration, 0);
+                        `;
 
-            const totalSholatTime = completedTasks
-                .filter(task => task.name.includes('Sholat'))
-                .reduce((sum, task) => sum + task.actualDuration, 0);
-            
-            const totalWorkTime = completedTasks
-                .filter(task => !task.name.includes('Break') && !task.name.includes('Sholat'))
-                .reduce((sum, task) => sum + task.actualDuration, 0);
-            
+                        taskListContainer.appendChild(taskItem);
+                    });
+}
+
+function updateStats() {
+    const completedTasks = tasks.filter(task => task.completed);
+
+    if (completedTasks.length === 0) {
+        totalMinutes.textContent = '0 Menit';
+        productiveBarEl.style.width = '0%';
+        breakBarEl.style.width = '0%';
+        productiveBarEl.textContent = '';
+        breakBarEl.textContent = '';
+        return;
+    }
+
+    const totalDuration = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
+
+    const totalBreakTime = completedTasks
+    .filter(task => task.name.includes('Break'))
+    .reduce((sum, task) => sum + task.actualDuration, 0);
+
+    const totalSholatTime = completedTasks
+    .filter(task => task.name.includes('Sholat'))
+    .reduce((sum, task) => sum + task.actualDuration, 0);
+
+    const totalWorkTime = completedTasks
+    .filter(task => !task.name.includes('Break') && !task.name.includes('Sholat'))
+    .reduce((sum, task) => sum + task.actualDuration, 0);
+
             // Format total minutes to be more informative
-            let formattedTime = '';
-            if (totalDuration < 60) {
-                formattedTime = `${totalDuration} Menit`;
-            } else {
-                const hours = Math.floor(totalDuration / 60);
-                const minutes = totalDuration % 60;
-                formattedTime = minutes > 0 ? `${hours} Jam ${minutes} Menit` : `${hours} Jam`;
-            }
-            
-            totalMinutes.textContent = formattedTime;
-            
-            const productiveDuration = totalWorkTime + totalSholatTime;
-            const chartTotal = productiveDuration + totalBreakTime;
+    let formattedTime = '';
+    if (totalDuration < 60) {
+        formattedTime = `${totalDuration} Menit`;
+    } else {
+        const hours = Math.floor(totalDuration / 60);
+        const minutes = totalDuration % 60;
+        formattedTime = minutes > 0 ? `${hours} Jam ${minutes} Menit` : `${hours} Jam`;
+    }
 
-            let productivePercentage = 0;
-            let chartBreakPercentage = 0;
+    totalMinutes.textContent = formattedTime;
 
-            if (chartTotal > 0) {
-                productivePercentage = ((productiveDuration / chartTotal) * 100);
-                chartBreakPercentage = ((totalBreakTime / chartTotal) * 100);
-            }
-            
-            const productivePercentageRounded = productivePercentage.toFixed(0);
-            const chartBreakPercentageRounded = chartBreakPercentage.toFixed(0);
+    const productiveDuration = totalWorkTime + totalSholatTime;
+    const chartTotal = productiveDuration + totalBreakTime;
 
-            productiveBarEl.style.width = `${productivePercentageRounded}%`;
-            productiveBarEl.textContent = productivePercentageRounded > 0 ? `${productivePercentageRounded}% Produktif` : '';
-            
-            breakBarEl.style.width = `${chartBreakPercentageRounded}%`;
-            breakBarEl.textContent = chartBreakPercentageRounded > 0 ? `${chartBreakPercentageRounded}% Break` : '';
-        }
-        
-        function handleTaskClick(taskId) {
-            const task = tasks.find(t => t.id == taskId);
-            if (!task || task.completed || task.inProgress) return;
-            
-            startTask(taskId);
-        }
-        
-        function moveTaskToTop(taskId) {
-            const task = tasks.find(t => t.id == taskId);
-            if (!task || task.completed || task.inProgress) return;
-            
-            const taskIndex = tasks.findIndex(t => t.id == taskId);
-            if (taskIndex === -1) return;
-            
-            tasks.splice(taskIndex, 1);
-            tasks.unshift(task);
-            
-            saveTasks();
-            renderTasks();
-        }
-        
-        function repeatTask(taskId) {
-            const task = tasks.find(t => t.id == taskId);
-            if (!task || !task.completed) return;
-            
-            if (currentTaskId) {
-                completeCurrentTask();
-            }
-            
-            const newTask = {
-                id: Date.now(),
-                name: task.name,
-                startTime: new Date(),
-                endTime: null,
-                actualDuration: 0,
-                completed: false,
-                inProgress: true
-            };
-            
+    let productivePercentage = 0;
+    let chartBreakPercentage = 0;
+
+    if (chartTotal > 0) {
+        productivePercentage = ((productiveDuration / chartTotal) * 100);
+        chartBreakPercentage = ((totalBreakTime / chartTotal) * 100);
+    }
+
+    const productivePercentageRounded = productivePercentage.toFixed(0);
+    const chartBreakPercentageRounded = chartBreakPercentage.toFixed(0);
+
+    productiveBarEl.style.width = `${productivePercentageRounded}%`;
+    productiveBarEl.textContent = productivePercentageRounded > 0 ? `${productivePercentageRounded}% Produktif` : '';
+
+    breakBarEl.style.width = `${chartBreakPercentageRounded}%`;
+    breakBarEl.textContent = chartBreakPercentageRounded > 0 ? `${chartBreakPercentageRounded}% Break` : '';
+}
+
+function handleTaskClick(taskId) {
+    const task = tasks.find(t => t.id == taskId);
+    if (!task || task.completed || task.inProgress) return;
+
+    startTask(taskId);
+}
+
+function moveTaskToTop(taskId) {
+    const task = tasks.find(t => t.id == taskId);
+    if (!task || task.completed || task.inProgress) return;
+
+    const taskIndex = tasks.findIndex(t => t.id == taskId);
+    if (taskIndex === -1) return;
+
+    tasks.splice(taskIndex, 1);
+    tasks.unshift(task);
+
+    saveTasks();
+    renderTasks();
+}
+
+function repeatTask(taskId) {
+    const task = tasks.find(t => t.id == taskId);
+    if (!task || !task.completed) return;
+
+    if (currentTaskId) {
+        completeCurrentTask();
+    }
+
+    const newTask = {
+        id: Date.now(),
+        name: task.name,
+        startTime: new Date(),
+        endTime: null,
+        actualDuration: 0,
+        completed: false,
+        inProgress: true
+    };
+
             // Menambahkan task di awal array, bukan di akhir
-            tasks.unshift(newTask);
-            currentTaskId = newTask.id;
-            
-            localStorage.setItem('currentTaskId', currentTaskId);
-            
-            currentTaskDiv.style.display = 'block';
-            currentTaskName.innerHTML = processHashtags(task.name);
-            
-            startStopwatch();
-            
-            saveTasks();
-            renderTasks();
-            updateStats();
+    tasks.unshift(newTask);
+    currentTaskId = newTask.id;
 
-            fireConfetti();
-            taraAudio.play();
+    localStorage.setItem('currentTaskId', currentTaskId);
+
+    currentTaskDiv.style.display = 'block';
+    currentTaskName.innerHTML = processHashtags(task.name);
+
+    startStopwatch();
+
+    saveTasks();
+    renderTasks();
+    updateStats();
+
+    fireConfetti();
+    taraAudio.play();
+}
+
+function editTask(taskId) {
+    const task = tasks.find(t => t.id == taskId);
+    if (!task || task.completed || task.inProgress) return;
+
+    editingTaskId = taskId;
+    editTaskInput.value = task.name;
+    editModal.style.display = 'flex';
+
+    setTimeout(() => {
+        editTaskInput.focus();
+        editTaskInput.select();
+    }, 100);
+}
+
+function saveTaskEdit() {
+    const newName = editTaskInput.value.trim();
+    if (!newName) return;
+
+    const task = tasks.find(t => t.id == editingTaskId);
+    if (task) {
+        task.name = newName;
+        saveTasks();
+        renderTasks();
+        updateStats();
+    }
+
+    closeEditModal();
+}
+
+function closeEditModal() {
+    editModal.style.display = 'none';
+    editTaskInput.value = '';
+    editingTaskId = null;
+}
+
+function deleteTask(taskId) {
+    const task = tasks.find(t => t.id == taskId);
+    if (!task) return;
+
+    if (confirm(`Hapus tugas: "${task.name}"?`)) {
+        if (currentTaskId == taskId) {
+            completeCurrentTask();
         }
-        
-        function editTask(taskId) {
-            const task = tasks.find(t => t.id == taskId);
-            if (!task || task.completed || task.inProgress) return;
-            
-            editingTaskId = taskId;
-            editTaskInput.value = task.name;
-            editModal.style.display = 'flex';
-            
-            setTimeout(() => {
-                editTaskInput.focus();
-                editTaskInput.select();
-            }, 100);
-        }
-        
-        function saveTaskEdit() {
-            const newName = editTaskInput.value.trim();
-            if (!newName) return;
-            
-            const task = tasks.find(t => t.id == editingTaskId);
-            if (task) {
-                task.name = newName;
-                saveTasks();
-                renderTasks();
-                updateStats();
-            }
-            
-            closeEditModal();
-        }
-        
-        function closeEditModal() {
-            editModal.style.display = 'none';
-            editTaskInput.value = '';
-            editingTaskId = null;
-        }
-        
-        function deleteTask(taskId) {
-            const task = tasks.find(t => t.id == taskId);
-            if (!task) return;
-            
-            if (confirm(`Hapus tugas: "${task.name}"?`)) {
-                if (currentTaskId == taskId) {
-                    completeCurrentTask();
-                }
-                
-                tasks = tasks.filter(t => t.id !== taskId);
-                saveTasks();
-                renderTasks();
-                updateStats();
-            }
-        }
-        
-        function resetAll() {
-            const completedTasks = tasks.filter(task => task.completed);
-            
-            if (completedTasks.length === 0) {
-                return;
-            }
-            
-            if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
-                tasks = tasks.filter(task => !task.completed);
-                
-                saveTasks();
-                renderTasks();
-                updateStats();
-            }
-        }
-        
-        function saveTasks() {
-            localStorage.setItem('tasks', JSON.stringify(tasks));
-        }
-        
+
+        tasks = tasks.filter(t => t.id !== taskId);
+        saveTasks();
+        renderTasks();
+        updateStats();
+    }
+}
+
+function resetAll() {
+    const completedTasks = tasks.filter(task => task.completed);
+
+    if (completedTasks.length === 0) {
+        return;
+    }
+
+    if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
+        tasks = tasks.filter(task => !task.completed);
+
+        saveTasks();
+        renderTasks();
+        updateStats();
+    }
+}
+
+function saveTasks() {
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
         // Make functions globally accessible
-        window.handleTaskClick = handleTaskClick;
-        window.moveTaskToTop = moveTaskToTop;
-        window.repeatTask = repeatTask;
-        window.editTask = editTask;
-        window.deleteTask = deleteTask;
-    </script>
+window.handleTaskClick = handleTaskClick;
+window.moveTaskToTop = moveTaskToTop;
+window.repeatTask = repeatTask;
+window.editTask = editTask;
+window.deleteTask = deleteTask;
+</script>
 </body>
 </html>
+
+
+
 
