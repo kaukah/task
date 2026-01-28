@@ -69,6 +69,7 @@
             margin: 0 auto;
             padding: 0px 20px;
             width: 100%;
+
         }
 
         .theme-toggle {
@@ -329,7 +330,7 @@
             font-size: 3rem;
             font-weight: 300;
             text-align: center;
-            color: orange;
+            color: blue;
             margin-bottom: 5px;
             display: none;
             font-family: 'Inter', sans-serif;
@@ -341,10 +342,14 @@
             font-weight: 700;
             /*text-transform: uppercase;*/
             text-align: center;
-            color: orange;
+            color: blue;
             font-family: 'Inter', sans-serif;
             letter-spacing: -1px;
             margin:10px 0 0s;
+        }
+        .stopwatch-text,
+        .stopwatch-number{
+            animation: pulse 1s infinite;
         }
 
         .stopwatch-toggle {
@@ -821,6 +826,9 @@
                 transform: scale(1);
             }
         }
+        .fixed-spacer{
+            height:40px; /* sesuaikan tinggi input + tombol */
+        }
 
         @media (max-width: 600px) {
             .task-list-header {
@@ -896,7 +904,7 @@
         <div class="input-section">
             <input type="text" id="taskInput" class="task-input" placeholder="Ketik Tugas Baru (Shift + Enter)" autofocus>
         </div>
-        
+        <div class="fixed-spacer"></div>
         <div class="stopwatch-container">
 
             <div  id="stopwatchProgress"></div>
@@ -919,13 +927,15 @@
             <div class="input-section">
                 <div class="btn-group">
                     <div class="quick-actions">
-                        <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i>Break </button>
+                        <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> </button>
+                        <button id="timer10Btn" class="quick-action-btn">⏳ 10</button>
+                        <button id="timer30Btn" class="quick-action-btn">⏳ 30</button>
 
                     </div>
                     <button id="addTaskBtn"></button>
-                    <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> Kerja</button>
+                    <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> ok</button>
                     <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
-                    <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i>Reset </button>
+                    <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> </button>
                 </div>
             </div>
 
@@ -967,6 +977,7 @@
             let isPaused = localStorage.getItem('isPaused') === 'true' || false;
             let taskStopwatchIntervals = {};
             let editingTaskId = null;
+            let timerTargetSeconds = null;
             let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
 
         // Hashtag colors configuration
@@ -1019,8 +1030,8 @@
         }
         
         // Audio Cues - DINONAKTIFKAN SEMENTARA karena Base64 URL tidak valid/mengganggu
-        const dingAudio = { play: () => {} }; // Dummy function to prevent errors
-        const taraAudio = { play: () => {} }; // Dummy function to prevent errors
+        const dingAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        const taraAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg');
         
         // Statistik Elements
         const productiveBarEl = document.getElementById('productiveBar');
@@ -1048,7 +1059,18 @@
         }
         
         // Event Listeners
+        // timer 10 menit
 
+        const timer10Btn = document.getElementById('timer10Btn');
+        timer10Btn.addEventListener('click', () => {
+            timerTargetSeconds = 10 * 60;
+        });
+
+        // timer 30 menit
+        const timer30Btn = document.getElementById('timer30Btn');
+        timer30Btn.addEventListener('click', () => {
+            timerTargetSeconds = 30 * 60;
+        });
         
         // Input event listeners
         taskInput.addEventListener('keypress', function(e) {
@@ -1066,7 +1088,7 @@
         executeTaskBtn.addEventListener('click', executeTask);
         stopTaskBtn.addEventListener('click', completeCurrentTask);
         breakBtn.addEventListener('click', function() {
-            executeQuickTask('☕ Break');
+            executeQuickTask('☕ Istirahat');
         });
 
         resetBtn.addEventListener('click', resetAll);
@@ -1207,7 +1229,7 @@
             
             currentTaskDiv.style.display = 'block';
             currentTaskName.innerHTML = processHashtags(taskName);
-            
+            timerTargetSeconds = null;
             startStopwatch();
             html.setAttribute('data-theme','light');
             localStorage.setItem('theme','light');
@@ -1317,7 +1339,7 @@
             stopwatchText.innerHTML = '';
             stopwatchNumber.textContent = '';
             toggleStartStopButtons(false);
-            
+            timerTargetSeconds = null;
             saveTasks();
             renderTasks();
             updateStats();
@@ -1325,37 +1347,37 @@
         
         function startStopwatch() {
             if (stopwatchInterval) clearInterval(stopwatchInterval);
-            
-            updateStopwatchDisplay();
-            updateProgressBar();
 
             toggleStartStopButtons(true);
 
             stopwatchInterval = setInterval(() => {
-                if (!isPaused) {
-                    updateStopwatchDisplay();
-                    updateProgressBar();
-                    
-                    const currentTask = tasks.find(t => t.id == currentTaskId);
-                    if (currentTask && currentTask.startTime) {
-                        const startTime = new Date(currentTask.startTime);
-                        const now = new Date();
-                        const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                        
-                        // Trigger audio every 5 minutes (300 seconds)
-                        if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) {
-                            dingAudio.play();
-                        }
+                if (isPaused || !currentTaskId) return;
 
-                        if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) {
-                            addLogEntry();
-                        }
-                    }
+                const currentTask = tasks.find(t => t.id == currentTaskId);
+                if (!currentTask || !currentTask.startTime) return;
+
+                const startTime = new Date(currentTask.startTime);
+                const now = new Date();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+
+                let displaySeconds = elapsedSeconds;
+
+        // kalau tombol ⏳ 30 menit dipilih → jadi countdown
+                if (timerTargetSeconds !== null) {
+                    displaySeconds = Math.max(timerTargetSeconds - elapsedSeconds, 0);
                 }
+
+                updateStopwatchDisplay(displaySeconds);
+                updateProgressBar(elapsedSeconds);
+
+        // bunyi tiap 5 menit
+                if (elapsedSeconds > 0 && elapsedSeconds % 300 === 0) dingAudio.play();
+
+                if (elapsedSeconds > 0 && elapsedSeconds % 60 === 0) addLogEntry();
+
             }, 1000);
         }
-        
-        function updateStopwatchDisplay() {
+        function updateStopwatchDisplay(displaySeconds) {            
             if (!currentTaskId) return;
 
             const currentTask = tasks.find(t => t.id == currentTaskId);
@@ -1363,11 +1385,10 @@
 
             const startTime = new Date(currentTask.startTime);
             const now = new Date();
-            const elapsedSeconds = Math.floor((now - startTime) / 1000);
 
-            const hours = Math.floor(elapsedSeconds / 3600);
-            const minutes = Math.floor((elapsedSeconds % 3600) / 60);
-            const seconds = elapsedSeconds % 60;
+            const hours = Math.floor(displaySeconds / 3600);
+            const minutes = Math.floor((displaySeconds % 3600) / 60);
+            const seconds = displaySeconds % 60;
 
     // Format stopwatch based on duration
             let textDisplay = '';
@@ -1378,201 +1399,229 @@
                 textDisplay = `<span class="time-number">${hours}</span> Jam <span class="time-number">${minutes}</span> Menit`;
 
     // ANGKA: 02:05:00
-                numberDisplay = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:00`;
-            } else {
+                numberDisplay = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;            } else {
     // TEXT: 2 Menit 9 Detik
-                textDisplay = `<span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
+                    textDisplay = `<span class="time-number">${minutes}</span> Menit <span class="time-number">${seconds}</span> Detik`;
 
     // ANGKA: 02:09
-                numberDisplay = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-            }
+                    numberDisplay = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+                }
 
-            stopwatchText.innerHTML = textDisplay;
-            stopwatchNumber.textContent = numberDisplay;
-        }
-        
-        function updateProgressBar() {
-            if (!currentTaskId) return;
-            
-            const currentTask = tasks.find(t => t.id == currentTaskId);
-            if (!currentTask || !currentTask.startTime) return;
-            
-            const startTime = new Date(currentTask.startTime);
-            const now = new Date();
-            const elapsedSeconds = Math.floor((now - startTime) / 1000);
-            
-            const currentSecond = elapsedSeconds % 60;
-            const progressWidth = (100 - (currentSecond / 60) * 100);
-            
-            stopwatchProgress.style.width = `${progressWidth}%`;
-        }
-        
-        function addLogEntry(taskParam = null) {
-            const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
-            if (!task) return;
-            
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('id-ID', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-            
-            const logEntry = {
-                id: Date.now(),
-                taskId: task.id,
-                taskName: task.name,
-                time: timeString,
-                timestamp: now
-            };
-            
-            let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
-            logs.push(logEntry);
-            
-            localStorage.setItem('timeLogs', JSON.stringify(logs));
-        }
-        
-        function getDurationPercentage(duration) {
-            const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-            const percentage = Math.min(duration / maxDuration, 1);
-            return percentage;
-        }
-        
-        function getDurationColor(duration) {
-            const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-            const intensity = Math.min(duration / maxDuration, 1);
-            const hue = 230;
-            const saturation = 70;
-            const lightness = 50 - (intensity * 20);
-            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        }
-        
-        function formatDuration(minutes) {
-            if (minutes < 60) {
-                return `${minutes} Menit`;
-            } else {
-                const hours = Math.floor(minutes / 60);
-                const mins = minutes % 60;
-                return mins > 0 ? `${hours} Jam ${mins} Menit` : `${hours} Jam`;
-            }
-        }
-        
-        function renderTasks() {
-            if (tasks.length === 0) {
-                taskListContainer.innerHTML = '<p class="empty-state">Belum ada tugas</p>';
-                return;
-            }
-            
-            taskListContainer.innerHTML = '';
-            
-            Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
-            taskStopwatchIntervals = {};
-            
-            const sortedTasks = [...tasks].sort((a, b) => {
-                if (a.inProgress && !b.inProgress) return -1;
-                if (!a.inProgress && b.inProgress) return 1;
+                if (timerTargetSeconds !== null) {
+                    numberDisplay = '-' + numberDisplay;
+                    textDisplay = '− ' + textDisplay;
 
-                if (a.completed && !b.completed) return 1;
-                if (!a.completed && b.completed) return -1;
+                    stopwatchNumber.style.color = '#ef4444';
+                    stopwatchText.style.color = '#ef4444';
+                } else {
+                    stopwatchNumber.style.color = 'blue';
+                    stopwatchText.style.color = 'blue';
+                }
 
-                if (a.completed && b.completed) {
-                    if (a.startTime && b.startTime) {
-                        const timeA = new Date(a.startTime);
-                        const timeB = new Date(b.startTime);
+                if (timerTargetSeconds !== null && displaySeconds <= 60) {
+                    stopwatchNumber.style.animationDuration = '0.3s';
+                    stopwatchText.style.animationDuration = '0.3s';
+                } else {
+                    stopwatchNumber.style.animationDuration = '1s';
+                    stopwatchText.style.animationDuration = '1s';
+                }
+
+
+
+                stopwatchText.innerHTML = textDisplay;
+                stopwatchNumber.textContent = numberDisplay;
+
+                if (timerTargetSeconds !== null && displaySeconds === 0) {
+    dingAudio.play();   // sound habis waktu
+    timerTargetSeconds = null;
+    completeCurrentTask();
+}
+
+
+}
+
+function updateProgressBar() {
+    if (!currentTaskId) return;
+
+    const currentTask = tasks.find(t => t.id == currentTaskId);
+    if (!currentTask || !currentTask.startTime) return;
+
+    const startTime = new Date(currentTask.startTime);
+    const now = new Date();
+    const elapsedSeconds = Math.floor((now - startTime) / 1000);
+
+    const currentSecond = elapsedSeconds % 60;
+    const progressWidth = (100 - (currentSecond / 60) * 100);
+
+    stopwatchProgress.style.width = `${progressWidth}%`;
+}
+
+function addLogEntry(taskParam = null) {
+    const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
+    if (!task) return;
+
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('id-ID', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    });
+
+    const logEntry = {
+        id: Date.now(),
+        taskId: task.id,
+        taskName: task.name,
+        time: timeString,
+        timestamp: now
+    };
+
+    let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
+    logs.push(logEntry);
+
+    localStorage.setItem('timeLogs', JSON.stringify(logs));
+}
+
+function getDurationPercentage(duration) {
+    const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+    const percentage = Math.min(duration / maxDuration, 1);
+    return percentage;
+}
+
+function getDurationColor(duration) {
+    const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
+    const intensity = Math.min(duration / maxDuration, 1);
+    const hue = 230;
+    const saturation = 70;
+    const lightness = 50 - (intensity * 20);
+    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+}
+
+function formatDuration(minutes) {
+    if (minutes < 60) {
+        return `${minutes} Menit`;
+    } else {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return mins > 0 ? `${hours} Jam ${mins} Menit` : `${hours} Jam`;
+    }
+}
+
+function renderTasks() {
+    if (tasks.length === 0) {
+        taskListContainer.innerHTML = '<p class="empty-state">Belum ada tugas</p>';
+        return;
+    }
+
+    taskListContainer.innerHTML = '';
+
+    Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
+    taskStopwatchIntervals = {};
+
+    const sortedTasks = [...tasks].sort((a, b) => {
+        if (a.inProgress && !b.inProgress) return -1;
+        if (!a.inProgress && b.inProgress) return 1;
+
+        if (a.completed && !b.completed) return 1;
+        if (!a.completed && b.completed) return -1;
+
+        if (a.completed && b.completed) {
+            if (a.startTime && b.startTime) {
+                const timeA = new Date(a.startTime);
+                const timeB = new Date(b.startTime);
                         return timeA - timeB; // Oldest first (ASCENDING)
                     }
                 }
 
                 return tasks.indexOf(a) - tasks.indexOf(b);
             });
-            
-            sortedTasks.forEach(task => {
-                if (task.inProgress) return; 
-                const taskItem = document.createElement('div');
-                taskItem.className = 'task-item';
-                
-                if (task.completed) {
-                    taskItem.classList.add('completed');
-                } else if (task.inProgress) {
-                    taskItem.classList.add('in-progress');
+
+    sortedTasks.forEach(task => {
+        if (task.inProgress) return; 
+        const taskItem = document.createElement('div');
+        taskItem.className = 'task-item';
+
+        if (task.completed) {
+            taskItem.classList.add('completed');
+        } else if (task.inProgress) {
+            taskItem.classList.add('in-progress');
+        }
+
+        let checkboxContent = '';
+        let checkboxClass = '';
+
+        if (task.completed) {
+            checkboxContent = '✓';
+            checkboxClass = 'checked';
+        } else if (task.inProgress) {
+            checkboxContent = '🚀';
+            checkboxClass = 'active';
+        } else {
+            checkboxContent = '';
+            checkboxClass = '';
+        }
+
+        const startTimeText = task.startTime 
+        ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        })
+        : '-';
+
+        let taskStopwatch = '';
+        let taskStopwatchId = `task-stopwatch-${task.id}`;
+
+        if (task.inProgress && task.startTime) {
+            taskStopwatch = `<span id="${taskStopwatchId}">00:00</span>`;
+
+            taskStopwatchIntervals[task.id] = setInterval(() => {
+                const startTime = new Date(task.startTime);
+                const now = new Date();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                const minutes = Math.floor(elapsedSeconds / 60);
+                const seconds = elapsedSeconds % 60;
+
+                const stopwatchElement = document.getElementById(taskStopwatchId);
+                if (stopwatchElement) {
+                    stopwatchElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                 }
-                
-                let checkboxContent = '';
-                let checkboxClass = '';
-                
-                if (task.completed) {
-                    checkboxContent = '✓';
-                    checkboxClass = 'checked';
-                } else if (task.inProgress) {
-                    checkboxContent = '🚀';
-                    checkboxClass = 'active';
-                } else {
-                    checkboxContent = '';
-                    checkboxClass = '';
-                }
-                
-                const startTimeText = task.startTime 
-                ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
-                })
-                : '-';
-                
-                let taskStopwatch = '';
-                let taskStopwatchId = `task-stopwatch-${task.id}`;
-                
-                if (task.inProgress && task.startTime) {
-                    taskStopwatch = `<span id="${taskStopwatchId}">00:00</span>`;
-                    
-                    taskStopwatchIntervals[task.id] = setInterval(() => {
-                        const startTime = new Date(task.startTime);
-                        const now = new Date();
-                        const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                        const minutes = Math.floor(elapsedSeconds / 60);
-                        const seconds = elapsedSeconds % 60;
-                        
-                        const stopwatchElement = document.getElementById(taskStopwatchId);
-                        if (stopwatchElement) {
-                            stopwatchElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                        }
-                    }, 1000);
-                }
-                
-                let durationDisplay = '';
-                if (!task.inProgress && task.actualDuration > 0) {
-                    const durationPercentage = getDurationPercentage(task.actualDuration);
-                    const durationColor = getDurationColor(task.actualDuration);
-                    const barWidth = Math.max(20, durationPercentage * 100);
-                    
-                    durationDisplay = `
+            }, 1000);
+        }
+
+        let durationDisplay = '';
+        if (!task.inProgress && task.actualDuration > 0) {
+            const durationPercentage = getDurationPercentage(task.actualDuration);
+            const durationColor = getDurationColor(task.actualDuration);
+            const barWidth = Math.max(20, durationPercentage * 100);
+
+            durationDisplay = `
                         <div class="task-duration">
                             <div class="duration-bar" style="width: ${barWidth}%; background-color: ${durationColor};"></div>
                             <div class="duration-text">${formatDuration(task.actualDuration)}</div>
                         </div>
-                    `;
-                }
-                
-                taskItem.innerHTML = `
+            `;
+        }
+
+        taskItem.innerHTML = `
                     <div class="task-info">
                         <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
                         <div class="task-timestamp">${startTimeText}</div>
                         <div class="task-title">${processHashtags(task.name)}</div>
                     </div>
                     ${durationDisplay}
-                    ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
+            ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
                     <div class="task-actions">
-                    ${!task.completed && !task.inProgress ? `
+            ${!task.completed && !task.inProgress ? `
                             <button class="task-action-btn" onclick="moveTaskToTop(${task.id})" title="Pindahkan ke atas"><i class="fas fa-arrow-up"></i></button>
                             <button class="task-action-btn" onclick="editTask(${task.id})" title="Edit"><i class="fas fa-edit"></i></button>
-                        ` : ''}
-                        ${task.completed ? `
+                ` : ''}
+                ${task.completed ? `
                             <button class="task-action-btn" onclick="repeatTask(${task.id})" title="Ulangi"><i class="fas fa-redo"></i></button>
-                            ` : ''}
+                    ` : ''}
                         <button class="task-action-btn" onclick="deleteTask(${task.id})" title="Hapus"><i class="fas fa-trash"></i></button>
                     </div>
-                        `;
+                `;
 
-                        taskListContainer.appendChild(taskItem);
-                    });
+                taskListContainer.appendChild(taskItem);
+            });
 }
 
 function updateStats() {
@@ -1681,8 +1730,10 @@ function repeatTask(taskId) {
 
     currentTaskDiv.style.display = 'block';
     currentTaskName.innerHTML = processHashtags(task.name);
-
+timerTargetSeconds = null;
     startStopwatch();
+    html.setAttribute('data-theme','light');
+    localStorage.setItem('theme','light');
 
     saveTasks();
     renderTasks();
