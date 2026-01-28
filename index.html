@@ -121,7 +121,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-bottom: 0px;
+            margin-bottom: 20px;
             animation: fadeIn 0.8s ease-out;
         }
 
@@ -227,7 +227,7 @@
         }
         
         .btn-stat-stop:hover {
-            background-color: #dc2626;
+            background-color: #red;
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
@@ -830,6 +830,21 @@
             height:40px; /* sesuaikan tinggi input + tombol */
         }
 
+        #breakBtn{
+            background-color: var(--accent-success);
+            color: #fff;
+        }
+
+        #breakBtn:hover{
+            background-color: #34d399;
+        }
+        #executeTaskBtn{
+            background-color: #2563eb; /* biru clean modern */
+        }
+
+        #executeTaskBtn:hover{
+            background-color: #3b82f6;
+        }
         @media (max-width: 600px) {
             .task-list-header {
                 justify-content: space-between;
@@ -928,30 +943,30 @@
                 <div class="btn-group">
                     <div class="quick-actions">
                         <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> </button>
-                        <button id="timer10Btn" class="quick-action-btn">⏳ 10</button>
-                        <button id="timer30Btn" class="quick-action-btn">⏳ 30</button>
+                        <button id="timer10Btn" class="quick-action-btn">10M</button>
+                        <button id="timer30Btn" class="quick-action-btn">30M</button>
 
                     </div>
                     <button id="addTaskBtn"></button>
-                    <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i> ok</button>
-                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
+                    <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i></button>
+                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i></button>
                     <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> </button>
                 </div>
             </div>
 
-            <div class="chart-container">
-                <div class="chart-bar-container">
-                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-                </div>
-            </div>
+            
 
             <div class="task-list">
                 <div id="taskListContainer">
                     <p class="empty-state">Belum ada tugas</p>
                 </div>
             </div>
-
+            <div class="chart-container">
+                <div class="chart-bar-container">
+                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
+                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
+                </div>
+            </div>
             <div class="task-stats">
                 Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
             </div>
@@ -1730,7 +1745,7 @@ function repeatTask(taskId) {
 
     currentTaskDiv.style.display = 'block';
     currentTaskName.innerHTML = processHashtags(task.name);
-timerTargetSeconds = null;
+    timerTargetSeconds = null;
     startStopwatch();
     html.setAttribute('data-theme','light');
     localStorage.setItem('theme','light');
