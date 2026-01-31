@@ -122,6 +122,7 @@
             flex-direction: column;
             align-items: center;
             margin-bottom: 20px;
+                margin-top: 20px;
             animation: fadeIn 0.8s ease-out;
         }
 
@@ -285,7 +286,7 @@
 
         .stopwatch-container {
             position: relative;
-            margin: 0px 0 -30px;
+            margin: -20px 0 -30px;
         }
 
         .stopwatch-bar {
@@ -461,7 +462,7 @@
             justify-content: space-between;
             gap: 15px;
             white-space: nowrap;
-            margin: 20px 0;
+            margin: 10px 0 20px;
             flex-wrap: wrap;
         }
         
@@ -923,6 +924,15 @@
             <input type="text" id="taskInput" class="task-input" placeholder="Ketik Tugas Baru (Shift + Enter)" autofocus>
         </div>
         <div class="fixed-spacer"></div>
+        <div class="chart-container">
+                <div class="chart-bar-container">
+                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
+                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="task-stats">
+                Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
+            </div>
         <div class="stopwatch-container">
 
             <div  id="stopwatchProgress"></div>
@@ -964,15 +974,7 @@
                     <p class="empty-state">Belum ada tugas</p>
                 </div>
             </div>
-            <div class="chart-container">
-                <div class="chart-bar-container">
-                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-                </div>
-            </div>
-            <div class="task-stats">
-                Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
-            </div>
+            
 
 
         </div>
@@ -1841,6 +1843,7 @@ window.deleteTask = deleteTask;
 </script>
 </body>
 </html>
+
 
 
 
