@@ -62,6 +62,49 @@
         html, body {
             transition: background-color 0.6s ease, color 0.6s ease;
         }
+        #focusOverlay{
+            position: fixed;
+            inset: 0;
+            background:#000;
+            z-index: 9999;
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            align-items:center;
+            color:#fff;
+            width:100vw;
+            height:100vh;
+        }
+
+        #focusTaskTitle{
+            font-size: clamp(32px, 5vw, 80px);
+            font-weight: 800;
+            text-align:center;
+            padding:20px;
+            line-height:1.2;
+        }
+
+        #focusInterrupt i,
+        #focusBtn i,
+        #interruptBtn i{
+            font-size: 16px;
+        }
+        #focusClose{
+            position:absolute;
+            top:20px;
+            right:20px;
+            width:48px;
+            height:48px;
+            border:none;
+            border-radius:50%;
+            background:#222;
+            color:#fff;
+            font-size:24px;
+            cursor:pointer;
+        }
+        #focusClose:hover{
+            background:#444;
+        }
 
         .container {
             background-color: var(--bg-secondary);
@@ -71,7 +114,32 @@
             width: 100%;
 
         }
-
+        #focusInterrupt{
+            position:absolute;
+            top:20px;
+            left:20px;
+            padding:10px 16px;
+            border:none;
+            border-radius:8px;
+            background:#2563eb;
+            color:#fff;
+            font-weight:700;
+            cursor:pointer;
+        }
+        #focusStopwatch{
+            font-size: clamp(40px,6vw,90px);
+            font-weight:800;
+            margin-top:20px;
+            color:#22c55e;
+            transition: all 0.4s ease;
+        }
+        #focusStopwatch.big{
+            font-size: clamp(80px,12vw,180px);
+            animation: pulse 0.8s infinite;
+        }
+        #focusInterrupt:hover{
+            background:#3b82f6;
+        }
         .theme-toggle {
             position: fixed;
             top: 20px;
@@ -89,6 +157,25 @@
             box-shadow: var(--shadow-md);
             transition: var(--transition);
             z-index: 1000;
+        }
+
+        .task-stats{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            padding:10px 14px;
+            margin:10px 0 15px;
+            border-radius:10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .task-stats-label{
+            font-size:0.9rem;
+            font-weight:600;
+            color:var(--text-secondary);
+            display:flex;
+            align-items:center;
+            gap:8px;
         }
 
         .theme-toggle:hover {
@@ -136,7 +223,7 @@
             z-index: 1;
             background-color: var(--bg-secondary);
             width: 100%;
-            max-width: 90vw;
+            max-width: 80vw;
             padding: 16px 20px;
             font-size: 1.5rem;
             background-color: #fff;
@@ -306,7 +393,7 @@
             position: absolute;
             top: 0;
             left: 0;
-            height: 100%;
+            height: 10%;
             background: linear-gradient(90deg, var(--accent-danger), #f97316);
             transition: width 0.5s linear;
             border-radius: 999px;
@@ -319,7 +406,18 @@
             50% { opacity: 0.7; }
             100% { opacity: 0.9; }
         }
-
+        body.urgency{
+            background:#2b0000 !important;
+            animation: urgencyPulse 4s infinite;
+        }
+        @keyframes urgencyPulse{
+            0%{ filter: brightness(1); }
+            50%{ filter: brightness(1.08); }
+            100%{ filter: brightness(1); }
+        }
+        body.urgency #focusOverlay{
+            background:#3a0000 !important;
+        }
         .stopwatch-display {
             display: flex;
             flex-direction: column;
@@ -346,7 +444,7 @@
             color: green;
             font-family: 'Inter', sans-serif;
             letter-spacing: -1px;
-            margin:10px 0 0s;
+            margin:10px 0 0;
         }
         .stopwatch-text,
         .stopwatch-number{
@@ -455,6 +553,9 @@
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
+        .chart-bar-productive{
+            transition: width 1s linear;
+        }
 
         .task-stats {
             display: flex;
@@ -481,11 +582,38 @@
 
         .total-minutes {
             color: var(--accent-warning);
-            font-size: 2rem;
+            font-size: 13px;
             font-family: 'Inter', sans-serif;
             letter-spacing: 0px;
+            font-weight:300;
+            letter-spacing:-0.5px;
         }
 
+        #focusTimerBtns{
+            margin-top:20px;
+            display:flex;
+            gap:10px;
+        }
+
+        #focusTimerBtns button{
+            padding:8px 14px;
+            border:1px solid rgba(255,255,255,0.8);
+            border-radius:8px;
+            background:transparent;
+            color:#fff;
+            font-weight:300;
+            font-size:20px;
+            cursor:pointer;
+            transition: all 0.25s ease;
+        }
+
+        #focusTimerBtns button:hover{
+            background:orange;
+        }
+        .focus-progress-wrap{
+            width:min(500px, 70vw);
+            margin-top:20px;
+        }
         .task-item {
             display: flex;
             justify-content: space-between;
@@ -924,23 +1052,21 @@
             <input type="text" id="taskInput" class="task-input" placeholder="Ketik Tugas Baru (Shift + Enter)" autofocus>
         </div>
         <div class="fixed-spacer"></div>
-        <div class="chart-container">
-            <div class="chart-bar-container">
-                <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-            </div>
-        </div>
+        
         <div class="task-stats">
-            Total Jam Kerja : <div class="total-minutes" id="totalMinutes">0 Menit</div>
+            <div class="task-stats-label">
+                <i class="fas fa-clock"></i> Total Jam Kerja
+            </div>
+            <div class="total-minutes" id="totalMinutes">0 Menit</div>
         </div>
         <div class="stopwatch-container">
 
-            <div  id="stopwatchProgress"></div>
+            <div id="stopwatchProgress" class="stopwatch-progress"></div>
 
             <div class="stopwatch-display">
                 <div class="stopwatch-text" id="stopwatchText">
-                    <span class="time-number"></span>Milyarder</div>
-                    <div class="stopwatch-number" id="stopwatchNumber">Milyarder</div>
+                    <span class="time-number"></span>Halo</div>
+                    <div class="stopwatch-number" id="stopwatchNumber">Halo</div>
 
                 </div>
             </div>
@@ -962,12 +1088,23 @@
                     </div>
                     <button id="addTaskBtn"></button>
                     <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i></button>
-                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;"><i class="fas fa-stop"></i></button>
-                    <button id="resetBtn" class="btn btn-reset"><i class="fas fa-trash"></i> </button>
+                    <button id="focusBtn" class="btn btn-secondary">
+                        <i class="fas fa-tv"></i>
+                    </button>
+                    <button id="interruptBtn" class="btn btn-secondary">
+                        <i class="fas fa-hand-paper"></i>
+                    </button>
+                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;">STOP</button>
+                    <button id="resetBtn" class="btn btn-reset">CLEAR </button>
                 </div>
             </div>
 
-            
+            <div class="chart-container">
+                <div class="chart-bar-container">
+                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
+                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
+                </div>
+            </div>
 
             <div class="task-list">
                 <div id="taskListContainer">
@@ -989,19 +1126,44 @@
             </div>
         </div>
 
-        <script>
+
+<!-- FOCUS MODE -->
+<div id="focusOverlay" style="display:none;">
+    <button id="focusClose">✕</button>
+    <button id="focusInterrupt">
+        <i class="fas fa-hand-paper"></i>
+    </button>
+
+    <div id="focusTaskTitle">Fokus...</div>
+    <div id="focusStopwatch"></div>
+
+    <div class="focus-progress-wrap">
+        <div class="chart-bar-container">
+            <div class="chart-bar-productive" id="focusProductiveBar" style="width:0%"></div>
+            <div class="chart-bar-break" id="focusBreakBar" style="width:0%"></div>
+        </div>
+    </div>
+
+    <div id="focusTimerBtns">
+        <button id="focus10Btn">10 Menit</button>
+        <button id="focus30Btn">30 Menit</button>
+    </div>
+</div>
+
+<script>
         // Initialize variables
-            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            let currentTaskId = localStorage.getItem('currentTaskId') || null;
-            let stopwatchInterval = null;
-            let isPaused = localStorage.getItem('isPaused') === 'true' || false;
-            let taskStopwatchIntervals = {};
-            let editingTaskId = null;
-            let timerTargetSeconds = null;
-            let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let currentTaskId = localStorage.getItem('currentTaskId') || null;
+    let stopwatchInterval = null;
+    let isPaused = localStorage.getItem('isPaused') === 'true' || false;
+    let taskStopwatchIntervals = {};
+    let editingTaskId = null;
+    let timerTargetSeconds = parseInt(localStorage.getItem('timerTargetSeconds')) || null;
+    let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
+    let timerFinishedPlayed = false;
 
         // Hashtag colors configuration
-            const HASHTAG_COLORS = {
+    const HASHTAG_COLORS = {
             "#RED":        "#e53935",   // merah terang
             "#SHOPEE":     "#fb8c00",   // oranye tebal
             "#YELLOW":     "#fdd835",   // kuning modern
@@ -1019,6 +1181,8 @@
         const addTaskBtn = document.getElementById('addTaskBtn');
         const executeTaskBtn = document.getElementById('executeTaskBtn');
         const stopTaskBtn = document.getElementById('stopTaskBtn');
+        const interruptBtn = document.getElementById('interruptBtn');
+        const focusBtn = document.getElementById('focusBtn');
         const breakBtn = document.getElementById('breakBtn');
         const resetBtn = document.getElementById('resetBtn');
         const taskListContainer = document.getElementById('taskListContainer');
@@ -1032,7 +1196,15 @@
         const saveEditBtn = document.getElementById('saveEditBtn');
         const stopwatchText = document.getElementById('stopwatchText');
         const stopwatchNumber = document.getElementById('stopwatchNumber');
-
+        // Focus Mode Elements
+        const focusOverlay = document.getElementById('focusOverlay');
+        const focusTaskTitle = document.getElementById('focusTaskTitle');
+        const focusClose = document.getElementById('focusClose');
+        const focusInterrupt = document.getElementById('focusInterrupt');
+        const focus10Btn = document.getElementById('focus10Btn');
+        const focus30Btn = document.getElementById('focus30Btn');
+        const focusProductiveBar = document.getElementById('focusProductiveBar');
+        const focusBreakBar = document.getElementById('focusBreakBar');
         updateStopwatchMode();
 
 
@@ -1050,13 +1222,13 @@
         }
         
         // Audio Cues - DINONAKTIFKAN SEMENTARA karena Base64 URL tidak valid/mengganggu
-        const dingAudio = new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg');
+        const dingAudio = new Audio('https://sragen.netlify.app/sfx-10.mp3');
         const taraAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
         
         // Statistik Elements
         const productiveBarEl = document.getElementById('productiveBar');
         const breakBarEl = document.getElementById('breakBar');
-        
+
         // Initialize
         renderTasks();
         updateStats();
@@ -1067,52 +1239,70 @@
             if (currentTask && !currentTask.completed) {
                 currentTaskDiv.style.display = 'block';
                 currentTaskName.innerHTML = processHashtags(currentTask.name);
-                startStopwatch();
-                toggleStartStopButtons(true);
-            } else {
-                currentTaskId = null;
-                localStorage.removeItem('currentTaskId');
-                toggleStartStopButtons(false);
-            }
-        } else {
-            toggleStartStopButtons(false);
-        }
-        
+                if(timerTargetSeconds === null){
+    timerTargetSeconds = 60 * 60; // default 1 jam
+}
+startStopwatch();
+toggleStartStopButtons(true);
+} else {
+    currentTaskId = null;
+    localStorage.removeItem('currentTaskId');
+    toggleStartStopButtons(false);
+}
+} else {
+    toggleStartStopButtons(false);
+}
+
         // Event Listeners
         // timer 10 menit
 
-        const timer10Btn = document.getElementById('timer10Btn');
-        timer10Btn.addEventListener('click', () => {
-            timerTargetSeconds = 10 * 60;
-        });
+const timer10Btn = document.getElementById('timer10Btn');
+timer10Btn.addEventListener('click', () => {
+    timerTargetSeconds = 10 * 60;
+    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
+});
 
         // timer 30 menit
-        const timer30Btn = document.getElementById('timer30Btn');
-        timer30Btn.addEventListener('click', () => {
-            timerTargetSeconds = 30 * 60;
-        });
-        
-        // Input event listeners
-        taskInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                if (e.shiftKey) {
-                    executeTask();
-                } else {
-                    addTaskToQueue();
-                }
-            }
-        });
-        
-        // Button event listeners
-        addTaskBtn.addEventListener('click', addTaskToQueue);
-        executeTaskBtn.addEventListener('click', executeTask);
-        stopTaskBtn.addEventListener('click', completeCurrentTask);
-        breakBtn.addEventListener('click', function() {
-            executeQuickTask('☕ Istirahat');
-        });
+const timer30Btn = document.getElementById('timer30Btn');
+timer30Btn.addEventListener('click', () => {
+    timerTargetSeconds = 30 * 60;
+    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
+});
 
-        resetBtn.addEventListener('click', resetAll);
-        
+
+focus10Btn.addEventListener('click', () => {
+    timerTargetSeconds = 10 * 60;
+    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
+});
+
+focus30Btn.addEventListener('click', () => {
+    timerTargetSeconds = 30 * 60;
+    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
+});
+
+
+        // Input event listeners
+taskInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        if (e.shiftKey) {
+            executeTask();
+        } else {
+            addTaskToQueue();
+        }
+    }
+});
+
+        // Button event listeners
+addTaskBtn.addEventListener('click', addTaskToQueue);
+executeTaskBtn.addEventListener('click', executeTask);
+stopTaskBtn.addEventListener('click', completeCurrentTask);
+breakBtn.addEventListener('click', function() {
+    timerTargetSeconds = 5 * 60; // 5 menit
+    executeQuickTask('☕ Istirahat');
+});
+
+resetBtn.addEventListener('click', resetAll);
+
         // Collapse toggle event listener
         // collapseToggle.addEventListener('click', function() {
         //     collapsibleContent.classList.toggle('collapsed');
@@ -1124,232 +1314,305 @@
         //         collapseToggle.innerHTML = 'HIDE <i class="fas fa-chevron-up"></i>';
         //     }
         // });
-        
 
-        
 
-        
+
+
+
         // Edit modal event listeners
-        cancelEditBtn.addEventListener('click', closeEditModal);
-        saveEditBtn.addEventListener('click', saveTaskEdit);
-        editTaskInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                saveTaskEdit();
-            }
-        });
-        
+cancelEditBtn.addEventListener('click', closeEditModal);
+saveEditBtn.addEventListener('click', saveTaskEdit);
+editTaskInput.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        saveTaskEdit();
+    }
+});
+
         // Close modal when clicking outside
-        editModal.addEventListener('click', function(e) {
-            if (e.target === editModal) {
-                closeEditModal();
-            }
-        });
-        
+editModal.addEventListener('click', function(e) {
+    if (e.target === editModal) {
+        closeEditModal();
+    }
+});
+
         // Functions
-        function fireConfetti() {
-            confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-        }
+function fireConfetti() {
+    confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+    });
+}
 
-        function toggleStartStopButtons(isTaskRunning) {
-            if (isTaskRunning) {
-                stopTaskBtn.style.display = 'block';
-            } else {
-                stopTaskBtn.style.display = 'none';
-            }
-        }
-        
-        function setStopwatchMode(mode) {
-            stopwatchMode = mode;
-            localStorage.setItem('stopwatchMode', mode);
-            updateStopwatchMode();
-        }
-        
-        stopwatchText.addEventListener('click', toggleStopwatchMode);
-        stopwatchNumber.addEventListener('click', toggleStopwatchMode);
+function toggleStartStopButtons(isTaskRunning) {
+    if (isTaskRunning) {
+        stopTaskBtn.style.display = 'block';
+    } else {
+        stopTaskBtn.style.display = 'none';
+    }
+}
 
-        function toggleStopwatchMode(){
-            stopwatchMode = stopwatchMode === 'text' ? 'number' : 'text';
-            localStorage.setItem('stopwatchMode', stopwatchMode);
-            updateStopwatchMode();
-        }
+function setStopwatchMode(mode) {
+    stopwatchMode = mode;
+    localStorage.setItem('stopwatchMode', mode);
+    updateStopwatchMode();
+}
+
+stopwatchText.addEventListener('click', toggleStopwatchMode);
+stopwatchNumber.addEventListener('click', toggleStopwatchMode);
+
+function toggleStopwatchMode(){
+    stopwatchMode = stopwatchMode === 'text' ? 'number' : 'text';
+    localStorage.setItem('stopwatchMode', stopwatchMode);
+    updateStopwatchMode();
+}
 
 
-        function updateStopwatchMode() {
-            if (stopwatchMode === 'text') {
+function updateStopwatchMode() {
+    if (stopwatchMode === 'text') {
 
-                stopwatchText.style.display = 'block';
-                stopwatchNumber.style.display = 'none';
-            } else {
+        stopwatchText.style.display = 'block';
+        stopwatchNumber.style.display = 'none';
+    } else {
 
-                stopwatchText.style.display = 'none';
-                stopwatchNumber.style.display = 'block';
-            }
-        }
-        
-        function processHashtags(text) {
+        stopwatchText.style.display = 'none';
+        stopwatchNumber.style.display = 'block';
+    }
+}
+
+
+// ===== FOCUS MODE =====
+function openFocusMode(taskName){
+    focusTaskTitle.innerHTML = processHashtags(taskName);
+    focusOverlay.style.display = 'flex';
+    focusOverlay.style.background = '#000';
+    taskInput.disabled = true;
+}
+
+function closeFocusMode(){
+    focusOverlay.style.display = 'none';
+
+    taskInput.disabled = false;
+}
+focusBtn.addEventListener('click', () => {
+    if(currentTaskId){
+        const t = tasks.find(x=>x.id==currentTaskId);
+        if(t) openFocusMode(t.name);
+    }
+});
+
+
+interruptBtn.addEventListener('click', interruptTask);
+
+// tombol close
+focusClose.addEventListener('click', closeFocusMode);
+focusInterrupt.addEventListener('click', interruptTask);
+
+// ESC keluar focus mode
+document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape'){
+        closeFocusMode();
+        taskInput.focus();
+    }
+});
+
+function interruptTask(){
+    if(!currentTaskId) return;
+
+    const task = tasks.find(t => t.id == currentTaskId);
+    if(!task) return;
+
+    // stop task sekarang TANPA completed
+    task.inProgress = false;
+    task.startTime = null;
+
+    currentTaskId = null;
+    localStorage.removeItem('currentTaskId');
+    timerTargetSeconds = null;
+    localStorage.removeItem('timerTargetSeconds');
+
+    if(stopwatchInterval) clearInterval(stopwatchInterval);
+
+    currentTaskDiv.style.display = 'none';
+    closeFocusMode();
+    toggleStartStopButtons(false);
+
+    saveTasks();
+    renderTasks();
+
+    taskInput.focus();
+}
+
+function processHashtags(text) {
             // Process hashtags in text and convert them to colored capsules
-            return text.replace(/#(\w+)/g, function(match, hashtag) {
-                const hashtagUpper = '#' + hashtag.toUpperCase();
+    return text.replace(/#(\w+)/g, function(match, hashtag) {
+        const hashtagUpper = '#' + hashtag.toUpperCase();
                 const color = HASHTAG_COLORS[hashtagUpper] || '#888888'; // Default gray if not found
                 return `<span class="hashtag-capsule" style="background-color: ${color}">${hashtagUpper}</span>`;
             });
-        }
-        
-        function addTaskToQueue() {
-            const taskName = taskInput.value.trim();
-            if (!taskName) return;
-            
-            const newTask = {
-                id: Date.now(),
-                name: taskName,
-                startTime: null,
-                endTime: null,
-                actualDuration: 0,
-                completed: false,
-                inProgress: false
-            };
-            
+}
+
+function addTaskToQueue() {
+    const taskName = taskInput.value.trim();
+    if (!taskName) return;
+
+    const newTask = {
+        id: Date.now(),
+        name: taskName,
+        startTime: null,
+        endTime: null,
+        actualDuration: 0,
+        completed: false,
+        inProgress: false
+    };
+
             // Menambahkan task di awal array, bukan di akhir
-            tasks.unshift(newTask);
-            
-            saveTasks();
-            renderTasks();
-            updateStats();
-            
-            taskInput.value = '';
-        }
-        
-        function executeTask() {
-            const taskName = taskInput.value.trim();
-            if (!taskName) return;
-            
-            if (currentTaskId) {
-                completeCurrentTask();
-            }
-            
-            const newTask = {
-                id: Date.now(),
-                name: taskName,
-                startTime: new Date(),
-                endTime: null,
-                actualDuration: 0,
-                completed: false,
-                inProgress: true
-            };
-            
+    tasks.unshift(newTask);
+
+    saveTasks();
+    renderTasks();
+    updateStats();
+
+    taskInput.value = '';
+}
+
+function executeTask() {
+    const taskName = taskInput.value.trim();
+    if (!taskName) return;
+
+    if (currentTaskId) {
+        completeCurrentTask();
+    }
+
+    const newTask = {
+        id: Date.now(),
+        name: taskName,
+        startTime: new Date(),
+        endTime: null,
+        actualDuration: 0,
+        completed: false,
+        inProgress: true
+    };
+
             // Menambahkan task di awal array, bukan di akhir
-            tasks.unshift(newTask);
-            currentTaskId = newTask.id;
-            
-            localStorage.setItem('currentTaskId', currentTaskId);
-            
-            currentTaskDiv.style.display = 'block';
-            currentTaskName.innerHTML = processHashtags(taskName);
-            timerTargetSeconds = null;
-            startStopwatch();
-            html.setAttribute('data-theme','light');
-            localStorage.setItem('theme','light');
+    tasks.unshift(newTask);
+    currentTaskId = newTask.id;
+
+    localStorage.setItem('currentTaskId', currentTaskId);
+
+    currentTaskDiv.style.display = 'block';
+    currentTaskName.innerHTML = processHashtags(taskName);
+    openFocusMode(taskName);
+    startStopwatch();
+    html.setAttribute('data-theme','light');
+    localStorage.setItem('theme','light');
 
 
-            saveTasks();
-            renderTasks();
-            updateStats();
-            
-            taskInput.value = '';
+    saveTasks();
+    renderTasks();
+    updateStats();
 
-            fireConfetti();
-            taraAudio.play();
-        }
-        
-        function executeQuickTask(taskName) {
-            if (currentTaskId) {
-                completeCurrentTask();
-            }
-            
-            const newTask = {
-                id: Date.now(),
-                name: taskName,
-                startTime: new Date(),
-                endTime: null,
-                actualDuration: 0,
-                completed: false,
-                inProgress: true
-            };
-            
+    taskInput.value = '';
+
+    fireConfetti();
+    taraAudio.play();
+}
+
+function executeQuickTask(taskName) {
+    if (currentTaskId) {
+        completeCurrentTask();
+    }
+
+// SET TIMER SETELAH complete (PENTING)
+    if(taskName.includes('Istirahat')){
+        timerTargetSeconds = 5 * 60;
+        localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
+    }
+    if(taskName.includes('Istirahat')){
+        focusOverlay.style.background = '#111';
+    }
+    const newTask = {
+        id: Date.now(),
+        name: taskName,
+        startTime: new Date(),
+        endTime: null,
+        actualDuration: 0,
+        completed: false,
+        inProgress: true
+    };
+
             // Menambahkan task di awal array, bukan di akhir
-            tasks.unshift(newTask);
-            currentTaskId = newTask.id;
-            
-            localStorage.setItem('currentTaskId', currentTaskId);
-            
-            currentTaskDiv.style.display = 'block';
-            currentTaskName.innerHTML = processHashtags(taskName);
-            
-            startStopwatch();
-            html.setAttribute('data-theme','light');
-            localStorage.setItem('theme','light');
-            
-            saveTasks();
-            renderTasks();
-            updateStats();
+    tasks.unshift(newTask);
+    currentTaskId = newTask.id;
 
-            fireConfetti();
-            taraAudio.play();
-        }
-        
-        function startTask(taskId) {
-            if (currentTaskId) {
-                completeCurrentTask();
-            }
-            
-            const task = tasks.find(t => t.id == taskId);
-            if (!task || task.completed) return;
-            
-            task.inProgress = true;
-            task.startTime = new Date();
-            
-            currentTaskId = taskId;
-            localStorage.setItem('currentTaskId', currentTaskId);
-            
-            currentTaskDiv.style.display = 'block';
-            currentTaskName.innerHTML = processHashtags(task.name);
-            
-            startStopwatch();
-            html.setAttribute('data-theme','light');
-            localStorage.setItem('theme','light');
+    localStorage.setItem('currentTaskId', currentTaskId);
+
+    currentTaskDiv.style.display = 'block';
+    currentTaskName.innerHTML = processHashtags(taskName);
+    openFocusMode(taskName);
+    startStopwatch();
+    html.setAttribute('data-theme','light');
+    localStorage.setItem('theme','light');
+
+    saveTasks();
+    renderTasks();
+    updateStats();
+
+    fireConfetti();
+    taraAudio.play();
+}
+
+function startTask(taskId) {
+    if (currentTaskId) {
+        completeCurrentTask();
+    }
+
+    const task = tasks.find(t => t.id == taskId);
+    if (!task || task.completed) return;
+
+    task.inProgress = true;
+    task.startTime = new Date();
+
+    currentTaskId = taskId;
+    localStorage.setItem('currentTaskId', currentTaskId);
+
+    currentTaskDiv.style.display = 'block';
+    currentTaskName.innerHTML = processHashtags(task.name);
+    openFocusMode(task.name);
+
+    startStopwatch();
+    html.setAttribute('data-theme','light');
+    localStorage.setItem('theme','light');
 
 
-            saveTasks();
-            renderTasks();
-            updateStats();
+    saveTasks();
+    renderTasks();
+    updateStats();
 
-            fireConfetti();
-            taraAudio.play();
-        }
-        
-        function completeCurrentTask() {
-            if (!currentTaskId) return;
-            
-            const task = tasks.find(t => t.id == currentTaskId);
-            if (!task) return;
-            
-            task.completed = true;
-            task.inProgress = false;
-            task.endTime = new Date();
-            
-            if (task.startTime) {
-                const startTime = new Date(task.startTime);
-                const endTime = new Date();
+    fireConfetti();
+    taraAudio.play();
+}
+
+function completeCurrentTask() {
+    if (!currentTaskId) return;
+
+    const task = tasks.find(t => t.id == currentTaskId);
+    if (!task) return;
+
+    task.completed = true;
+    task.inProgress = false;
+    task.endTime = new Date();
+
+    if (task.startTime) {
+        const startTime = new Date(task.startTime);
+        const endTime = new Date();
                 task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
             }
             
             addLogEntry(task);
             
             currentTaskDiv.style.display = 'none';
+            closeFocusMode();
             html.setAttribute('data-theme','dark');
             localStorage.setItem('theme','dark');
             currentTaskId = null;
@@ -1360,12 +1623,18 @@
             stopwatchNumber.textContent = '';
             toggleStartStopButtons(false);
             timerTargetSeconds = null;
+            localStorage.removeItem('timerTargetSeconds');
             saveTasks();
             renderTasks();
             updateStats();
         }
         
         function startStopwatch() {
+            timerFinishedPlayed = false;
+            // default timer 1 jam
+            if (timerTargetSeconds === null){
+                timerTargetSeconds = 60 * 60;
+            }
             if (stopwatchInterval) clearInterval(stopwatchInterval);
 
             toggleStartStopButtons(true);
@@ -1388,7 +1657,8 @@
                 }
 
                 updateStopwatchDisplay(displaySeconds);
-                updateProgressBar(elapsedSeconds);
+                updateProgressBar();
+                updateStats();
 
         // bunyi tiap 5 menit
                 if (elapsedSeconds === 1800) {   // 30 menit
@@ -1437,6 +1707,12 @@ if (elapsedSeconds > 0 && elapsedSeconds % 600 === 0) addLogEntry();
                 }
 
                 if (timerTargetSeconds !== null) {
+                    // ===== URGENCY ZONE =====
+                    if(timerTargetSeconds !== null && displaySeconds <= 300){
+                        document.body.classList.add('urgency');
+                    }else{
+                        document.body.classList.remove('urgency');
+                    }
                     numberDisplay = '-' + numberDisplay;
                     textDisplay = '− ' + textDisplay;
 
@@ -1460,12 +1736,48 @@ if (elapsedSeconds > 0 && elapsedSeconds % 600 === 0) addLogEntry();
                 stopwatchText.innerHTML = textDisplay;
                 stopwatchNumber.textContent = numberDisplay;
 
-                if (timerTargetSeconds !== null && displaySeconds === 0) {
-    dingAudio.play();   // sound habis waktu
-    timerTargetSeconds = null;
-    completeCurrentTask();
-}
+                if (timerTargetSeconds !== null) {
 
+    // escalating beep saat 10 detik terakhir
+                    if(displaySeconds <= 10 && displaySeconds > 0){
+                        dingAudio.play();
+                    }
+
+                    if (displaySeconds === 0 && !timerFinishedPlayed) {
+                        timerFinishedPlayed = true;
+
+                        dingAudio.play();
+                        setTimeout(()=>dingAudio.play(),300);
+                        setTimeout(()=>dingAudio.play(),600);
+
+                        timerTargetSeconds = null;
+                        completeCurrentTask();
+                    }
+                }
+
+
+                if(currentTask && currentTask.name.includes('Istirahat')){
+                    document.body.classList.remove('urgency');
+                }
+
+                const fsw = document.getElementById('focusStopwatch');
+                if(fsw){
+                    fsw.textContent = numberDisplay;
+
+                    if(timerTargetSeconds !== null){
+        // warna otomatis
+                        if(displaySeconds <= 300){
+            fsw.style.color = '#ef4444'; // merah
+            fsw.classList.add('big');
+        } else if(displaySeconds <= 900){
+            fsw.style.color = '#f59e0b'; // kuning
+            fsw.classList.remove('big');
+        } else {
+            fsw.style.color = '#22c55e'; // hijau
+            fsw.classList.remove('big');
+        }
+    }
+}
 
 }
 
@@ -1479,8 +1791,15 @@ function updateProgressBar() {
     const now = new Date();
     const elapsedSeconds = Math.floor((now - startTime) / 1000);
 
-    const currentSecond = elapsedSeconds % 60;
-    const progressWidth = (100 - (currentSecond / 60) * 100);
+    let progressWidth = 100;
+
+    if(timerTargetSeconds !== null){
+        const remaining = Math.max(timerTargetSeconds - elapsedSeconds, 0);
+        progressWidth = (remaining / timerTargetSeconds) * 100;
+    }else{
+        const currentSecond = elapsedSeconds % 60;
+        progressWidth = (100 - (currentSecond / 60) * 100);
+    }
 
     stopwatchProgress.style.width = `${progressWidth}%`;
 }
@@ -1654,10 +1973,8 @@ function renderTasks() {
 }
 
 function updateStats() {
-    const completedTasks = tasks.filter(task => task.completed);
-
-    if (completedTasks.length === 0) {
-        totalMinutes.textContent = '0 Menit';
+    // kalau tidak ada task aktif → kosongkan bar
+    if(!currentTaskId || timerTargetSeconds === null){
         productiveBarEl.style.width = '0%';
         breakBarEl.style.width = '0%';
         productiveBarEl.textContent = '';
@@ -1665,51 +1982,36 @@ function updateStats() {
         return;
     }
 
-    const totalDuration = tasks.reduce((sum, task) => sum + task.actualDuration, 0);
+    const currentTask = tasks.find(t => t.id == currentTaskId);
+    if(!currentTask || !currentTask.startTime) return;
 
-    const totalBreakTime = completedTasks
-    .filter(task => task.name.includes('Break'))
-    .reduce((sum, task) => sum + task.actualDuration, 0);
+    const startTime = new Date(currentTask.startTime);
+    const now = new Date();
+    const elapsed = Math.floor((now - startTime)/1000);
 
-    const totalSholatTime = completedTasks
-    .filter(task => task.name.includes('Sholat'))
-    .reduce((sum, task) => sum + task.actualDuration, 0);
+    const remaining = Math.max(timerTargetSeconds - elapsed, 0);
+    const percent = (remaining / timerTargetSeconds) * 100;
 
-    const totalWorkTime = completedTasks
-    .filter(task => !task.name.includes('Break') && !task.name.includes('Sholat'))
-    .reduce((sum, task) => sum + task.actualDuration, 0);
+    // progress utama
+    productiveBarEl.style.width = `${percent}%`;
+    productiveBarEl.textContent = `${Math.ceil(remaining/60)}m`;
 
-            // Format total minutes to be more informative
-    let formattedTime = '';
-    if (totalDuration < 60) {
-        formattedTime = `${totalDuration} Menit`;
-    } else {
-        const hours = Math.floor(totalDuration / 60);
-        const minutes = totalDuration % 60;
-        formattedTime = minutes > 0 ? `${hours} Jam ${minutes} Menit` : `${hours} Jam`;
+    // bagian habis waktu
+    breakBarEl.style.width = `${100 - percent}%`;
+    breakBarEl.textContent = '';
+
+    if(focusProductiveBar){
+        focusProductiveBar.style.width = `${percent}%`;
+        focusBreakBar.style.width = `${100 - percent}%`;
     }
 
-    totalMinutes.textContent = formattedTime;
+    if(totalMinutes){
+        const total = tasks
+        .filter(t => t.completed)
+        .reduce((sum,t)=>sum+(t.actualDuration||0),0);
 
-    const productiveDuration = totalWorkTime + totalSholatTime;
-    const chartTotal = productiveDuration + totalBreakTime;
-
-    let productivePercentage = 0;
-    let chartBreakPercentage = 0;
-
-    if (chartTotal > 0) {
-        productivePercentage = ((productiveDuration / chartTotal) * 100);
-        chartBreakPercentage = ((totalBreakTime / chartTotal) * 100);
+        totalMinutes.textContent = formatDuration(total);
     }
-
-    const productivePercentageRounded = productivePercentage.toFixed(0);
-    const chartBreakPercentageRounded = chartBreakPercentage.toFixed(0);
-
-    productiveBarEl.style.width = `${productivePercentageRounded}%`;
-    productiveBarEl.textContent = productivePercentageRounded > 0 ? `${productivePercentageRounded}% Produktif` : '';
-
-    breakBarEl.style.width = `${chartBreakPercentageRounded}%`;
-    breakBarEl.textContent = chartBreakPercentageRounded > 0 ? `${chartBreakPercentageRounded}% Break` : '';
 }
 
 function handleTaskClick(taskId) {
@@ -1759,7 +2061,7 @@ function repeatTask(taskId) {
 
     currentTaskDiv.style.display = 'block';
     currentTaskName.innerHTML = processHashtags(task.name);
-    timerTargetSeconds = null;
+    openFocusMode(task.name);
     startStopwatch();
     html.setAttribute('data-theme','light');
     localStorage.setItem('theme','light');
@@ -1850,6 +2152,7 @@ window.repeatTask = repeatTask;
 window.editTask = editTask;
 window.deleteTask = deleteTask;
 </script>
+
 </body>
 </html>
 
