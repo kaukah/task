@@ -1,2161 +1,1234 @@
-
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tulis Todolist Hari ini ✏️</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <style>
-        :root {
-            /* Light mode colors */
-            --bg-primary: #ffffff;
-            --bg-secondary: #ffffff;
-            --bg-tertiary: #e5e7eb;
-            --text-primary: #111827;
-            --text-secondary: #4b5563;
-            --text-tertiary: #6b7280;
-            --accent-primary: #4f46e5;
-            --accent-secondary: #818cf8;
-            --accent-success: #10b981;
-            --accent-danger: #ef4444;
-            --accent-warning: #f59e0b;
-            --border-color: #d1d5db;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        [data-theme="dark"] {
-            /* Dark mode colors */
-            --bg-primary: #121212;
-            --bg-secondary: #1e1e1e;
-            --bg-tertiary: #2a2a2a;
-            --text-primary: #ffffff;
-            --text-secondary: #b0b0b0;
-            --text-tertiary: #808080;
-            --border-color: #333333;
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
-        }
-
-        * {
-
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            transition: var(--transition);
-        }
-        html, body {
-            transition: background-color 0.6s ease, color 0.6s ease;
-        }
-        #focusOverlay{
-            position: fixed;
-            inset: 0;
-            background:#000;
-            z-index: 9999;
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            align-items:center;
-            color:#fff;
-            width:100vw;
-            height:100vh;
-        }
-
-        #focusTaskTitle{
-            font-size: clamp(32px, 5vw, 80px);
-            font-weight: 800;
-            text-align:center;
-            padding:20px;
-            line-height:1.2;
-        }
-
-        #focusInterrupt i,
-        #focusBtn i,
-        #interruptBtn i{
-            font-size: 16px;
-        }
-        #focusClose{
-            position:absolute;
-            top:20px;
-            right:20px;
-            width:48px;
-            height:48px;
-            border:none;
-            border-radius:50%;
-            background:#222;
-            color:#fff;
-            font-size:24px;
-            cursor:pointer;
-        }
-        #focusClose:hover{
-            background:#444;
-        }
-
-        .container {
-            background-color: var(--bg-secondary);
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 0px 20px;
-            width: 100%;
-
-        }
-        #focusInterrupt{
-            position:absolute;
-            top:20px;
-            left:20px;
-            padding:10px 16px;
-            border:none;
-            border-radius:8px;
-            background:#2563eb;
-            color:#fff;
-            font-weight:700;
-            cursor:pointer;
-        }
-        #focusStopwatch{
-            font-size: clamp(40px,6vw,90px);
-            font-weight:800;
-            margin-top:20px;
-            color:#22c55e;
-            transition: all 0.4s ease;
-        }
-        #focusStopwatch.big{
-            font-size: clamp(80px,12vw,180px);
-            animation: pulse 0.8s infinite;
-        }
-        #focusInterrupt:hover{
-            background:#3b82f6;
-        }
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-            z-index: 1000;
-        }
-
-        .task-stats{
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-            padding:10px 14px;
-            margin:10px 0 15px;
-            border-radius:10px;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .task-stats-label{
-            font-size:0.9rem;
-            font-weight:600;
-            color:var(--text-secondary);
-            display:flex;
-            align-items:center;
-            gap:8px;
-        }
-
-        .theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 0.6s ease-out;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            font-weight: 500;
-        }
-
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 20px;
-            margin-top: 20px;
-            animation: fadeIn 0.8s ease-out;
-        }
-
-        [data-theme="dark"] .task-input{
-            color:#000;
-        }
-
-        .task-input {
-
-            position: fixed;
-            z-index: 1;
-            background-color: var(--bg-secondary);
-            width: 100%;
-            max-width: 80vw;
-            padding: 16px 20px;
-            font-size: 1.5rem;
-            background-color: #fff;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-primary);
-            text-align: center;
-            outline: none;
-            font-weight: 400;
-            transition: var(--transition);
-            box-shadow: var(--shadow-sm);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .task-input:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-
-        .task-input::placeholder {
-            color: var(--text-tertiary);
-            font-weight: 500;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 12px;
-            /*margin-top: 20px;*/
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            background-color: var(--accent-primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 700;
-            transition: var(--transition);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-secondary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-secondary {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--border-color);
-        }
-
-        .btn-reset {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            font-size: 0.875rem;
-            padding: 8px 16px;
-        }
-        
-        .btn-stat-stop {
-            background-color: var(--accent-danger);
-            color: white;
-            font-size: 0.875rem;
-            padding: 8px 16px;
-            font-weight: 700;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-transform: uppercase;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .btn-stat-stop:hover {
-            background-color: #red;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        /* Collapse/Expand Section */
-        .collapse-section {
-            width: 100%;
-            margin-bottom: 20px;
-            animation: fadeIn 1s ease-out;
-        }
-
-        .collapse-toggle {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 10px 0;
-            cursor: pointer;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: var(--transition);
-            padding: 8px;
-            border-radius: 6px;
-        }
-
-        .collapse-toggle:hover {
-            color: var(--text-primary);
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        [data-theme="dark"] .collapse-toggle:hover {
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .collapse-toggle i {
-            margin-left: 8px;
-            transition: transform 0.3s ease;
-        }
-
-        .collapse-toggle.collapsed i {
-            transform: rotate(180deg);
-        }
-
-        .collapsible-content {
-            max-height: 580px;
-            overflow: hidden;
-            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .collapsible-content.collapsed {
-            max-height: 0;
-        }
-
-        .stopwatch-container {
-            position: relative;
-            margin: -20px 0 -30px;
-        }
-
-        .stopwatch-bar {
-            height: 8px;
-            background-color: var(--bg-tertiary);
-            border-radius: 999px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        [data-theme="dark"] .stopwatch-bar {
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .stopwatch-progress {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 10%;
-            background: linear-gradient(90deg, var(--accent-danger), #f97316);
-            transition: width 0.5s linear;
-            border-radius: 999px;
-            width: 100%;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 0.9; }
-            50% { opacity: 0.7; }
-            100% { opacity: 0.9; }
-        }
-        body.urgency{
-            background:#2b0000 !important;
-            animation: urgencyPulse 4s infinite;
-        }
-        @keyframes urgencyPulse{
-            0%{ filter: brightness(1); }
-            50%{ filter: brightness(1.08); }
-            100%{ filter: brightness(1); }
-        }
-        body.urgency #focusOverlay{
-            background:#3a0000 !important;
-        }
-        .stopwatch-display {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 0px;
-        }
-
-        .stopwatch-text {
-            font-size: 3rem;
-            font-weight: 300;
-            text-align: center;
-            color: green;
-            margin-bottom: 5px;
-            display: none;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -1px;
-        }
-
-        .stopwatch-number {
-            font-size: 7rem;
-            font-weight: 700;
-            /*text-transform: uppercase;*/
-            text-align: center;
-            color: green;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -1px;
-            margin:10px 0 0;
-        }
-        .stopwatch-text,
-        .stopwatch-number{
-            animation: pulse 1s infinite;
-        }
-
-        .stopwatch-toggle {
-            margin-top: 10px;
-            display: block;
-        }
-
-        .toggle-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            transition: var(--transition);
-            margin: 0 4px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .toggle-btn:hover {
-            color: var(--text-primary);
-            border-color: var(--text-primary);
-        }
-
-        .toggle-btn.active {
-            color: var(--text-primary);
-            border-color: var(--accent-primary);
-            background-color: rgba(79, 70, 229, 0.1);
-        }
-
-        .current-task {
-            text-align: center;
-            letter-spacing: -3px !important;
-            margin: 20px 0;
-            padding: 0px;
-            animation: slideIn 0.5s ease-out;
-        }
-
-        .current-task h1 {
-            font-size: 3rem;
-            color: var(--text-primary);
-            font-weight: 700;
-            animation: pulse 1s infinite;
-            font-family: 'Inter', sans-serif;
-            line-height: 0.9;
-        }
-
-        .task-list {
-            margin-bottom: 30px;
-            position: relative;
-            animation: fadeInUp 1s ease-out;
-        }
-
-        .task-list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .task-list h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .quick-action-btn {
-            padding: 10px 16px;
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            transition: var(--transition);
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .quick-action-btn:hover {
-            background-color: var(--border-color);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-        .chart-bar-productive{
-            transition: width 1s linear;
-        }
-
-        .task-stats {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 15px;
-            white-space: nowrap;
-            margin: 10px 0 20px;
-            flex-wrap: wrap;
-        }
-        
-        .stat-buttons-group {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        .task-counter {
-            color: var(--text-primary);
-            font-weight: 700;
-            font-size: 1.25rem;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .total-minutes {
-            color: var(--accent-warning);
-            font-size: 13px;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 0px;
-            font-weight:300;
-            letter-spacing:-0.5px;
-        }
-
-        #focusTimerBtns{
-            margin-top:20px;
-            display:flex;
-            gap:10px;
-        }
-
-        #focusTimerBtns button{
-            padding:8px 14px;
-            border:1px solid rgba(255,255,255,0.8);
-            border-radius:8px;
-            background:transparent;
-            color:#fff;
-            font-weight:300;
-            font-size:20px;
-            cursor:pointer;
-            transition: all 0.25s ease;
-        }
-
-        #focusTimerBtns button:hover{
-            background:orange;
-        }
-        .focus-progress-wrap{
-            width:min(500px, 70vw);
-            margin-top:20px;
-        }
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 4px;
-            padding:10px;
-            background-color: var(--bg-secondary);
-            box-shadow: var(--shadow-sm);
-            transition: var(--transition);
-            border-left: 4px solid transparent;
-        }
-
-        .task-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .task-item.completed {
-            opacity: 0.2;
-
-        }
-
-        .task-info {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            overflow: hidden;
-            font-size: 3rem;
-
-        }
-
-        .task-checkbox {
-            width: 28px;
-            height: 28px;
-            cursor: pointer;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            font-weight: 700;
-            color: transparent;
-            flex-shrink: 0;
-            transition: var(--transition);
-        }
-
-        .task-checkbox:hover {
-            border-color: var(--accent-primary);
-        }
-
-        .task-checkbox.checked {
-            background-color: var(--accent-success);
-            border-color: var(--accent-success);
-            color: white;
-        }
-
-        .task-checkbox.active {
-            border: none;
-            background: none;
-            color: var(--accent-primary);
-            font-size: 1.2rem;
-        }
-
-        .task-timestamp {
-            min-width: 60px;
-            text-align: center;
-            font-size: 1rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 1px;
-            flex-shrink: 0;
-        }
-
-        .task-title {
-            font-weight: 300;
-            text-transform: uppercase;
-            font-size: 1rem;
-            flex-grow: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .task-meta {
-            font-size: 0.75rem;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .task-duration {
-            min-width: 120px;
-            color: var(--text-primary);
-            text-align: right;
-            font-weight: 600;
-            font-size: 0.875rem;
-            text-transform: uppercase;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            position: relative;
-            margin-left: 12px;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 1px;
-        }
-
-        .duration-bar {
-            position: absolute;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            background-color: rgba(79, 70, 229, 0.2);
-            border-radius: 4px;
-            z-index: -1;
-        }
-
-        .duration-text {
-            padding: 4px 8px;
-            border-radius: 4px;
-            z-index: 1;
-            background-color: rgba(255, 255, 255, 0.7);
-        }
-
-        [data-theme="dark"] .duration-text {
-            background-color: rgba(18, 18, 18, 0.7);
-        }
-
-        .task-stopwatch {
-            min-width: 80px;
-            text-align: right;
-            font-size: 1.25rem;
-            color: var(--accent-primary);
-            font-weight: 700;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 1px;
-            margin-left: 12px;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 6px;
-            margin-left: 12px;
-        }
-
-        .task-action-btn {
-            background: none;
-            border: none;
-            color: var(--text-tertiary);
-            cursor: pointer;
-            font-size: 1rem;
-            padding: 6px;
-            border-radius: 6px;
-            transition: var(--transition);
-        }
-
-        .task-action-btn:hover {
-            color: var(--text-primary);
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        [data-theme="dark"] .task-action-btn:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 0;
-            color: var(--text-tertiary);
-            text-transform: uppercase;
-            font-weight: 500;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .edit-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-            backdrop-filter: blur(4px);
-        }
-
-        .edit-modal-content {
-            background-color: var(--bg-secondary);
-            padding: 30px;
-            width: 90%;
-            max-width: 500px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
-            animation: modalSlideIn 0.3s ease-out;
-        }
-
-        .edit-modal-input {
-            width: 100%;
-            padding: 16px;
-            font-size: 1.25rem;
-            background-color: var(--bg-primary);
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            color: var(--text-primary);
-            text-align: center;
-            outline: none;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-            font-weight: 600;
-            transition: var(--transition);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .edit-modal-input:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-
-        .edit-modal-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-        }
-        
-        .chart-container {
-            margin-top: 24px;
-            margin-bottom: 20px;
-        }
-
-        .chart-label {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .chart-bar-container {
-            display: flex;
-            height: 16px;
-            background-color: var(--bg-tertiary);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        [data-theme="dark"] .chart-bar-container {
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .chart-bar-productive, .chart-bar-break {
-            height: 100%;
-            transition: width 0.5s ease-out;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.875rem;
-            font-weight: 700;
-            color: #fff;
-            white-space: nowrap;
-            padding: 0 10px;
-            font-family: 'Inter', sans-serif;
-            letter-spacing: 1px;
-        }
-
-        .chart-bar-productive {
-            background: linear-gradient(90deg, var(--accent-success), #34d399);
-        }
-
-        .chart-bar-break {
-            background: linear-gradient(90deg, var(--accent-danger), #f87171);
-        }
-
-        /* Hashtag capsule styles */
-        .hashtag-capsule {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin: 0 2px;
-            color: white;
-            text-transform: uppercase;
-        }
-
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: scale(0.95);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        .fixed-spacer{
-            height:40px; /* sesuaikan tinggi input + tombol */
-        }
-
-        #breakBtn{
-            background-color: var(--accent-success);
-            color: #fff;
-        }
-
-        #breakBtn:hover{
-            background-color: #34d399;
-        }
-        #executeTaskBtn{
-            background-color: #2563eb; /* biru clean modern */
-        }
-
-        #executeTaskBtn:hover{
-            background-color: #3b82f6;
-        }
-        .time-number{
-            font-weight: 800;
-        }
-        @media (max-width: 600px) {
-            .task-list-header {
-                justify-content: space-between;
-            }
-            
-            .stopwatch-text {
-                font-size: 3rem;
-            }
-            
-
-            
-            .current-task h1 {
-                font-size: 3rem;
-            }
-            
-            .task-stats {
-                gap: 10px;
-                justify-content: center;
-            }
-            
-            .stat-buttons-group {
-                gap: 10px;
-                margin-top: 10px;
-            }
-
-            .task-counter, .total-minutes {
-                font-size: 1.5rem;
-            }
-            
-            .task-timestamp, .task-duration {
-                min-width: 50px;
-                font-size: 1rem;
-            }
-            
-            .task-stopwatch {
-                min-width: 60px;
-                font-size: 1rem;
-            }
-            
-            .quick-actions {
-                gap: 8px;
-            }
-            
-            .quick-action-btn {
-                width: 100%;
-                justify-content: center;
-            }
-            
-            .btn-reset {
-                margin-left: 0;
-                margin-top: 0;
-            }
-            
-            .task-duration {
-                min-width: 80px;
-            }
-            
-            .task-item {
-                padding: 5px;
-            }
-            
-            .task-title {
-                font-size: 1.2rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <title>Focus To-Do Timer • Pro Version</title>
+  <!-- SortableJS untuk Drag & Drop -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f0f19;
+      --text: #eef2ff;
+      --accent: #00d4ff;
+      --accent-glow: rgba(0, 212, 255, 0.3);
+      --accent-success: #00ce7c;
+      --accent-warning: #ffaa00;
+      --accent-danger: #ff4d4d;
+      --card: #1e1e3a;
+      --card-hover: #2a2a45;
+      --border: #333355;
+      --secondary: #8b8bba;
+      --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    [data-theme="light"] {
+      --bg: #f3f4f6;
+      --text: #1f2937;
+      --accent: #2563eb;
+      --accent-glow: rgba(37, 99, 235, 0.2);
+      --accent-success: #059669;
+      --accent-warning: #d97706;
+      --accent-danger: #dc2626;
+      --card: #ffffff;
+      --card-hover: #f9fafb;
+      --border: #e5e7eb;
+      --secondary: #6b7280;
+    }
+    
+    * { box-sizing: border-box; outline: none; }
+
+    body {
+      font-family: var(--font-family);
+      font-family:'Inter', sans-serif;
+
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.4s ease, color 0.4s ease;
+    }
+
+    .container { 
+      width: 100%; 
+      max-width: 540px; 
+      margin: 0 auto; 
+      position: relative;
+    }
+
+    /* Header & Toggles */
+    .top-bar {
+      position:relative;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:30px 0 20px;
+    }
+    h1 {
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      margin:0;
+      font-size:2.8rem;
+      color: var(--text);
+      text-shadow:0 0 15px var(--accent-glow);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:800px;
+      text-align:center;
+    }
+
+    .icon-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+      color: var(--text);
+    }
+    .icon-btn:hover { transform: scale(1.1); border-color: var(--accent); }
+    .icon-btn:active { transform: scale(0.95); }
+
+    /* Timer Visuals */
+    .timer-wrapper {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 0 auto 30px;
+    }
+    .task-item.active-task{
+      background: rgba(37, 99, 235, 0.12);
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+    .task-item.active-task{
+      animation: activeGlow 1.5s ease infinite alternate;
+    }
+
+    @keyframes activeGlow{
+      from{ box-shadow:0 0 0 2px var(--accent-glow);}
+      to{ box-shadow:0 0 8px 3px var(--accent-glow);}
+    }
+
+    .btn-done-active{
+      background: #009f00 !important;
+      border-color: var(--accent-success);
+      color: #fff !important;
+      font-weight:700;
+      box-shadow:0 2px 8px rgba(0,206,124,0.35);
+
+    }
+
+    .tag{
+      display:inline-block;
+      padding:2px 8px;
+      margin-left:4px;
+      border-radius:999px;
+      background:var(--accent);
+      color:#fff;
+      font-size:0.75rem;
+      font-weight:600;
+    }
+    .timer-circle { position: absolute; inset: 0; }
+    svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    circle { fill: none; stroke-linecap: round; transition: stroke 0.3s; }
+    
+    .minutes-bg   { stroke: var(--border); stroke-width: 24; opacity: 0.3; }
+    .minutes-prog { 
+      stroke: var(--accent); 
+      stroke-width: 15; 
+      transition: stroke-dashoffset 1s linear, stroke 0.3s; 
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+    }
+    .seconds-bg   { stroke: var(--border); stroke-width: 12; opacity: 0.2; }
+    .seconds-prog { 
+      stroke: var(--secondary); 
+      stroke-width: 4; 
+      transition: stroke-dashoffset 1s linear, stroke 0.3s; 
+    }
+    .continue-popup{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+    z-index:9999;
+  transform:translateX(-50%);
+  background:var(--card);
+  border:1px solid var(--border);
+  padding:10px 16px;
+  border-radius:10px;
+  box-shadow:0 6px 20px rgba(0,0,0,0.15);
+  display:flex;
+  align-items:center;
+  gap:10px;
+  opacity:0;
+  pointer-events:none;
+  transition:all 0.3s;
+  font-size:0.9rem;
+}
+
+.continue-popup.show{
+  opacity:1;
+  pointer-events:auto;
+}
+
+#continueBtn{
+  background:var(--accent-success);
+  color:#fff;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+    .time-display {
+      position: absolute;
+      top: 50%;
+      font-feature-settings: "tnum";
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 4.5rem;
+      font-weight: 800;
+      color: var(--text);
+      z-index: 2;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -2px;
+    }
+    .seconds-part {
+      font-weight: 400;
+      color: var(--secondary);
+      font-size: 1em;
+    }
+    .notes-section{
+      margin-top:16px;
+      width:100%;
+    }
+
+    #focusNotes{
+      width:100%;
+      min-height:100px;
+      resize:vertical;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      font-size:1rem;
+      font-family:'Inter', sans-serif;
+    }
+
+    /* Controls */
+    .controls-row {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    
+    button {
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    button:hover { background: var(--card-hover); transform: translateY(-1px); }
+    button:active { transform: translateY(1px); }
+
+    .duration-btn.active { 
+      background: var(--accent-success); 
+      color: #fff; 
+      border-color: var(--accent-success); 
+      box-shadow: 0 4px 12px rgba(0, 206, 124, 0.3);
+    }
+    
+    .action-break,
+    .action-reset,
+    .action-collapse{
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .action-break:hover,
+    .action-reset:hover,
+    .action-collapse:hover{
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    button{
+      border-radius: 6px;
+
+    }
+    .timer-wrapper.flash{
+      animation: flash 1s ease infinite;
+    }
+
+    @keyframes flash{
+      0%{transform:scale(1)}
+      50%{transform:scale(1.08)}
+      100%{transform:scale(1)}
+    }
+    /* Task Section */
+    .task-section {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      overflow: hidden;
+    }
+    .task-section.collapsed { 
+      max-height: 0; 
+      opacity: 0; 
+      margin: 0; 
+      padding: 0; 
+    }
+
+    .task-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    input[type="text"] {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--accent); }
+    
+    button,
+    input,
+    .task-text{
+      font-family:'Inter', sans-serif;
+    }
+    .btn-add {
+      background: var(--accent);
+      color: white;
+      border: none;
+    }
+
+    .btn-retask{
+      background:transparent;
+      border:1px solid var(--border);
+      color:var(--secondary);
+    }
+
+    .btn-retask:hover{
+      border-color:var(--accent-warning);
+      color:var(--accent-warning);
+    }
+
+    .btn-retask{
+      width:32px;
+      height:28px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .task-list { list-style: none; padding: 0; margin: 0; }
+    
+    .task-item {
+      background: var(--card);
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: grab;
+      border: 1px solid transparent;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .task-item:hover { transform: translateY(-2px); border-color: var(--border); }
+    .task-item:active { cursor: grabbing; transform: scale(0.99); }
+    
+    .task-item.done {
+      opacity: 0.5;
+      background: var(--bg);
+      border: 1px dashed var(--border);
+    }
+    .task-item.done .task-text { text-decoration: line-through; color: var(--secondary); }
+
+    .task-text {
+      flex: 1;
+      font-size: 1rem;
+      margin-right: 12px;
+      cursor: pointer;
+    }
+    
+    .task-actions { display: flex; gap: 6px; }
+    .task-actions button {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+    }
+    .btn-start,
+    .btn-edit,
+    .btn-delete{
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .btn-start:hover{
+      border-color: var(--accent-success);
+      color: var(--accent-success);
+    }
+
+    .btn-edit:hover{
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-delete:hover{
+      border-color: var(--accent-danger);
+      color: var(--accent-danger);
+    }
+
+    .btn-start:disabled{
+      opacity:0.4;
+      cursor:not-allowed;
+    }
+    .task-actions button{
+      width:28px;
+      height:28px;
+      padding:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .btn-start{
+      min-width:60px;
+    }
+    .task-actions button:hover{
+      transform:translateY(-1px);
+    }
+    /* Animations */
+    @keyframes pop { 0% { transform: scale(0.9); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    .pop { animation: pop 0.3s ease; }
+
+    /* Drag & Drop Ghost Classes */
+    .sortable-ghost { opacity: 0.4; background: var(--border); }
+    .sortable-drag { cursor: grabbing; background: var(--card-hover); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+
+    .timer-done{
+      animation: timerPulse 1s ease infinite;
+    }
+
+    @keyframes timerPulse{
+      0%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+      50%{ transform:translate(-50%,-50%) scale(1.1); opacity:0.6; }
+      100%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+    }
+
+
+
+
+
+    /* ============================= */
+/* MOBILE RESPONSIVE */
+/* ============================= */
+
+@media (max-width: 600px){
+
+  body{
+    padding:12px;
+  }
+
+  .container{
+    max-width:100%;
+  }
+
+  h1{
+    font-size:1.4rem;
+    max-width:200px;
+  }
+
+  .timer-wrapper{
+    width:240px;
+    height:240px;
+    margin-bottom:20px;
+  }
+
+  .time-display{
+    font-size:3rem;
+  }
+
+  .controls-row{
+    gap:6px;
+  }
+
+  button{
+    padding:8px 10px;
+    font-size:0.8rem;
+  }
+
+  .task-item{
+    padding:10px 12px;
+  }
+
+  .task-text{
+    font-size:0.9rem;
+  }
+
+  .task-actions button{
+    padding:4px 6px;
+    font-size:0.7rem;
+  }
+
+}
+</style>
 </head>
 <body>
 
-    <div class="container">
+  <div class="container">
+    <div class="top-bar">
 
-        <div class="input-section">
-            <input type="text" id="taskInput" class="task-input" placeholder="Ketik Tugas Baru (Shift + Enter)" autofocus>
-        </div>
-        <div class="fixed-spacer"></div>
-        
-        <div class="task-stats">
-            <div class="task-stats-label">
-                <i class="fas fa-clock"></i> Total Jam Kerja
-            </div>
-            <div class="total-minutes" id="totalMinutes">0 Menit</div>
-        </div>
-        <div class="stopwatch-container">
-
-            <div id="stopwatchProgress" class="stopwatch-progress"></div>
-
-            <div class="stopwatch-display">
-                <div class="stopwatch-text" id="stopwatchText">
-                    <span class="time-number"></span>Halo</div>
-                    <div class="stopwatch-number" id="stopwatchNumber">Halo</div>
-
-                </div>
-            </div>
-
-            <div class="current-task" id="currentTask" style="display: none;">
-                <h1 id="currentTaskName">-</h1>
-            </div>
-
-
-
-
-            <div class="input-section">
-                <div class="btn-group">
-                    <div class="quick-actions">
-                        <button id="breakBtn" class="quick-action-btn"><i class="fas fa-coffee"></i> </button>
-                        <button id="timer10Btn" class="quick-action-btn">10M</button>
-                        <button id="timer30Btn" class="quick-action-btn">30M</button>
-
-                    </div>
-                    <button id="addTaskBtn"></button>
-                    <button id="executeTaskBtn" class="btn"><i class="fas fa-rocket"></i></button>
-                    <button id="focusBtn" class="btn btn-secondary">
-                        <i class="fas fa-tv"></i>
-                    </button>
-                    <button id="interruptBtn" class="btn btn-secondary">
-                        <i class="fas fa-hand-paper"></i>
-                    </button>
-                    <button id="stopTaskBtn" class="btn btn-stat-stop" style="display: none;">STOP</button>
-                    <button id="resetBtn" class="btn btn-reset">CLEAR </button>
-                </div>
-            </div>
-
-            <div class="chart-container">
-                <div class="chart-bar-container">
-                    <div class="chart-bar-productive" id="productiveBar" style="width: 0%;"></div>
-                    <div class="chart-bar-break" id="breakBar" style="width: 0%;"></div>
-                </div>
-            </div>
-
-            <div class="task-list">
-                <div id="taskListContainer">
-                    <p class="empty-state">Belum ada tugas</p>
-                </div>
-            </div>
-            
-
-
-        </div>
-
-        <div id="editModal" class="edit-modal" style="display: none;">
-            <div class="edit-modal-content">
-                <input type="text" id="editTaskInput" class="edit-modal-input" placeholder="Nama tugas">
-                <div class="edit-modal-buttons">
-                    <button id="cancelEditBtn" class="btn btn-secondary">Batal</button>
-                    <button id="saveEditBtn" class="btn">Simpan</button>
-                </div>
-            </div>
-        </div>
-
-
-<!-- FOCUS MODE -->
-<div id="focusOverlay" style="display:none;">
-    <button id="focusClose">✕</button>
-    <button id="focusInterrupt">
-        <i class="fas fa-hand-paper"></i>
-    </button>
-
-    <div id="focusTaskTitle">Fokus...</div>
-    <div id="focusStopwatch"></div>
-
-    <div class="focus-progress-wrap">
-        <div class="chart-bar-container">
-            <div class="chart-bar-productive" id="focusProductiveBar" style="width:0%"></div>
-            <div class="chart-bar-break" id="focusBreakBar" style="width:0%"></div>
-        </div>
+      <h1 id="headerTitle">Halo Endro</h1>
+      <div style="width: 90px;"></div> <!-- Spacer for center balance -->
     </div>
 
-    <div id="focusTimerBtns">
-        <button id="focus10Btn">10 Menit</button>
-        <button id="focus30Btn">30 Menit</button>
+    <div class="timer-wrapper">
+      <!-- Outer Circle: Minutes -->
+      <div class="timer-circle">
+        <svg viewBox="0 0 300 300">
+          <circle class="minutes-bg" cx="150" cy="150" r="130"></circle>
+          <circle class="minutes-prog" id="minutesProg" cx="150" cy="150" r="130"></circle>
+        </svg>
+      </div>
+      <!-- Inner Circle: Seconds -->
+      <div class="timer-circle">
+        <svg viewBox="0 0 300 300">
+          <circle class="seconds-bg" cx="150" cy="150" r="115"></circle>
+          <circle class="seconds-prog" id="secondsProg" cx="150" cy="150" r="115"></circle>
+        </svg>
+      </div>
+
+      <div class="time-display" id="timeDisplay">
+        00:<span class="seconds-part">00</span>
+      </div>
     </div>
+
+    <div class="controls-row">
+
+    </div>
+
+    <div class="controls-row">
+
+      <button class="duration-btn active pop" data-min="1">1</button>
+      <button class="duration-btn pop" data-min="10">10</button>
+      <button class="duration-btn pop" data-min="30">30</button>
+      <button class="duration-btn pop" data-min="60">60</button>
+      <button class="action-break pop" id="breakBtn">Break</button>
+      <button class="action-reset pop" id="resetBtn" title="Reset Timer">Reset</button>
+      <button class="action-collapse pop" id="collapseBtn">Hide</button>
+
+
+    </div>
+
+    <div style="text-align: center; margin-bottom: 10px;">
+    </div>
+
+    <div class="task-section" id="taskSection">
+
+
+      <div class="task-input-group">
+        <input type="text" id="taskInput" placeholder="Tulis tugas baru di sini... (Enter)">
+        <button class="btn-add pop" id="addTask">Add</button>
+      </div>
+      <ul class="task-list" id="taskList">
+        <!-- Tasks will appear here -->
+      </ul>
+
+      <div class="notes-section">
+        <textarea id="focusNotes" placeholder="Catatan / ide cepat... (autosave)"></textarea>
+      </div>
+    </div>
+
+  </div>
+
+<div id="continuePopup" class="continue-popup">
+  Waktu habis • lanjut 5 menit?
+  <button id="continueBtn">LANJUT</button>
 </div>
 
+
+
+<!-- Audio SFX -->
+<audio id="clickSfx" src="https://sragen.netlify.app/sfx-22.mp3"></audio>
+<audio id="startSfx" src="https://sragen.netlify.app/sfx-9.mp3"></audio>
+<audio id="doneSfx" preload="auto" src="https://sragen.netlify.app/sfx-17.mp3"></audio>
+<audio id="editSfx" src="https://sragen.netlify.app/sfx-22.mp3"></audio>
+
 <script>
-        // Initialize variables
-    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-    let currentTaskId = localStorage.getItem('currentTaskId') || null;
-    let stopwatchInterval = null;
-    let isPaused = localStorage.getItem('isPaused') === 'true' || false;
-    let taskStopwatchIntervals = {};
-    let editingTaskId = null;
-    let timerTargetSeconds = parseInt(localStorage.getItem('timerTargetSeconds')) || null;
-    let stopwatchMode = localStorage.getItem('stopwatchMode') || 'number';
-    let timerFinishedPlayed = false;
+  "use strict";
 
-        // Hashtag colors configuration
-    const HASHTAG_COLORS = {
-            "#RED":        "#e53935",   // merah terang
-            "#SHOPEE":     "#fb8c00",   // oranye tebal
-            "#YELLOW":     "#fdd835",   // kuning modern
-            "#GREEN":      "#43a047",   // hijau solid
-            "#TEAL":       "#00897b",   // hijau kebiruan elegan
-            "#BLUE":       "#1e88e5",   // biru cerah
-            "#SKY":        "#29b6f6",   // biru langit lembut
-            "#TIKTOK":     "#8e24aa",   // ungu mewah
-            "#PINK":       "#d81b60",   // pink fuchsia
-            "#KAUKAH":     "#6d4c41",   // coklat profesional
+// --- Configuration & State ---
+  const state = {
+    taskId: null,
+    timerInterval: null,
+    selectedMinutes: 10,
+    totalSeconds: 600,
+    remainingSeconds: 600,
+    isSoundOn: true,
+      isStopwatch: false
+
+  };
+
+// --- DOM Elements ---
+  const el = {
+    html: document.documentElement,
+    themeToggle: document.getElementById("themeToggle"),
+    headerTitle: document.getElementById("headerTitle"),
+    minutesProg: document.getElementById("minutesProg"),
+    secondsProg: document.getElementById("secondsProg"),
+    timeDisplay: document.getElementById("timeDisplay"),
+    taskInput: document.getElementById("taskInput"),
+    addTaskBtn: document.getElementById("addTask"),
+    taskList: document.getElementById("taskList"),
+    collapseBtn: document.getElementById("collapseBtn"),
+    taskSection: document.getElementById("taskSection"),
+    breakBtn: document.getElementById("breakBtn"),
+    resetBtn: document.getElementById("resetBtn"),
+    modal: document.getElementById("modalOverlay"),
+    modalClose: document.getElementById("modalCloseBtn"),
+    modalMessage: document.getElementById("modalMessage"),
+    continuePopup: document.getElementById("continuePopup"),
+continueBtn: document.getElementById("continueBtn"),
+    sfx: {
+      click: document.getElementById("clickSfx"),
+      start: document.getElementById("startSfx"),
+      done: document.getElementById("doneSfx"),
+      edit: document.getElementById("editSfx")
+    }
+  };
+
+// --- Constants ---
+  const minCircum = 2 * Math.PI * 130;
+  const secCircum = 2 * Math.PI * 115;
+  el.minutesProg.style.strokeDasharray = minCircum;
+  el.secondsProg.style.strokeDasharray = secCircum;
+
+// --- Helper Functions ---
+  function renderHashtags(text){
+    return text.replace(/#(\w+)/g, '<span class="tag">#$1</span>');
+  }
+  function saveTimer() {
+    localStorage.setItem("focusTimerState", JSON.stringify({
+      remainingSeconds: state.remainingSeconds,
+      totalSeconds: state.totalSeconds,
+      selectedMinutes: state.selectedMinutes,
+      taskId: state.taskId,
+      running: !!state.timerInterval,
+      timestamp: Date.now()
+    }));
+  }
+  function saveTasks() {
+    const tasks = [];
+    document.querySelectorAll(".task-item").forEach(li => {
+      tasks.push({
+        id: li.dataset.id,
+        text: li.querySelector(".task-text").textContent,
+        done: li.classList.contains("done")
+      });
+    });
+    localStorage.setItem("focusTasks", JSON.stringify(tasks));
+  }
+
+  function showContinuePopup(){
+
+  el.continuePopup.classList.add("show");
+
+  setTimeout(()=>{
+    el.continuePopup.classList.remove("show");
+  },5000);
+
+}
+
+  function loadTasks() {
+    const data = localStorage.getItem("focusTasks");
+    if (!data) return;
+
+    const tasks = JSON.parse(data);
+
+    tasks.forEach(t => {
+      const li = document.createElement("li");
+      li.className = "task-item";
+      li.dataset.id = t.id;
+
+      li.innerHTML = `
+      <span class="task-text">${renderHashtags(t.text)}</span>
+      <div class="task-actions">
+        <button class="btn-start">▶ MULAI</button>
+        <button class="btn-edit">✏️</button>
+        <button class="btn-delete">✕</button>
+      </div>
+      `;
+
+      const startBtn = li.querySelector(".btn-start");
+      const editBtn = li.querySelector(".btn-edit");
+      const deleteBtn = li.querySelector(".btn-delete");
+
+      startBtn.addEventListener("click", () => startTimer(t.id));
+      editBtn.addEventListener("click", () => editTaskName(li));
+      deleteBtn.addEventListener("click", () => {
+
+  // jika task sudah selesai → langsung hapus
+        if(li.classList.contains("done")){
+          li.remove();
+          saveTasks();
+          return;
+        }
+
+  // jika belum selesai → konfirmasi dulu
+        if(confirm("Hapus task ini?")){
+          li.remove();
+          saveTasks();
+        }
+
+      });
+
+// klik teks tidak melakukan apa-apa
+      const taskText = li.querySelector(".task-text");
+      taskText.style.cursor = "default";
+
+
+    // jika task sudah selesai
+      if (t.done) {
+        li.classList.add("done");
+
+        startBtn.disabled = true;
+        startBtn.style.display = "none";
+        editBtn.style.display = "none";
+
+        const retask = document.createElement("button");
+        retask.className = "btn-retask";
+        retask.textContent = "↺";
+
+        retask.onclick = () => {
+          li.classList.remove("done");
+          startBtn.disabled = false;
+          startBtn.style.display = "";
+          editBtn.style.display = "";
+          retask.remove();
+
+          el.taskList.prepend(li);
+          saveTasks();
         };
-        
-        // DOM Elements
-        const taskInput = document.getElementById('taskInput');
-        const addTaskBtn = document.getElementById('addTaskBtn');
-        const executeTaskBtn = document.getElementById('executeTaskBtn');
-        const stopTaskBtn = document.getElementById('stopTaskBtn');
-        const interruptBtn = document.getElementById('interruptBtn');
-        const focusBtn = document.getElementById('focusBtn');
-        const breakBtn = document.getElementById('breakBtn');
-        const resetBtn = document.getElementById('resetBtn');
-        const taskListContainer = document.getElementById('taskListContainer');
-        const stopwatchProgress = document.getElementById('stopwatchProgress');
-        const currentTaskDiv = document.getElementById('currentTask');
-        const currentTaskName = document.getElementById('currentTaskName');
-        const totalMinutes = document.getElementById('totalMinutes');
-        const editModal = document.getElementById('editModal');
-        const editTaskInput = document.getElementById('editTaskInput');
-        const cancelEditBtn = document.getElementById('cancelEditBtn');
-        const saveEditBtn = document.getElementById('saveEditBtn');
-        const stopwatchText = document.getElementById('stopwatchText');
-        const stopwatchNumber = document.getElementById('stopwatchNumber');
-        // Focus Mode Elements
-        const focusOverlay = document.getElementById('focusOverlay');
-        const focusTaskTitle = document.getElementById('focusTaskTitle');
-        const focusClose = document.getElementById('focusClose');
-        const focusInterrupt = document.getElementById('focusInterrupt');
-        const focus10Btn = document.getElementById('focus10Btn');
-        const focus30Btn = document.getElementById('focus30Btn');
-        const focusProductiveBar = document.getElementById('focusProductiveBar');
-        const focusBreakBar = document.getElementById('focusBreakBar');
-        updateStopwatchMode();
 
+        li.querySelector(".task-actions").prepend(retask);
+      }
 
-        // Collapse elements
-        // const collapseToggle = document.getElementById('collapseToggle');
-        // const collapsibleContent = document.getElementById('collapsibleContent');
-        
-        // Theme toggle
-        const html = document.documentElement;
-        
-        // Check for saved theme preference or default to light
-        const currentTheme = localStorage.getItem('theme') || 'light';
-        if (currentTheme === 'dark') {
-            html.setAttribute('data-theme', 'dark');
-        }
-        
-        // Audio Cues - DINONAKTIFKAN SEMENTARA karena Base64 URL tidak valid/mengganggu
-        const dingAudio = new Audio('https://sragen.netlify.app/sfx-10.mp3');
-        const taraAudio = new Audio('https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg');
-        
-        // Statistik Elements
-        const productiveBarEl = document.getElementById('productiveBar');
-        const breakBarEl = document.getElementById('breakBar');
-
-        // Initialize
-        renderTasks();
-        updateStats();
-        
-        // If there's a current task, restore it
-        if (currentTaskId) {
-            const currentTask = tasks.find(t => t.id == currentTaskId);
-            if (currentTask && !currentTask.completed) {
-                currentTaskDiv.style.display = 'block';
-                currentTaskName.innerHTML = processHashtags(currentTask.name);
-                if(timerTargetSeconds === null){
-    timerTargetSeconds = 60 * 60; // default 1 jam
-}
-startStopwatch();
-toggleStartStopButtons(true);
-} else {
-    currentTaskId = null;
-    localStorage.removeItem('currentTaskId');
-    toggleStartStopButtons(false);
-}
-} else {
-    toggleStartStopButtons(false);
-}
-
-        // Event Listeners
-        // timer 10 menit
-
-const timer10Btn = document.getElementById('timer10Btn');
-timer10Btn.addEventListener('click', () => {
-    timerTargetSeconds = 10 * 60;
-    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
-});
-
-        // timer 30 menit
-const timer30Btn = document.getElementById('timer30Btn');
-timer30Btn.addEventListener('click', () => {
-    timerTargetSeconds = 30 * 60;
-    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
-});
-
-
-focus10Btn.addEventListener('click', () => {
-    timerTargetSeconds = 10 * 60;
-    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
-});
-
-focus30Btn.addEventListener('click', () => {
-    timerTargetSeconds = 30 * 60;
-    localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
-});
-
-
-        // Input event listeners
-taskInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        if (e.shiftKey) {
-            executeTask();
-        } else {
-            addTaskToQueue();
-        }
-    }
-});
-
-        // Button event listeners
-addTaskBtn.addEventListener('click', addTaskToQueue);
-executeTaskBtn.addEventListener('click', executeTask);
-stopTaskBtn.addEventListener('click', completeCurrentTask);
-breakBtn.addEventListener('click', function() {
-    timerTargetSeconds = 5 * 60; // 5 menit
-    executeQuickTask('☕ Istirahat');
-});
-
-resetBtn.addEventListener('click', resetAll);
-
-        // Collapse toggle event listener
-        // collapseToggle.addEventListener('click', function() {
-        //     collapsibleContent.classList.toggle('collapsed');
-        //     collapseToggle.classList.toggle('collapsed');
-
-        //     if (collapsibleContent.classList.contains('collapsed')) {
-        //         collapseToggle.innerHTML = 'SHOW <i class="fas fa-chevron-down"></i>';
-        //     } else {
-        //         collapseToggle.innerHTML = 'HIDE <i class="fas fa-chevron-up"></i>';
-        //     }
-        // });
-
-
-
-
-
-        // Edit modal event listeners
-cancelEditBtn.addEventListener('click', closeEditModal);
-saveEditBtn.addEventListener('click', saveTaskEdit);
-editTaskInput.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        saveTaskEdit();
-    }
-});
-
-        // Close modal when clicking outside
-editModal.addEventListener('click', function(e) {
-    if (e.target === editModal) {
-        closeEditModal();
-    }
-});
-
-        // Functions
-function fireConfetti() {
-    confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-    });
-}
-
-function toggleStartStopButtons(isTaskRunning) {
-    if (isTaskRunning) {
-        stopTaskBtn.style.display = 'block';
-    } else {
-        stopTaskBtn.style.display = 'none';
-    }
-}
-
-function setStopwatchMode(mode) {
-    stopwatchMode = mode;
-    localStorage.setItem('stopwatchMode', mode);
-    updateStopwatchMode();
-}
-
-stopwatchText.addEventListener('click', toggleStopwatchMode);
-stopwatchNumber.addEventListener('click', toggleStopwatchMode);
-
-function toggleStopwatchMode(){
-    stopwatchMode = stopwatchMode === 'text' ? 'number' : 'text';
-    localStorage.setItem('stopwatchMode', stopwatchMode);
-    updateStopwatchMode();
-}
-
-
-function updateStopwatchMode() {
-    if (stopwatchMode === 'text') {
-
-        stopwatchText.style.display = 'block';
-        stopwatchNumber.style.display = 'none';
-    } else {
-
-        stopwatchText.style.display = 'none';
-        stopwatchNumber.style.display = 'block';
-    }
-}
-
-
-// ===== FOCUS MODE =====
-function openFocusMode(taskName){
-    focusTaskTitle.innerHTML = processHashtags(taskName);
-    focusOverlay.style.display = 'flex';
-    focusOverlay.style.background = '#000';
-    taskInput.disabled = true;
-}
-
-function closeFocusMode(){
-    focusOverlay.style.display = 'none';
-
-    taskInput.disabled = false;
-}
-focusBtn.addEventListener('click', () => {
-    if(currentTaskId){
-        const t = tasks.find(x=>x.id==currentTaskId);
-        if(t) openFocusMode(t.name);
-    }
-});
-
-
-interruptBtn.addEventListener('click', interruptTask);
-
-// tombol close
-focusClose.addEventListener('click', closeFocusMode);
-focusInterrupt.addEventListener('click', interruptTask);
-
-// ESC keluar focus mode
-document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape'){
-        closeFocusMode();
-        taskInput.focus();
-    }
-});
-
-function interruptTask(){
-    if(!currentTaskId) return;
-
-    const task = tasks.find(t => t.id == currentTaskId);
-    if(!task) return;
-
-    // stop task sekarang TANPA completed
-    task.inProgress = false;
-    task.startTime = null;
-
-    currentTaskId = null;
-    localStorage.removeItem('currentTaskId');
-    timerTargetSeconds = null;
-    localStorage.removeItem('timerTargetSeconds');
-
-    if(stopwatchInterval) clearInterval(stopwatchInterval);
-
-    currentTaskDiv.style.display = 'none';
-    closeFocusMode();
-    toggleStartStopButtons(false);
-
-    saveTasks();
-    renderTasks();
-
-    taskInput.focus();
-}
-
-function processHashtags(text) {
-            // Process hashtags in text and convert them to colored capsules
-    return text.replace(/#(\w+)/g, function(match, hashtag) {
-        const hashtagUpper = '#' + hashtag.toUpperCase();
-                const color = HASHTAG_COLORS[hashtagUpper] || '#888888'; // Default gray if not found
-                return `<span class="hashtag-capsule" style="background-color: ${color}">${hashtagUpper}</span>`;
-            });
-}
-
-function addTaskToQueue() {
-    const taskName = taskInput.value.trim();
-    if (!taskName) return;
-
-    const newTask = {
-        id: Date.now(),
-        name: taskName,
-        startTime: null,
-        endTime: null,
-        actualDuration: 0,
-        completed: false,
-        inProgress: false
-    };
-
-            // Menambahkan task di awal array, bukan di akhir
-    tasks.unshift(newTask);
-
-    saveTasks();
-    renderTasks();
-    updateStats();
-
-    taskInput.value = '';
-}
-
-function executeTask() {
-    const taskName = taskInput.value.trim();
-    if (!taskName) return;
-
-    if (currentTaskId) {
-        completeCurrentTask();
-    }
-
-    const newTask = {
-        id: Date.now(),
-        name: taskName,
-        startTime: new Date(),
-        endTime: null,
-        actualDuration: 0,
-        completed: false,
-        inProgress: true
-    };
-
-            // Menambahkan task di awal array, bukan di akhir
-    tasks.unshift(newTask);
-    currentTaskId = newTask.id;
-
-    localStorage.setItem('currentTaskId', currentTaskId);
-
-    currentTaskDiv.style.display = 'block';
-    currentTaskName.innerHTML = processHashtags(taskName);
-    openFocusMode(taskName);
-    startStopwatch();
-    html.setAttribute('data-theme','light');
-    localStorage.setItem('theme','light');
-
-
-    saveTasks();
-    renderTasks();
-    updateStats();
-
-    taskInput.value = '';
-
-    fireConfetti();
-    taraAudio.play();
-}
-
-function executeQuickTask(taskName) {
-    if (currentTaskId) {
-        completeCurrentTask();
-    }
-
-// SET TIMER SETELAH complete (PENTING)
-    if(taskName.includes('Istirahat')){
-        timerTargetSeconds = 5 * 60;
-        localStorage.setItem('timerTargetSeconds', timerTargetSeconds);
-    }
-    if(taskName.includes('Istirahat')){
-        focusOverlay.style.background = '#111';
-    }
-    const newTask = {
-        id: Date.now(),
-        name: taskName,
-        startTime: new Date(),
-        endTime: null,
-        actualDuration: 0,
-        completed: false,
-        inProgress: true
-    };
-
-            // Menambahkan task di awal array, bukan di akhir
-    tasks.unshift(newTask);
-    currentTaskId = newTask.id;
-
-    localStorage.setItem('currentTaskId', currentTaskId);
-
-    currentTaskDiv.style.display = 'block';
-    currentTaskName.innerHTML = processHashtags(taskName);
-    openFocusMode(taskName);
-    startStopwatch();
-    html.setAttribute('data-theme','light');
-    localStorage.setItem('theme','light');
-
-    saveTasks();
-    renderTasks();
-    updateStats();
-
-    fireConfetti();
-    taraAudio.play();
-}
-
-function startTask(taskId) {
-    if (currentTaskId) {
-        completeCurrentTask();
-    }
-
-    const task = tasks.find(t => t.id == taskId);
-    if (!task || task.completed) return;
-
-    task.inProgress = true;
-    task.startTime = new Date();
-
-    currentTaskId = taskId;
-    localStorage.setItem('currentTaskId', currentTaskId);
-
-    currentTaskDiv.style.display = 'block';
-    currentTaskName.innerHTML = processHashtags(task.name);
-    openFocusMode(task.name);
-
-    startStopwatch();
-    html.setAttribute('data-theme','light');
-    localStorage.setItem('theme','light');
-
-
-    saveTasks();
-    renderTasks();
-    updateStats();
-
-    fireConfetti();
-    taraAudio.play();
-}
-
-function completeCurrentTask() {
-    if (!currentTaskId) return;
-
-    const task = tasks.find(t => t.id == currentTaskId);
-    if (!task) return;
-
-    task.completed = true;
-    task.inProgress = false;
-    task.endTime = new Date();
-
-    if (task.startTime) {
-        const startTime = new Date(task.startTime);
-        const endTime = new Date();
-                task.actualDuration = Math.floor((endTime - startTime) / 60000); // in minutes
-            }
-            
-            addLogEntry(task);
-            
-            currentTaskDiv.style.display = 'none';
-            closeFocusMode();
-            html.setAttribute('data-theme','dark');
-            localStorage.setItem('theme','dark');
-            currentTaskId = null;
-            localStorage.removeItem('currentTaskId');
-            
-            if (stopwatchInterval) clearInterval(stopwatchInterval);
-            stopwatchText.innerHTML = '';
-            stopwatchNumber.textContent = '';
-            toggleStartStopButtons(false);
-            timerTargetSeconds = null;
-            localStorage.removeItem('timerTargetSeconds');
-            saveTasks();
-            renderTasks();
-            updateStats();
-        }
-        
-        function startStopwatch() {
-            timerFinishedPlayed = false;
-            // default timer 1 jam
-            if (timerTargetSeconds === null){
-                timerTargetSeconds = 60 * 60;
-            }
-            if (stopwatchInterval) clearInterval(stopwatchInterval);
-
-            toggleStartStopButtons(true);
-
-            stopwatchInterval = setInterval(() => {
-                if (isPaused || !currentTaskId) return;
-
-                const currentTask = tasks.find(t => t.id == currentTaskId);
-                if (!currentTask || !currentTask.startTime) return;
-
-                const startTime = new Date(currentTask.startTime);
-                const now = new Date();
-                const elapsedSeconds = Math.floor((now - startTime) / 1000);
-
-                let displaySeconds = elapsedSeconds;
-
-        // kalau tombol ⏳ 30 menit dipilih → jadi countdown
-                if (timerTargetSeconds !== null) {
-                    displaySeconds = Math.max(timerTargetSeconds - elapsedSeconds, 0);
-                }
-
-                updateStopwatchDisplay(displaySeconds);
-                updateProgressBar();
-                updateStats();
-
-        // bunyi tiap 5 menit
-                if (elapsedSeconds === 1800) {   // 30 menit
-                    dingAudio.play();
-                    setTimeout(() => dingAudio.play(), 500);
-                }
-
-if (elapsedSeconds === 3600) {   // 1 jam
-    dingAudio.play();
-    setTimeout(() => dingAudio.play(), 500);
-    setTimeout(() => dingAudio.play(), 1000);
-}
-
-if (elapsedSeconds > 0 && elapsedSeconds % 600 === 0) addLogEntry();
-
-}, 1000);
-        }
-        function updateStopwatchDisplay(displaySeconds) {            
-            if (!currentTaskId) return;
-
-            const currentTask = tasks.find(t => t.id == currentTaskId);
-            if (!currentTask || !currentTask.startTime) return;
-
-            const startTime = new Date(currentTask.startTime);
-            const now = new Date();
-
-            const hours = Math.floor(displaySeconds / 3600);
-            const minutes = Math.floor((displaySeconds % 3600) / 60);
-            const seconds = displaySeconds % 60;
-
-    // Format stopwatch based on duration
-            let textDisplay = '';
-            let numberDisplay = '';
-
-            if (hours > 0) {
-    // TEXT: 2 Jam 5 Menit
-                textDisplay = `<span class="time-number">${hours} Jam </span> ${minutes} Menit`;
-
-    // ANGKA: 02:05:00
-                numberDisplay = `${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;            } else {
-    // TEXT: 2 Menit 9 Detik
-                    textDisplay = `<span class="time-number">${minutes} Menit</span> ${seconds} Detik`;
-
-    // ANGKA: 02:09
-                    numberDisplay = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-                }
-
-                if (timerTargetSeconds !== null) {
-                    // ===== URGENCY ZONE =====
-                    if(timerTargetSeconds !== null && displaySeconds <= 300){
-                        document.body.classList.add('urgency');
-                    }else{
-                        document.body.classList.remove('urgency');
-                    }
-                    numberDisplay = '-' + numberDisplay;
-                    textDisplay = '− ' + textDisplay;
-
-                    stopwatchNumber.style.color = '#ef4444';
-                    stopwatchText.style.color = '#ef4444';
-                } else {
-                    stopwatchNumber.style.color = 'green';
-                    stopwatchText.style.color = 'green';
-                }
-
-                if (timerTargetSeconds !== null && displaySeconds <= 60) {
-                    stopwatchNumber.style.animationDuration = '0.3s';
-                    stopwatchText.style.animationDuration = '0.3s';
-                } else {
-                    stopwatchNumber.style.animationDuration = '1s';
-                    stopwatchText.style.animationDuration = '1s';
-                }
-
-
-
-                stopwatchText.innerHTML = textDisplay;
-                stopwatchNumber.textContent = numberDisplay;
-
-                if (timerTargetSeconds !== null) {
-
-    // escalating beep saat 10 detik terakhir
-                    if(displaySeconds <= 10 && displaySeconds > 0){
-                        dingAudio.play();
-                    }
-
-                    if (displaySeconds === 0 && !timerFinishedPlayed) {
-                        timerFinishedPlayed = true;
-
-                        dingAudio.play();
-                        setTimeout(()=>dingAudio.play(),300);
-                        setTimeout(()=>dingAudio.play(),600);
-
-                        timerTargetSeconds = null;
-                        completeCurrentTask();
-                    }
-                }
-
-
-                if(currentTask && currentTask.name.includes('Istirahat')){
-                    document.body.classList.remove('urgency');
-                }
-
-                const fsw = document.getElementById('focusStopwatch');
-                if(fsw){
-                    fsw.textContent = numberDisplay;
-
-                    if(timerTargetSeconds !== null){
-        // warna otomatis
-                        if(displaySeconds <= 300){
-            fsw.style.color = '#ef4444'; // merah
-            fsw.classList.add('big');
-        } else if(displaySeconds <= 900){
-            fsw.style.color = '#f59e0b'; // kuning
-            fsw.classList.remove('big');
-        } else {
-            fsw.style.color = '#22c55e'; // hijau
-            fsw.classList.remove('big');
-        }
-    }
-}
-
-}
-
-function updateProgressBar() {
-    if (!currentTaskId) return;
-
-    const currentTask = tasks.find(t => t.id == currentTaskId);
-    if (!currentTask || !currentTask.startTime) return;
-
-    const startTime = new Date(currentTask.startTime);
-    const now = new Date();
-    const elapsedSeconds = Math.floor((now - startTime) / 1000);
-
-    let progressWidth = 100;
-
-    if(timerTargetSeconds !== null){
-        const remaining = Math.max(timerTargetSeconds - elapsedSeconds, 0);
-        progressWidth = (remaining / timerTargetSeconds) * 100;
-    }else{
-        const currentSecond = elapsedSeconds % 60;
-        progressWidth = (100 - (currentSecond / 60) * 100);
-    }
-
-    stopwatchProgress.style.width = `${progressWidth}%`;
-}
-
-function addLogEntry(taskParam = null) {
-    const task = taskParam || (currentTaskId ? tasks.find(t => t.id == currentTaskId) : null);
-    if (!task) return;
-
-    const now = new Date();
-    const timeString = now.toLocaleTimeString('id-ID', { 
-        hour: '2-digit', 
-        minute: '2-digit' 
+      el.taskList.appendChild(li);
     });
 
-    const logEntry = {
-        id: Date.now(),
-        taskId: task.id,
-        taskName: task.name,
-        time: timeString,
-        timestamp: now
-    };
+  // pindahkan semua task selesai ke bawah
+    document.querySelectorAll(".task-item.done").forEach(li=>{
+      el.taskList.appendChild(li);
+    });
+  }
 
-    let logs = JSON.parse(localStorage.getItem('timeLogs')) || [];
-    logs.push(logEntry);
+  function getCssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
 
-    localStorage.setItem('timeLogs', JSON.stringify(logs));
+  function playSfx(audio, volume = 0.6) {
+    if (!state.isSoundOn) return;
+    if (audio) {
+      audio.currentTime = 0;
+      audio.volume = volume;
+    audio.play().catch(() => {}); // Ignore auto-play errors
+  }
 }
 
-function getDurationPercentage(duration) {
-    const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-    const percentage = Math.min(duration / maxDuration, 1);
-    return percentage;
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
-function getDurationColor(duration) {
-    const maxDuration = Math.max(...tasks.map(t => t.actualDuration), 1);
-    const intensity = Math.min(duration / maxDuration, 1);
-    const hue = 230;
-    const saturation = 70;
-    const lightness = 50 - (intensity * 20);
-    return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+function updateVisuals() {
+  // Update Text
+  const min = Math.floor(state.remainingSeconds / 60);
+  const sec = state.remainingSeconds % 60;
+  el.timeDisplay.innerHTML = `${String(min).padStart(2, '0')}:<span class="seconds-part">${String(sec).padStart(2, '0')}</span>`;
+
+  // Update Circles
+  const minPercent = state.remainingSeconds / state.totalSeconds;
+  const secPercent = sec / 60;
+  
+  el.minutesProg.style.strokeDashoffset = minCircum * (1 - minPercent);
+  el.secondsProg.style.strokeDashoffset = secCircum * (1 - secPercent);
+
+  // Dynamic Colors based on urgency
+  const dangerColor = getCssVar('--accent-danger');
+  const warningColor = getCssVar('--accent-warning');
+  const secondaryColor = getCssVar('--secondary');
+  const accentColor = getCssVar('--accent');
+
+  // Seconds Circle Color
+  if (sec <= 10) el.secondsProg.style.stroke = dangerColor;
+  else if (sec <= 20) el.secondsProg.style.stroke = warningColor;
+  else el.secondsProg.style.stroke = secondaryColor;
+
+  // Minutes Circle Color
+  if (state.remainingSeconds <= 60) el.minutesProg.style.stroke = dangerColor;
+  else if (state.remainingSeconds <= 300) el.minutesProg.style.stroke = warningColor;
+  else el.minutesProg.style.stroke = accentColor;
+  
+  // Document Title
+  document.title = `${formatTime(state.remainingSeconds)} 🔥`;
 }
 
-function formatDuration(minutes) {
-    if (minutes < 60) {
-        return `${minutes} Menit`;
+// --- Core Logic ---
+
+function startTimer(taskId = null, resume = false) {
+  if (state.timerInterval) clearInterval(state.timerInterval);
+
+  state.isStopwatch = false; // reset stopwatch mode
+
+
+  // stop efek selesai sebelumnya
+  document.querySelector(".timer-wrapper").classList.remove("flash");
+  el.timeDisplay.classList.remove("timer-done");
+
+  playSfx(el.sfx.start);
+
+  state.taskId = taskId || null;
+// hapus highlight lama
+  document.querySelectorAll(".task-item").forEach(li=>{
+    li.classList.remove("active-task");
+  });
+
+// tandai task aktif
+  if(state.taskId){
+    const li=document.querySelector(`[data-id="${state.taskId}"]`);
+    if(li) li.classList.add("active-task");
+  }
+  if(state.taskId){
+    const li=document.querySelector(`[data-id="${state.taskId}"]`);
+    if(li){
+      const startBtn = li.querySelector(".btn-start");
+
+      startBtn.textContent = "✓ DONE";
+      startBtn.classList.add("btn-done-active");
+
+      startBtn.onclick = () => {
+        finishTimer();
+      };
+    }
+  }
+
+  if (!resume) {
+    state.remainingSeconds = state.selectedMinutes * 60;
+    state.totalSeconds = state.remainingSeconds;
+  }
+
+// Update Header Title
+  if (state.taskId) {
+    const li = document.querySelector(`[data-id="${state.taskId}"]`);
+    if (li) {
+      el.headerTitle.textContent = li.querySelector(".task-text").textContent;
+    }
+} else if(el.headerTitle.textContent !== "🔋 Charging") {
+  el.headerTitle.textContent = "Halo Endro";
+}
+  
+
+  updateVisuals();
+
+state.timerInterval = setInterval(() => {
+
+  if(state.isStopwatch){
+    state.remainingSeconds++;
+  }else{
+    state.remainingSeconds--;
+
+    if(state.remainingSeconds <= 0){
+      finishTimer();
+      state.isStopwatch = true;
+      state.remainingSeconds = 0;
+    }
+  }
+
+  updateVisuals();
+  saveTimer();
+
+},1000);
+}
+
+function finishTimer() {
+
+
+  
+  const finishedId = state.taskId;
+  state.taskId = null;
+  document.title = "Waktu Habis! ⌛️";
+
+setTimeout(() => {
+  playSfx(el.sfx.done);
+}, 50);
+
+// reset circle supaya penuh lagi (agar pulse terlihat)
+  el.minutesProg.style.strokeDashoffset = 0;
+  el.secondsProg.style.strokeDashoffset = 0;
+  el.minutesProg.style.stroke = getCssVar('--secondary');
+  el.secondsProg.style.stroke = getCssVar('--secondary');
+
+  const timer = document.querySelector(".timer-wrapper");
+  timer.classList.add("flash");
+
+  el.timeDisplay.classList.add("timer-done");
+
+  // Mark task as done if exists
+  if (finishedId) {
+
+    const li = document.querySelector(`[data-id="${finishedId}"]`);
+    if (!li) return;
+
+    li.classList.add("done");
+    li.classList.remove("active-task");
+
+    const startBtn = li.querySelector(".btn-start");
+    const editBtn  = li.querySelector(".btn-edit");
+
+    if (startBtn) {
+      startBtn.disabled = true;
+      startBtn.style.display = "none";
+    }
+
+    if (editBtn) {
+      editBtn.style.display = "none";
+    }
+
+  // buat tombol retask
+    if (!li.querySelector(".btn-retask")) {
+
+      const retask = document.createElement("button");
+      retask.className = "btn-retask";
+      retask.textContent = "↺";
+      retask.title = "Retask";
+
+      retask.addEventListener("click", () => {
+
+        li.classList.remove("done");
+
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.style.display = "";
+          startBtn.textContent="▶ MULAI";
+          startBtn.classList.remove("btn-done-active");
+        }
+
+        if (editBtn) {
+          editBtn.style.display = "";
+        }
+
+        retask.remove();
+
+        el.taskList.prepend(li);
+        saveTasks();
+      });
+
+      const actions = li.querySelector(".task-actions");
+      if (actions) actions.prepend(retask);
+    }
+
+  // pindahkan ke bawah
+    el.taskList.appendChild(li);
+
+    saveTasks();
+  } else {
+
+    el.headerTitle.textContent = "Halo Endro";
+  }
+showContinuePopup();
+}
+
+function resetTimer() {
+
+  state.isStopwatch = false;
+
+  if (state.timerInterval) {
+    clearInterval(state.timerInterval);
+    state.timerInterval = null;
+    playSfx(el.sfx.click);
+  }
+  state.remainingSeconds = state.selectedMinutes * 60;
+  state.totalSeconds = state.remainingSeconds;
+  state.taskId = null;
+  el.headerTitle.textContent = "Halo Endro";
+  document.title = "Focus To-Do Timer";
+  document.querySelectorAll(".task-item").forEach(li=>{
+    li.classList.remove("active-task");
+  });
+
+
+  document.querySelector(".timer-wrapper").classList.remove("flash");
+  el.timeDisplay.classList.remove("timer-done");
+  saveTasks();
+
+  // hapus semua task yang sudah selesai
+  document.querySelectorAll(".task-item.done").forEach(li=>{
+    li.remove();
+  });
+
+  saveTasks();
+
+  document.querySelectorAll(".btn-start").forEach(btn=>{
+    btn.textContent="▶ MULAI";
+    btn.classList.remove("btn-done-active");
+  });
+  updateVisuals();
+}
+
+// --- Task Management ---
+
+function addTask() {
+  const text = el.taskInput.value.trim().toUpperCase();
+  if (!text) return;
+  playSfx(el.sfx.click);
+
+  const id = Date.now();
+  const li = document.createElement("li");
+  li.className = "task-item";
+  li.dataset.id = id;
+  li.innerHTML = `
+<span class="task-text">${renderHashtags(text)}</span>
+    <div class="task-actions">
+      <button class="btn-start" title="Mulai Fokus">▶ MULAI</button>
+      <button class="btn-edit" title="Edit">✏️</button>
+      <button class="btn-delete" title="Hapus">✕</button>
+    </div>
+  `;
+
+  // Event Listeners for Buttons
+  const startBtn = li.querySelector(".btn-start");
+  startBtn.addEventListener("click", () => startTimer(id));
+
+  const editBtn = li.querySelector(".btn-edit");
+  editBtn.addEventListener("click", () => editTaskName(li));
+
+  const deleteBtn = li.querySelector(".btn-delete");
+  deleteBtn.addEventListener("click", () => {
+
+    if(li.classList.contains("done")){
+      li.remove();
+      playSfx(el.sfx.click, 0.4);
+      saveTasks();
+      return;
+    }
+
+    if(confirm("Task belum selesai. Hapus?")){
+      li.remove();
+      playSfx(el.sfx.click, 0.4);
+      saveTasks();
+    }
+
+  });
+
+
+
+  el.taskList.prepend(li);
+  el.taskInput.value = "";
+  saveTasks();
+}
+
+function loadTimer() {
+  const data = localStorage.getItem("focusTimerState");
+  if (!data) return;
+
+  const saved = JSON.parse(data);
+
+  state.selectedMinutes = saved.selectedMinutes;
+  state.totalSeconds = saved.totalSeconds;
+  state.taskId = saved.taskId;
+
+  const elapsed = Math.floor((Date.now() - saved.timestamp) / 1000);
+  state.remainingSeconds = saved.remainingSeconds - elapsed;
+
+  if (state.remainingSeconds <= 0) {
+    localStorage.removeItem("focusTimerState");
+    return;
+  }
+
+  updateVisuals();
+
+  if (saved.running) {
+    startTimer(saved.taskId, true);
+  }
+}
+
+function editTaskName(li) {
+  playSfx(el.sfx.edit, 0.7);
+  const span = li.querySelector(".task-text");
+  const oldText = span.textContent;
+  
+  const input = document.createElement("input");
+  input.type = "text";
+  input.value = oldText;
+  input.className = "edit-input";
+  // Copy styles to match
+  input.style.cssText = `
+    width: 70%; font-size: 1rem; background: var(--bg); color: var(--text);
+    border: 1px solid var(--accent); border-radius: 6px; padding: 4px 8px;
+  `;
+  
+  span.replaceWith(input);
+  input.focus();
+  input.select();
+
+  function saveEdit() {
+    const newSpan = document.createElement("span");
+    newSpan.className = "task-text";
+    newSpan.textContent = input.value.trim() || oldText;
+    
+
+
+    input.replaceWith(newSpan);
+    
+    // Update header if currently running
+    if (String(state.taskId) === li.dataset.id){
+      el.headerTitle.textContent = newSpan.textContent;
+    }
+    saveTasks();
+  }
+
+  input.addEventListener("blur", saveEdit);
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") saveEdit();
+  });
+}
+
+// --- Event Listeners UI ---
+
+
+
+
+// Duration Buttons
+document.querySelectorAll(".duration-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".duration-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.selectedMinutes = parseInt(btn.dataset.min);
+    playSfx(el.sfx.click);
+    if (!state.timerInterval) {
+      resetTimer(); // Reset display to new duration if not running
     } else {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return mins > 0 ? `${hours} Jam ${mins} Menit` : `${hours} Jam`;
+      startTimer(state.taskId); // Restart immediately if running
     }
+  });
+});
+
+// Control Buttons
+
+el.continueBtn.addEventListener("click", ()=>{
+
+  el.continuePopup.classList.remove("show");
+
+  state.selectedMinutes = 5;
+  state.remainingSeconds = 5 * 60;
+  state.totalSeconds = state.remainingSeconds;
+
+  startTimer(state.taskId);
+
+});
+
+
+el.breakBtn.addEventListener("click", () => {
+  document.querySelectorAll(".duration-btn").forEach(b => b.classList.remove("active"));
+  state.selectedMinutes = 5;
+
+  el.headerTitle.textContent = "Break";
+
+  startTimer();
+});
+
+el.resetBtn.addEventListener("click", resetTimer);
+
+el.collapseBtn.addEventListener("click", () => {
+
+  el.taskSection.classList.toggle("collapsed");
+  const isCollapsed = el.taskSection.classList.contains("collapsed");
+
+  el.collapseBtn.textContent = isCollapsed ? "SHOW" : "HIDE";
+
+  // DARK MODE saat hide
+  if(isCollapsed){
+    el.html.dataset.theme = "dark";
+  }else{
+    el.html.dataset.theme = "light";
+  }
+
+  playSfx(el.sfx.click);
+  updateVisuals();
+});
+
+
+
+// Add Task
+el.addTaskBtn.addEventListener("click", addTask);
+el.taskInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") addTask();
+});
+
+// Drag & Drop
+new Sortable(el.taskList, {
+  animation: 150,
+  ghostClass: "sortable-ghost",
+  delay: 100, // Prevent accidental drags on mobile
+  delayOnTouchOnly: true,
+  onEnd: () => playSfx(el.sfx.click, 0.2)
+});
+
+// ===== NOTES AUTOSAVE =====
+const notes = document.getElementById("focusNotes");
+
+// load note
+const savedNotes = localStorage.getItem("focusNotes");
+if(savedNotes){
+  notes.value = savedNotes;
 }
 
-function renderTasks() {
-    if (tasks.length === 0) {
-        taskListContainer.innerHTML = '<p class="empty-state">Belum ada tugas</p>';
-        return;
-    }
+// autosave
+notes.addEventListener("input", ()=>{
+  localStorage.setItem("focusNotes", notes.value);
+});
 
-    taskListContainer.innerHTML = '';
+// Initialize
+updateVisuals();
+loadTasks();
+loadTimer();
 
-    Object.values(taskStopwatchIntervals).forEach(interval => clearInterval(interval));
-    taskStopwatchIntervals = {};
-
-    const sortedTasks = [...tasks].sort((a, b) => {
-        if (a.inProgress && !b.inProgress) return -1;
-        if (!a.inProgress && b.inProgress) return 1;
-
-        if (a.completed && !b.completed) return 1;
-        if (!a.completed && b.completed) return -1;
-
-        if (a.completed && b.completed) {
-            if (a.startTime && b.startTime) {
-                const timeA = new Date(a.startTime);
-                const timeB = new Date(b.startTime);
-                        return timeA - timeB; // Oldest first (ASCENDING)
-                    }
-                }
-
-                return tasks.indexOf(a) - tasks.indexOf(b);
-            });
-
-    sortedTasks.forEach(task => {
-        if (task.inProgress) return; 
-        const taskItem = document.createElement('div');
-        taskItem.className = 'task-item';
-
-        if (task.completed) {
-            taskItem.classList.add('completed');
-        } else if (task.inProgress) {
-            taskItem.classList.add('in-progress');
-        }
-
-        let checkboxContent = '';
-        let checkboxClass = '';
-
-        if (task.completed) {
-            checkboxContent = '✓';
-            checkboxClass = 'checked';
-        } else if (task.inProgress) {
-            checkboxContent = '🚀';
-            checkboxClass = 'active';
-        } else {
-            checkboxContent = '';
-            checkboxClass = '';
-        }
-
-        const startTimeText = task.startTime 
-        ? new Date(task.startTime).toLocaleTimeString('id-ID', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        })
-        : '-';
-
-        let taskStopwatch = '';
-        let taskStopwatchId = `task-stopwatch-${task.id}`;
-
-        if (task.inProgress && task.startTime) {
-            taskStopwatch = `<span id="${taskStopwatchId}">00:00</span>`;
-
-            taskStopwatchIntervals[task.id] = setInterval(() => {
-                const startTime = new Date(task.startTime);
-                const now = new Date();
-                const elapsedSeconds = Math.floor((now - startTime) / 1000);
-                const minutes = Math.floor(elapsedSeconds / 60);
-                const seconds = elapsedSeconds % 60;
-
-                const stopwatchElement = document.getElementById(taskStopwatchId);
-                if (stopwatchElement) {
-                    stopwatchElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                }
-            }, 1000);
-        }
-
-        let durationDisplay = '';
-        if (!task.inProgress && task.actualDuration > 0) {
-            const durationPercentage = getDurationPercentage(task.actualDuration);
-            const durationColor = getDurationColor(task.actualDuration);
-            const barWidth = Math.max(20, durationPercentage * 100);
-
-            durationDisplay = `
-                        <div class="task-duration">
-                            <div class="duration-bar" style="width: ${barWidth}%; background-color: ${durationColor};"></div>
-                            <div class="duration-text">${formatDuration(task.actualDuration)}</div>
-                        </div>
-            `;
-        }
-
-        taskItem.innerHTML = `
-                    <div class="task-info">
-                        <div class="task-checkbox ${checkboxClass}" onclick="handleTaskClick(${task.id})">${checkboxContent}</div>
-                        <div class="task-timestamp">${startTimeText}</div>
-                        <div class="task-title">${processHashtags(task.name)}</div>
-                    </div>
-                    ${durationDisplay}
-            ${task.inProgress ? `<div class="task-stopwatch">${taskStopwatch}</div>` : ''}
-                    <div class="task-actions">
-            ${!task.completed && !task.inProgress ? `
-                            <button class="task-action-btn" onclick="moveTaskToTop(${task.id})" title="Pindahkan ke atas"><i class="fas fa-arrow-up"></i></button>
-                            <button class="task-action-btn" onclick="editTask(${task.id})" title="Edit"><i class="fas fa-edit"></i></button>
-                ` : ''}
-                ${task.completed ? `
-                            <button class="task-action-btn" onclick="repeatTask(${task.id})" title="Ulangi"><i class="fas fa-redo"></i></button>
-                    ` : ''}
-                        <button class="task-action-btn" onclick="deleteTask(${task.id})" title="Hapus"><i class="fas fa-trash"></i></button>
-                    </div>
-                `;
-
-                taskListContainer.appendChild(taskItem);
-            });
-}
-
-function updateStats() {
-    // kalau tidak ada task aktif → kosongkan bar
-    if(!currentTaskId || timerTargetSeconds === null){
-        productiveBarEl.style.width = '0%';
-        breakBarEl.style.width = '0%';
-        productiveBarEl.textContent = '';
-        breakBarEl.textContent = '';
-        return;
-    }
-
-    const currentTask = tasks.find(t => t.id == currentTaskId);
-    if(!currentTask || !currentTask.startTime) return;
-
-    const startTime = new Date(currentTask.startTime);
-    const now = new Date();
-    const elapsed = Math.floor((now - startTime)/1000);
-
-    const remaining = Math.max(timerTargetSeconds - elapsed, 0);
-    const percent = (remaining / timerTargetSeconds) * 100;
-
-    // progress utama
-    productiveBarEl.style.width = `${percent}%`;
-    productiveBarEl.textContent = `${Math.ceil(remaining/60)}m`;
-
-    // bagian habis waktu
-    breakBarEl.style.width = `${100 - percent}%`;
-    breakBarEl.textContent = '';
-
-    if(focusProductiveBar){
-        focusProductiveBar.style.width = `${percent}%`;
-        focusBreakBar.style.width = `${100 - percent}%`;
-    }
-
-    if(totalMinutes){
-        const total = tasks
-        .filter(t => t.completed)
-        .reduce((sum,t)=>sum+(t.actualDuration||0),0);
-
-        totalMinutes.textContent = formatDuration(total);
-    }
-}
-
-function handleTaskClick(taskId) {
-    const task = tasks.find(t => t.id == taskId);
-    if (!task || task.completed || task.inProgress) return;
-
-    startTask(taskId);
-}
-
-function moveTaskToTop(taskId) {
-    const task = tasks.find(t => t.id == taskId);
-    if (!task || task.completed || task.inProgress) return;
-
-    const taskIndex = tasks.findIndex(t => t.id == taskId);
-    if (taskIndex === -1) return;
-
-    tasks.splice(taskIndex, 1);
-    tasks.unshift(task);
-
-    saveTasks();
-    renderTasks();
-}
-
-function repeatTask(taskId) {
-    const task = tasks.find(t => t.id == taskId);
-    if (!task || !task.completed) return;
-
-    if (currentTaskId) {
-        completeCurrentTask();
-    }
-
-    const newTask = {
-        id: Date.now(),
-        name: task.name,
-        startTime: new Date(),
-        endTime: null,
-        actualDuration: 0,
-        completed: false,
-        inProgress: true
-    };
-
-            // Menambahkan task di awal array, bukan di akhir
-    tasks.unshift(newTask);
-    currentTaskId = newTask.id;
-
-    localStorage.setItem('currentTaskId', currentTaskId);
-
-    currentTaskDiv.style.display = 'block';
-    currentTaskName.innerHTML = processHashtags(task.name);
-    openFocusMode(task.name);
-    startStopwatch();
-    html.setAttribute('data-theme','light');
-    localStorage.setItem('theme','light');
-
-    saveTasks();
-    renderTasks();
-    updateStats();
-
-    fireConfetti();
-    taraAudio.play();
-}
-
-function editTask(taskId) {
-    const task = tasks.find(t => t.id == taskId);
-    if (!task || task.completed || task.inProgress) return;
-
-    editingTaskId = taskId;
-    editTaskInput.value = task.name;
-    editModal.style.display = 'flex';
-
-    setTimeout(() => {
-        editTaskInput.focus();
-        editTaskInput.select();
-    }, 100);
-}
-
-function saveTaskEdit() {
-    const newName = editTaskInput.value.trim();
-    if (!newName) return;
-
-    const task = tasks.find(t => t.id == editingTaskId);
-    if (task) {
-        task.name = newName;
-        saveTasks();
-        renderTasks();
-        updateStats();
-    }
-
-    closeEditModal();
-}
-
-function closeEditModal() {
-    editModal.style.display = 'none';
-    editTaskInput.value = '';
-    editingTaskId = null;
-}
-
-function deleteTask(taskId) {
-    const task = tasks.find(t => t.id == taskId);
-    if (!task) return;
-
-    if (confirm(`Hapus tugas: "${task.name}"?`)) {
-        if (currentTaskId == taskId) {
-            completeCurrentTask();
-        }
-
-        tasks = tasks.filter(t => t.id !== taskId);
-        saveTasks();
-        renderTasks();
-        updateStats();
-    }
-}
-
-function resetAll() {
-    const completedTasks = tasks.filter(task => task.completed);
-
-    if (completedTasks.length === 0) {
-        return;
-    }
-
-    if (confirm(`Hapus ${completedTasks.length} tugas yang sudah selesai?`)) {
-        tasks = tasks.filter(task => !task.completed);
-
-        saveTasks();
-        renderTasks();
-        updateStats();
-    }
-}
-
-function saveTasks() {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-}
-
-        // Make functions globally accessible
-window.handleTaskClick = handleTaskClick;
-window.moveTaskToTop = moveTaskToTop;
-window.repeatTask = repeatTask;
-window.editTask = editTask;
-window.deleteTask = deleteTask;
 </script>
 
 </body>
 </html>
-
-
-
-
